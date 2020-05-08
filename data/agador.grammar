@@ -1,0 +1,20 @@
+# Statements about identity.
+S: NS_B NOUNP COP NOUNP NS_E
+
+# Statements and questions about the state of things.
+S: NS_B NOUNP COP STATE NS_E
+S: NS_B NOUNP COP PP NS_E
+S: NS_B QWORD COP NOUNP NS_E
+S: NS_B QWORD NOUNP COP NOUNP NS_E
+S: NS_B COP NOUNP STATE NS_E
+
+# Commands to do things.
+S: NS_B ACTION NOUNP NS_E
+S: NS_B ACTION NOUNP PREP DIGIT NS_E
+S: NS_B ACTION NS_E
+S: NS_B ACTION NOUNP LOC NS_E
+
+# Fragments
+PP: PREP NOUNP
+LOC: PREP DTR PLACE
+NOUNP: DTR THING

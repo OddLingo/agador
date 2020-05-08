@@ -1,0 +1,92 @@
+# Available sounds in English:
+# aa ae ah ao aw ay b ch d dh eh er ey f 
+# g hh ih iy jh k l m n ng ow oy
+# p r s sh t th uh uw v w y z zh
+
+# A THING is a NOUN
+% THING
+MOVIE           m uw v iy
+STATION		s t ey sh ah n
+WEATHER		w eh dh er
+IT              ih t
+TIME            t ay m
+LIGHT		l ay t
+DOG		d ao g
+DOGS		d aa g z
+EMAIL		iy m ey l
+
+# A PLACE is a NOUN which can contain THINGs.  These are often
+# used with Prepositions like IN and AT.
+% PLACE
+KITCHEN		k ih ch ah n
+BEDROOM		b eh d r uw m
+STUDY		s t ah d iy
+OFFICE		ao f ah s
+GARAGE		g aa r aa jh
+UPSTAIRS	ah p s t eh r z
+
+# An ACTION is a VERB
+% ACTION
+#SUGGEST        s ah jh eh s t
+TELL		t eh l
+PLAY		p l ey
+STOP		s t aa p
+START		s t aa r t
+WILL		w ih l
+REPEAT          r ih p iy t
+FIND		f ay n d
+REMEMBER	r ih m eh m b er
+SET		s eh t
+
+# a COPULA is a VERB that expresses some identity between its
+# subject and an object or property.
+% COP
+IS              ih z
+WAS		w aa z
+
+% STATE
+ON		aa n
+OFF		ao f
+
+
+%DIGIT
+0       z iy r ow
+1       w ah n
+2       t uw
+3       th r iy
+4       f ao r
+5       f ay v
+6       s ih k s
+7       s eh v ah n
+8       ey t
+9       n ay n
+
+% PREP
+IN		ih n
+AT		ae t
+
+% QWORD
+WHAT            w ah t
+WHEN		w eh n
+WHERE		w eh r
+
+% DTR
+SOME		s ah m
+THE		dh ah
+MY		m ay
+THIS		dh ih s
+ANY		eh n iy
+
+#% TIME
+#TOMORROW	t ah m aa r ow
+#NOW		n ah ow
+
+#% REQUEST
+#PLEASE          p l iy z ah
+
+% NS_B
+s	sil
+
+% NS_E
+es	sil
+
