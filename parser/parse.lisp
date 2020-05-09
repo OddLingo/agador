@@ -1,6 +1,6 @@
 ;;;; -*- Mode: Lisp; Syntax: ANSI-Common-Lisp; -*-
 
-(in-package :BTP)
+(in-package :AGP)
 
 (defvar *seq*)
 
@@ -16,7 +16,7 @@
   (setq *seq* (+ *seq* 1)))
 
 (defun check-match (lt rt r)
-  (if (eq (rule-left r) (btc:term-fn lt))
+  (if (eq (rule-left r) (agc:term-fn lt))
       (join lt rt (rule-result r)))
   )
 	
@@ -25,7 +25,7 @@
 ;; limited to those with the correct right side term, and the candidates
 ;; are only those terms immediatly adjacent in the utterance.
 ;; This recurses through join so we declare that forward.
-(declaim (ftype (function (btc:term btc:term SYMBOL) t) join))
+(declaim (ftype (function (agc:term agc:term SYMBOL) t) join))
 (defun apply-rules (rt rules neighbors)
   (mapc (lambda (lt)
 	  (mapc (lambda (r) (check-match lt rt r)) rules)
@@ -37,7 +37,7 @@
 ;; Consider what rules might apply to a new term, assuming that this
 ;; term would be on the right side of the rule.
 (defun consider (rt)
-  (let ((rules (rules-for (btc:term-fn rt)))
+  (let ((rules (rules-for (agc:term-fn rt)))
 	(neighbors (left-adjacent rt)))
     (apply-rules rt rules neighbors)
     )
@@ -86,7 +86,7 @@
   "Add a word to the sentence and look for matches"
   (let* ((funs (agm:get-word spell))
 	 (lfuns (if (null funs)
-		    '(BTF::AJ BTF::NN BTF::VB BTF::AV)
+		    '(AGF::ADJ AGF::NOUN AGF::VERB AGF::ADV)
 		    funs))
 	 (pos (length *right*)))
 
@@ -128,14 +128,14 @@
 (defmethod seek-guesses ((u pusage))
   (if (> (term-unc u) 0)
       (agm:put-word
-       (btc:spelled u)
-       (list (btc:term-fn u))))
+       (agc:spelled u)
+       (list (agc:term-fn u))))
       )
 (defmethod seek-guesses ((p ppair))
   (if (> (term-unc p) 0)
       (block recurse
-	(seek-guesses (btc:left p))
-	(seek-guesses (btc:right p))
+	(seek-guesses (agc:left p))
+	(seek-guesses (agc:right p))
        ))
   )
 
@@ -201,17 +201,22 @@
   (parse-words (agu:words-from-file fi))
   )
 
-(defun parse-speech (words)
+(defun parse-msg (words)
   (init-parse)
   (mapc 'accept-word words)
-  (choose top)
+  (choose-top)
   (judge)
   )
 
+(defvar *parser-inbox*)
+
+(defun parse (words)
+  (sb-concurrency:send-message *parser-inbox* words)
+  )
+
 ;; Load the grammar rules and start the grammar analysis thread.
-;; We return the input mailbox so that the speech recognizer can
-;; find it.
 (defun start-parser ()
   (init-rules)
-  (make-instance 'agu:mbx-server :actor 'parse-speech)
+  (setq *parser-inbox*
+	(make-instance 'agu:mbx-server :actor 'parse-msg))
   )

@@ -3,11 +3,12 @@
 (defpackage :AGADOR.SPEECH
   (:nicknames :ags)
   (:use common-lisp)
+  (:import-from :cl-utilities :split-sequence)
   (:export jstart jsend say tstart)
   )
 
 (defpackage :AGADOR.MAIN
-  (:nicknames :btc)
+  (:nicknames :agc)
   (:use common-lisp)
   (:export run)
   (:export term usage pair term-fn spelled left right)
@@ -16,8 +17,8 @@
 ;; There are a lot of grammatical function names, so they get their
 ;; own package namespace to avoid collisions.  Several modules
 ;; reference these names.
-(defpackage :BTREE.GFUN
-  (:nicknames :btf)
+(defpackage :AGADOR.GFUN
+  (:nicknames :agf)
   )
 
 ;; The utility package has string and symbol manipulation functions,
@@ -43,9 +44,9 @@
   )
 
 ;; The actual Adjacency Parser that turns text into trees.
-(defpackage :BTREE.PARSER
-  (:nicknames :btp)
+(defpackage :AGADOR.PARSER
+  (:nicknames :agp)
   (:use common-lisp)
   (:export parse-words parse-string parse-line parse-file-line init-rules)
-  (:export pterm ppair pusage start-parser)
+  (:export pterm ppair pusage start-parser parse)
   )

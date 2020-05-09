@@ -1,6 +1,6 @@
 ;;;; -*- Mode: Lisp; Syntax: ANSI-Common-Lisp; -*-
 
-(in-package :BTP)
+(in-package :AGP)
 
 ;; Within the parser, terms add a lexical range and an uncertainty.
 (defclass pterm () (
@@ -12,11 +12,11 @@
 
 ;; The usage of a word puts a spelling and one possible
 ;; function at a position in an utterance.
-(defclass pusage (btc:usage btp:pterm) ())
+(defclass pusage (agc:usage agp:pterm) ())
 
 (defmethod print-object ((obj pusage) stream)
-  (let ((s (btc:spelled obj))
-	(f (btc:term-fn obj))
+  (let ((s (agc:spelled obj))
+	(f (agc:term-fn obj))
 	(p (term-rpos obj))
 	(q (term-seq obj))
 	(u (term-unc obj))
@@ -27,20 +27,20 @@
 
 ;; An adjacent pair of terms have a collective function as well as
 ;; a span of positions.  Uncertainties are summed.
-(defclass ppair (btc:pair btp:pterm) ())
+(defclass ppair (agc:pair agp:pterm) ())
 
 (defmethod initialize-instance :after ((obj ppair) &key)
   (setf (term-unc obj)
-	(+ (term-unc (btc:left obj))
-	   (term-unc (btc:right obj)))
+	(+ (term-unc (agc:left obj))
+	   (term-unc (agc:right obj)))
 	)
   ; Span from the lpos of the left to the rpos of the right.
-  (setf (term-lpos obj) (term-lpos (btc:left obj)))
-  (setf (term-rpos obj) (term-rpos (btc:right obj)))
+  (setf (term-lpos obj) (term-lpos (agc:left obj)))
+  (setf (term-rpos obj) (term-rpos (agc:right obj)))
   )
 
 (defmethod print-object ((obj ppair) stream)
-  (let ((f (btc:term-fn obj))
+  (let ((f (agc:term-fn obj))
 	(lp (term-lpos obj))
 	(rp (term-rpos obj))
 	(u (term-unc obj))

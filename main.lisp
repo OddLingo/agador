@@ -1,13 +1,13 @@
 ;;;; -*- Mode: Lisp; Syntax: ANSI-Common-Lisp; -*-
 
-(in-package :BTC)
+(in-package :AGC)
 
 (defun run ()
   ;; Open the memory database
   (agm:db-open)
 
   ;; Load grammar analysis rules and start the parser thread.
-  (btp:start-parser)
+  (agp:start-parser)
 
   ;; Start Julius speech recognizer
   (ags:jstart "data/learn")

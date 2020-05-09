@@ -10,10 +10,10 @@
 (defun list-from-tree (mt)
   (let ((m (get-tree mt)))
     (if (equal (type-of m) 'musage)
-	(push (btc:spelled m) *leaves*)
+	(push (agc:spelled m) *leaves*)
 	(progn
-	  (list-from-tree (btc:right m))
-	  (list-from-tree (btc:left m))
+	  (list-from-tree (agc:right m))
+	  (list-from-tree (agc:left m))
 	  )
 	)
     )
@@ -45,7 +45,7 @@
 	(format T "Type somehting to set context~%~%"))
       (progn
 	(format T "~a  ~a~%~%"
-	  (btc:term-fn *cursor*)
+	  (agc:term-fn *cursor*)
 	  (string-from-tree (sig *cursor*)))
 	))
 
@@ -82,12 +82,12 @@
 	   
 	   ((eq cmd 108) ;; l
 	    (if (eq (type-of *cursor*) 'mpair)
-		(goto (btc:left *cursor*))
+		(goto (agc:left *cursor*))
 		(format T "Can't do that here~%")))
 
 	   ((eq cmd 114) ;; r
 	    (if (eq (type-of *cursor*) 'mpair)
-		(goto (btc:right *cursor*))
+		(goto (agc:right *cursor*))
 		(format T "Can't do that here~%")))
 
 	   ((equal verb "dt") ;; Dump tree
@@ -98,7 +98,7 @@
 	    (print-words))
 
 	   (T
-	    (let ((r (btp:parse-words wds)))
+	    (let ((r (agp:parse-words wds)))
 	      (if r (goto r) (prompt))
 	      ))
 

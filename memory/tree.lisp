@@ -10,21 +10,21 @@
 ;;; pairs are cloned recursively.  The value returned is always
 ;;; Merkle key of the remembered object.  
 (defgeneric remember (pterm))
-(defmethod remember ((u btp:pusage))
+(defmethod remember ((u agp:pusage))
   (let ((m (make-instance 'musage
-	:fn (btc:term-fn u)
-	:spelled (btc:spelled u))))
+	:fn (agc:term-fn u)
+	:spelled (agc:spelled u))))
     (if (null (get-tree (sig m)))
 	(progn
 	  (put-tree m)
 	  ))
     (sig m)
     ))
-(defmethod remember ((p btp:ppair))
-  (let* ((lc (remember (btc:left p)))
-	 (rc (remember (btc:right p)))
+(defmethod remember ((p agp:ppair))
+  (let* ((lc (remember (agc:left p)))
+	 (rc (remember (agc:right p)))
 	 (m (make-instance 'mpair
-			   :fn (btc:term-fn p)
+			   :fn (agc:term-fn p)
 			   :left lc
 			   :right rc))
 	 (msig (sig m))

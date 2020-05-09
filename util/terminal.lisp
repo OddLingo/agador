@@ -2,7 +2,7 @@
 
 (in-package :AGU)
 
-(defun gfun-from-string (s) (intern s :BTF))
+(defun gfun-from-string (s) (intern s :AGF))
 
 (defun words-from-string (s)
   (split-sequence '#\Space (string-trim " " s)))

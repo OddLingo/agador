@@ -64,7 +64,7 @@
 	)
     (if (null data) NIL
 	(mapcar
-	 (lambda (x) (intern x :BTF))
+	 (lambda (x) (intern x :AGF))
 	 (agu:words-from-string (to-s data))
 	 )
 	)

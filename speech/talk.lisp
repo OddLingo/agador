@@ -27,7 +27,7 @@
   )
 
 (defun say (msg)
-  (agu:send *talking* '(:op :SAY :TEXT msg :voice "slt"))
+  (agu:send *talking* (list :op :SAY :TEXT msg :voice "slt"))
   )
 
 

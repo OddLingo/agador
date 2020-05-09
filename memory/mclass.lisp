@@ -8,15 +8,15 @@
 ;;;; could be either a 'string (in which case it is a DB key) or
 ;;;; a 'term reference.  The memory versions add a hashed 'signature'
 ;;;; which is their Merkle database key.
-(defclass mterm (btc:term) (
+(defclass mterm (agc:term) (
    (signature :accessor sig :initarg :sig :initform NIL)))
 (defmethod initialize-instance :after ((mt mterm) &key)
   (if (null (sig mt))
       (setf (sig mt) (merkle mt))))
 
-(defclass mpair (btc:pair agm:mterm) ())
+(defclass mpair (agc:pair agm:mterm) ())
 
-(defclass musage (btc:usage agm:mterm) ())
+(defclass musage (agc:usage agm:mterm) ())
 
 (defgeneric deref (s))
 (defmethod deref ((s string)) s)
@@ -26,12 +26,12 @@
 (defgeneric to-string (mterm))
 (defmethod to-string ((p mpair))
   (format NIL "p ~a ~a ~a"
-	  (btc:term-fn p)
-	  (deref (btc:left p))
-	  (deref (btc:right p)) )
+	  (agc:term-fn p)
+	  (deref (agc:left p))
+	  (deref (agc:right p)) )
   )
 (defmethod to-string ((u musage))
-  (format NIL "u ~a ~a" (btc:term-fn u) (btc:spelled u)) )
+  (format NIL "u ~a ~a" (agc:term-fn u) (agc:spelled u)) )
 
 (defmethod merkle ((mt mterm)) (hash-of (to-string mt)))
 

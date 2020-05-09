@@ -1,6 +1,6 @@
 ;;;; -*- Mode: Lisp; Syntax: ANSI-Common-Lisp; -*-
 
-(in-package :BTC)
+(in-package :AGC)
 
 ;; Pairs and Words are subclasses of Terms.  All terms have
 ;; a grammatical function.

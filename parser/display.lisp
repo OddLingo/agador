@@ -1,7 +1,7 @@
 ;;;; -*- Mode: Lisp; Syntax: ANSI-Common-Lisp; -*-
 
 ;; Functions that display the contents of parser working trees.
-(in-package :BTP)
+(in-package :AGP)
 
 ;; Print the entire parse context so far, including all partials
 (defun print-all ()
@@ -22,8 +22,8 @@
 (defmethod print-tree ((p ppair) &optional (depth 0))
   (indent depth)
   (print-object p T) (terpri)
-  (print-tree (btc:left p) (+ depth 3))
-  (print-tree (btc:right p) (+ depth 3))
+  (print-tree (agc:left p) (+ depth 3))
+  (print-tree (agc:right p) (+ depth 3))
   )
 (defmethod print-tree ((u pusage) &optional (depth 0))
   (indent depth)
@@ -52,17 +52,17 @@
 (defmethod paint-parse ((u pusage) &optional (depth 0) (top 1))
   (let ((xpos (hpos (term-lpos u))))
     (agu:setxy xpos top)
-    (format T "~a" (btc:spelled u))
+    (format T "~a" (agc:spelled u))
     (agu:setxy xpos (1+ top))
-    (format T "~a" (btc:term-fn u))
+    (format T "~a" (agc:term-fn u))
     (+ depth top 1)
     ))
 (defmethod paint-parse ((p ppair) &optional (depth 2) (top 1))
   (let* (
 	 (lx (hpos (term-lpos p)))
 	 (rx (+ 4 (hpos (term-rpos p))))
-	 (ly (paint-parse (btc:left p) depth top))
-	 (ry (paint-parse (btc:right p) depth top))
+	 (ly (paint-parse (agc:left p) depth top))
+	 (ry (paint-parse (agc:right p) depth top))
 	 (base (+ top 2))
 	 (py (max ly ry))
 	 )
@@ -72,7 +72,7 @@
     (vline rx base py)
     (agu:setxy (- (average lx rx) (1+ base)) py)
     (agu:set-color 0 3)
-    (format T " ~a " (btc:term-fn p))
+    (format T " ~a " (agc:term-fn p))
     (agu:set-color 7 0)
     (1+ py)
     ))

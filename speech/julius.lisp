@@ -9,7 +9,6 @@
 ;;;; Regex patterns for the important Julius messages.
 (defparameter +shypo+
   "<\\s*SHYPO RANK=\"([^\"]+)\" SCORE=\"([0-9\.-]+)\" GRAM=\"(\d+)\">" )
-(defparameter +eshypo+ "\\s*</SHYPO>" )
 
 (defparameter +whypo+
   "\\*<SHYPO WORD=\"([^\"]+)\" CLASSID=\"(\d+)\" PHONE=\"([^\"]+)\" CM=\"([0-9\.]+)\"/>" )
@@ -54,7 +53,7 @@
 	    )
 	)
       )
-    (agu:send *parser-inbox* wordlist)
+    (agp:parse wordlist)
     )
   )
 
@@ -83,13 +82,15 @@
   (with-open-file (terms (format NIL "~a.term" langmodel))
     (loop for line = (read-line terms)
        while line do
-	 (let ((class (split-sequence '#\Tab (string-trim " " line)))
+	 (let ((class (cl-utilities:split-sequence
+		       '#\Tab
+		       (string-trim " " line)))
 	       )
-	   ;; We internalize the class names in the :BTF namespace
+	   ;; We internalize the class names in the :AGF namespace
 	   ;; because that is where the grammar rules will look
 	   ;; for them.
 	   (vector-push-extend
-	    (intern (cdr class) :btf)
+	    (intern (cdr class) :agf)
 	    *word-classes*)
 	   )
 	 )
@@ -98,7 +99,7 @@
 
 (defun matched-sent (txt)
   (ppcre:register-groups-bind (srank sscore sgram)
-   (+jsent+ txt)
+   (+shypo+ txt)
    (make-instance 'jsent
 		  :rank (parse-integer srank)
 		  :score (read-from-string sscore)
@@ -107,7 +108,7 @@
 
 (defun matched-word (txt)
   (ppcre:register-groups-bind (wspell wclass wph wcm)
-   (+word+ txt)
+   (+shypo+ txt)
    (make-instance 'jword
 		  :spell wspell
 		  :class (parse-integer wclass)
@@ -134,14 +135,14 @@
      (let ((m))
        (cond
 	 ((setf m (matched-word msg))
-	  (push m (words (sent *jstate*))))
+	  (push m (sent-words (sent *jstate*))))
 
 	 ((setf m (matched-sent msg))
 	  (progn
 	    (format T "Sentence score ~,0f~%" (score m))
 	    (setf (sent *jstate) m)))
 
-	 ((setf m (match +esent+ msg))
+	 ((search "</SHYPO>" msg)
 	  (progn
 	    (setf (recog *jstate*) NIL)
 	    (analyze)))

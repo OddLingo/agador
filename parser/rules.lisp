@@ -1,6 +1,6 @@
 ;;;; -*- Mode: Lisp; Syntax: ANSI-Common-Lisp; -*-
 
-(in-package :BTP)
+(in-package :AGP)
 
 ;; A hash table of rules, keyed on the right hand term.
 (defvar *rules* (make-hash-table :size 30))
@@ -23,22 +23,21 @@
 ;; Get a list of the rules with a specified right side term.
 (defun rules-for (fn) (gethash fn *rules*))
 
+(defparameter +rule+ "^(\\w+) (\\w+) (\\w+)" )
+
 ;; Load the rules at startup.
 (defun load-rules (fname)
   "Load rules from a file"
-  (setq *rules* (make-hash-table :size 30))
   (with-open-file (stream fname)
-    (loop for strs = (agu:words-from-file stream)
+    (loop for strs = (read-line stream)
        while strs do
-	 (let ((lfn (intern (car strs) :btf))
-	       (rfn (intern (cadr strs) :btf))
-	       (rslt (intern (caddr strs) :btf))
-	       )
-	   (add-rule lfn rfn rslt)
-	   )
+	 (ppcre:register-groups-bind
+	  (lfn rfn rslt)
+	  (+rule+ strs)
+	  (add-rule lfn rfn rslt))
 	 )
     )
-   )
+  )
 
 (defun init-rules ()
   (load-rules "data/rules.txt")

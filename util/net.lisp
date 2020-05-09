@@ -5,49 +5,57 @@
 (require :sb-concurrency)
 
 (defclass netport ()
-  ((connection :initarg cnx)
+  ((connection :initarg :cnx :accessor cnx)
    (outqueue :accessor outqueue)
-   (inhandler :initarg handler)
+   (inhandler :initarg :handler)
    (inthread :initarg ithread :accessor ithread)
-   (outthread :initarg othread)
+   (outthread :initarg othread :accessor othread)
    ))
 
+
 (defmethod disconnect ((np netport))
-  (sb-thread:interrupt-thread (ithread np))
+  (sb-thread:interrupt-thread (ithread np) 'alldone)
   )
 
-(defun netreceiver ()
+(defmethod send ((np netport) msg)
+  (sb-concurrency:send-message (outqueue np) msg)
+  )
+
+(defun netreceiver (np)
   (loop do
        (unwind-protect
-	    (progn
-	      (usocket:wait-for-input *cnx*)
-	      (format t "Input is: ~a~%" (read-line *cnx*)))
-	 (usocket:socket-close *cnx*))
+	    (let ((msg (usocket:wait-for-input (cnx np))))
+	      (funcall (handler np) msg np)
+	      )
+	 (usocket:socket-close (cnx np)))
        )
     )
 
 ;; This function loops sending messages.  It blocks when there is nothing
 ;; to send.
-(defun netsender ()
-  (loop for msg = (sb-concurrency:receive-message *outbound*)
+(defun netsender (np)
+  (loop for msg = (sb-concurrency:receive-message (outqueue np))
      do
        (unwind-protect
-	    (progn
-	      (let ((stream (usocket:socket-stream *cnx*)))
-		(format stream  "~a" msg)
-		(force-output stream)
-		)
+	    (let ((stream (usocket:socket-stream (cnx np))))
+	      (format stream  "~a" msg)
+	      (force-output stream)
 	      )
-	 (usocket:socket-close *cnx*))
+	 (usocket:socket-close (cnx np))
+	 )
        )
   )
 
-(defun connect (ip port)
-  (make-instance 'netport
-		 :cnx (usocket:socket-connect ip port)
-		 :ithread (sb-thread:make-thread 'msgreceiver)
-		 :othread (sb-thread:make-thread 'msgsender)
-		 )
+;; Create a TCP/IP connection and a thread to listen for incoming
+;; messages.  Messages will be delivered to a handler function.
+(defun connect (ip port handler)
+  (let ((np (make-instance 'netport
+	  :cnx (usocket:socket-connect ip port)
+	  :ihandler handler)))
+    ;; The threads are set separately so we can pass the NetPort
+    (setf (ithread np)
+	  (sb-thread:make-thread 'netreceiver :arguments (c)))
+    (setf (othread np)
+	  (sb-thread:make-thread 'netsender :arguments (c)))
+    np)
   )
-
-

@@ -1,10 +1,11 @@
+CACHE="/home/pd/.cache/common-lisp/sbcl-1.4.5.debian-linux-x64/home/pd/Develop/agador"
 
 clean:
 	@echo "Removing FASL files"
-	@rm -fr ~/.cache/common-lisp
+	@rm -fr ${CACHE}
 
 run:
-	sbcl --load main.lisp
+	lisp --core agador
 
 default:
 	lisp --eval '(asdf:make :agador)'
