@@ -6,7 +6,8 @@
 (in-package :agu)
 
 (defclass mbx-server () (
-  (actor :initarg :actor)
+  (actor :initarg :actor :accessor actor)
+  (name :initarg :name :accessor name :initform "noname")
   (queue :accessor queue :initform (sb-concurrency:make-mailbox))
   (mbthread :accessor server :initform NIL)
   ))
@@ -18,15 +19,21 @@
 (defun runmbx (e)
   (loop do
        (let ((msg (sb-concurrency:receive-message (queue e))))
+	 (format T "~a message ~a~%" (name e) msg)
 	 (funcall (actor e) msg)
 	 )
        )
   )
 
-;; Creates the thread in which 'runmbx executes.
+;; If an actor function was specified, create a thread in which
+;; 'runmbx executes.
 (defmethod initialize-instance :after ((mbx mbx-server) &key)
-  (setf (server e)
-	(sb-thread:make-thread 'runmbx :arguments (mbx)))
+  (if (actor mbx)
+      (setf (server mbx)
+	(sb-thread:make-thread
+	 'runmbx
+	 :name (name mbx)
+	 :arguments (list mbx))))
   )
 
 

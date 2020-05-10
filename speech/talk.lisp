@@ -9,10 +9,15 @@
   (let ((txt (getf msg :TEXT))
 	(voice (getf msg :VOICE)))
     (if (null voice) (setf voice "rms"))
+
+    ;; Tell Julius to stop listening while we talk.
+    (jsend "PAUSE\n")
+    (sleep 0.5)
     (uiop:run-program
-     (format T "mimic -voice ~a -text \"~a\"" voice txt)
+     (format NIL "mimic -voice ~a \" ~a\"" voice txt)
      :output '(:string :stripped T))
     )
+  (jsend "RESUME\n")
   (sleep 0.6)
   )
 
@@ -23,6 +28,7 @@
 
 (defun tstart ()
   (setq *talking* (make-instance 'agu:mbx-server
+				 :name "Talker"
 				 :actor 'speaker))
   )
 

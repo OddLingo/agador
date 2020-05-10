@@ -29,15 +29,19 @@
 (defun load-rules (fname)
   "Load rules from a file"
   (with-open-file (stream fname)
-    (loop for strs = (read-line stream)
-       while strs do
-	 (ppcre:register-groups-bind
-	  (lfn rfn rslt)
-	  (+rule+ strs)
-	  (add-rule lfn rfn rslt))
+    (loop for line = (read-line stream NIL)
+	 until (eq line NIL)
+	 do (if line
+		 (progn
+		   (ppcre:register-groups-bind
+		    (lfn rfn rslt)
+		    (+rule+ line)
+		    (add-rule lfn rfn rslt))
+		   )
+		 )
+	 )
 	 )
     )
-  )
 
 (defun init-rules ()
   (load-rules "data/rules.txt")

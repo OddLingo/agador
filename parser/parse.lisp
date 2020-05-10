@@ -211,6 +211,7 @@
 (defvar *parser-inbox*)
 
 (defun parse (words)
+  (format T "Parse ~a~%" words)
   (sb-concurrency:send-message *parser-inbox* words)
   )
 
@@ -218,5 +219,7 @@
 (defun start-parser ()
   (init-rules)
   (setq *parser-inbox*
-	(make-instance 'agu:mbx-server :actor 'parse-msg))
+	(make-instance 'agu:mbx-server
+		       :name "Parser"
+		       :actor 'parse-msg))
   )

@@ -16,7 +16,7 @@
   "<INPUT STATUS=\"([^\"]+)\" TIME=\"(\\d+)\"/>" )
 (defparameter +inparm+
   "<INPUTPARAM FRAMES=\"(\\d+)\" MSEC=\"(\\d+)\"/>" )
-(defparameter +class-num+ "(\d+)\s+(\w+)" )
+(defparameter +class-num+ "(\\d+)\\s+(\\w+)" )
 
 (defclass jstate () (
   (recognizing :initform NIL :accessor recog)
@@ -27,29 +27,29 @@
 
 (defclass jword () (
   (spell :initarg :spell :accessor spell)
-  (class :initarg :class :accessor word-class)
-  (phonemes :initarg :phonemes :accessor word-phonemes)
-  (confidence :initarg :cm :accessor word-cm)
+  (class :initarg :class :accessor word-class :type fixnum)
+  (phonemes :initarg :phonemes :accessor word-phonemes :type string)
+  (confidence :initarg :cm :accessor word-cm :type float)
   ))
 
 (defclass jsent () (
-  (rank :initarg :rank :accessor sent-rank)
-  (score :initarg :score :accessor sent-score)
-  (gram :initarg :gram :accessor sent-gram)
+  (rank :initarg :rank :accessor sent-rank :type float)
+  (score :initarg :score :accessor sent-score :type float)
+  (gram :initarg :gram :accessor sent-gram :type fixnum)
   (words :initform (make-array 10 :fill-pointer 0 :adjustable t )
-	 :accessor sent-words)
+	 :accessor sent-words :type list)
   ))
 
 ;; Extract list of consed spelling and class names and send
 ;; it to the tree parser.  We leave out the silence markers at
 ;; the beginning and end.
-(defparameter +stopwords+ (list 'NS_B 'NS_E))
+(defparameter +stoplist+ (list 'NS_B 'NS_E))
 (defmethod words-to-parser ((s jsent))
   (let* ((wordlist NIL))
     (dolist (w (sent-words s))
       (let ((name (elt *word-classes* (word-class w))))
 	(if (not (member name +stoplist+))
-	    (push (cons spell w) name)
+	    (push (cons name w) name)
 	    )
 	)
       )
@@ -80,7 +80,7 @@
 (defun load-classes (langmodel)
   "Load word classes"
   (with-open-file (terms (format NIL "~a.term" langmodel))
-    (loop for line = (read-line terms)
+    (loop for line = (read-line terms NIL)
        while line do
 	 (let ((class (cl-utilities:split-sequence
 		       '#\Tab
@@ -90,29 +90,33 @@
 	   ;; because that is where the grammar rules will look
 	   ;; for them.
 	   (vector-push-extend
-	    (intern (cdr class) :agf)
+	    (intern (cadr class) :agf)
 	    *word-classes*)
 	   )
 	 )
     )
+;  (format T "Classes ~a~%" *word-classes*)
   )
 
-(defun matched-sent (txt)
-  (ppcre:register-groups-bind (srank sscore sgram)
-   (+shypo+ txt)
+;; Match a <SHYPO that is the start of a sentence report.
+(defun matched-sent (jtxt)
+  (ppcre:register-groups-bind
+   (srank sscore sgram)
+   (+shypo+ jtxt :sharedp T)
    (make-instance 'jsent
 		  :rank (parse-integer srank)
 		  :score (read-from-string sscore)
 		  :gram (parse-integer sgram))
     ))
 
+;; Match a <WHYPO that is a word report within a sentence.
 (defun matched-word (txt)
   (ppcre:register-groups-bind (wspell wclass wph wcm)
-   (+shypo+ txt)
+   (+shypo+ txt :sharedp T)
    (make-instance 'jword
 		  :spell wspell
 		  :class (parse-integer wclass)
-		  :phonetics wph
+		  :phonemes wph
 		  :cm (read-from-string wcm))
    ))
 
@@ -129,8 +133,10 @@
   )
 
 ;; Process messages from Julius.
-(defun jreceive (msg)
+(defun jreceive (msg np)
   (cond
+    ((equal "." msg) T)
+
     ((recog *jstate*)
      (let ((m))
        (cond
@@ -139,8 +145,8 @@
 
 	 ((setf m (matched-sent msg))
 	  (progn
-	    (format T "Sentence score ~,0f~%" (score m))
-	    (setf (sent *jstate) m)))
+	    (format T "Sentence score ~,0f~%" (sent-score m))
+	    (setf (sent *jstate*) m)))
 
 	 ((search "</SHYPO>" msg)
 	  (progn
@@ -159,20 +165,27 @@
 
 (defvar *jport*)
 (defun jconnect ()
-  (setq *jport* (agu:connect "127.0.0.1" 10500 'jreceive))
+  (setq *jport* (agu:connect
+		 "127.0.0.1" 10500
+		 :handler 'jreceive
+		 :name "Julius"))
   )
 
-(defun jsend (cmd) (agu:send *jport* cmd))
+;; Send a command to Julius.
+(defun jsend (cmd)
+  (agu:send *jport* cmd))
 
 ;;;; Start up Julius, supplying its configuration file.  We also load
 ;;;; the "term" file that maps the word class numbers to their names.
 (defun jstart (confname)
-  (load-classes confname)
-  (uiop:run-program
-   (format NIL "julius -C ~a/~a.jconf"
-	   (asdf:system-relative-pathname :agador #p"data/")
+  (let ((path (asdf:system-relative-pathname :agador #p"data/")))
+    (load-classes (format NIL "~a~a" path confname))
+    (uiop:launch-program
+     (format NIL "julius -C ~a~a.jconf"
+	   path
 	   confname)
-   :wait NIL)
-  (sleep 2)
-  (jconnect)
-  )
+     :output *standard-output*)
+    (format T "Julius started~%")
+    (sleep 2)
+    (jconnect)
+  ))

@@ -10,10 +10,13 @@
   (agp:start-parser)
 
   ;; Start Julius speech recognizer
-  (ags:jstart "data/learn")
+  (ags:tstart)
+  (ags:jstart "agador")
+
+  (ags:say "I'm here.")
 
   ;; Start the visual user interface
-  (agm:explore)
+;  (agm:explore)
   (agm:db-close)
   )
 
