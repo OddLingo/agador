@@ -7,6 +7,7 @@
 (defvar *dbw* NIL)
 (defvar *dbt* NIL)
 (defvar *dbc* NIL)
+(defvar *dbmtx* NIL)
 
 ;;;; The overall environment, which includes the mapped data files
 ;;;; in which all the 'databases' are stored.
@@ -15,14 +16,17 @@
 
 ;; Call open first, which creates the mapping of the files.
 (defun db-open ()
+  (format T "DB open~%")
   (setq *dbenv* (lmdb:make-environment +db-directory+
 				       :max-databases 3
 				       :mapsize (* 1 1024 1024)))
   (lmdb:open-environment *dbenv*)
+  (setq *dbmtx* (sb-thread:make-mutex :name "memory mutex"))
   )
 
 ;; Call close last.  It releases the mapped file section.
 (defun db-close ()
+  (format T "DB close~%")
   (if *dbw* (progn (lmdb:close-database *dbw*) (setq *dbw* NIL)))
   (if *dbt* (progn (lmdb:close-database *dbt*) (setq *dbt* NIL)))
   (if *dbc* (progn (lmdb:close-database *dbc*) (setq *dbc* NIL)))
@@ -31,6 +35,9 @@
 
 ;;;; A transaction must be started in order to open databases.
 (defun db-start ()
+  (format T "grabbing mutex..")
+  (sb-thread:grab-mutex *dbmtx*)
+  (format T " got it~%")
   (setq *dbtxn* (lmdb:make-transaction *dbenv*))
   (lmdb:begin-transaction *dbtxn*)
   (setq *dbw* (lmdb:make-database *dbtxn* "words" :create T))
@@ -42,10 +49,13 @@
     )
 
 (defun db-commit ()
-  (lmdb:commit-transaction *dbtxn*) (setq *dbtxn* NIL)
+    (format T "DB commit~%")
+
+  (lmdb:commit-transaction *dbtxn*)
   (lmdb:close-database *dbt*) (setq *dbt* NIL)
   (lmdb:close-database *dbw*) (setq *dbw* NIL)
   (lmdb:close-database *dbc*) (setq *dbc* NIL)
+  (sb-thread:release-mutex *dbmtx*)
   )
 
 ;; Convert the vector of bytes returned by LMDB into a string.
@@ -162,4 +172,3 @@
   (lmdb:do-pairs (db key data)
     (format T "   ~a: ~a~%"  (to-s key) (to-s data))
     ))
-

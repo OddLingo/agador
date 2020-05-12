@@ -21,7 +21,7 @@
 
 ;; Console manipulation with escape sequences.
 (defun clear ()
-;  (format T "~C[H~C[J" (code-char 27) (code-char 27))
+  (format T "~C[H~C[J" (code-char 27) (code-char 27))
   )
 (defun setxy (x y)
   (format T "~C[~d;~dH" (code-char 27) y x)

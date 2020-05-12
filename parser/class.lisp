@@ -6,7 +6,7 @@
 (defclass pterm () (
   (lpos :accessor term-lpos :initarg :lpos :type integer)
   (rpos :accessor term-rpos :initarg :rpos :type integer)
-  (unc :accessor term-unc :initarg :unc :type integer)
+  (unc :accessor term-unc :initarg :unc :type integer :initform 0)
   (seq :accessor term-seq :initarg :seq :type integer)
   ))
 

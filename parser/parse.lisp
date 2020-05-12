@@ -12,8 +12,7 @@
     )
   )
 
-(defun nseq ()
-  (setq *seq* (+ *seq* 1)))
+(defun nseq () (setq *seq* (+ *seq* 1)))
 
 (defun check-match (lt rt r)
   (if (eq (rule-left r) (agc:term-fn lt))
@@ -48,12 +47,9 @@
 (defun join (lt rt fn)
   "Join two adjacent terms"
   (let ((np (make-instance 'ppair
-			   :fn fn
-			   :seq (nseq)
-			:left lt :right rt))
+	   :fn fn :seq (nseq) :left lt :right rt))
 	)
     (push np (elt *right* (term-rpos np)))
-;    (print-tree np)
     (consider np)
     )
   NIL
@@ -103,11 +99,9 @@
      (lambda (f)
        (let
 	   ((rt (make-instance 'pusage
-			       :spelled spell :fn f
-			       :lpos pos :rpos pos
-			       :seq (nseq)
-			       :unc (if (null funs) 1 0)
-			       )))
+	       :spelled spell :fn f
+	       :lpos pos :rpos pos
+	       :seq (nseq) :unc (if (null funs) 1 0) )))
 	 (push rt (elt *right* pos))
 	 (consider rt)))
      lfuns)
@@ -151,8 +145,11 @@
 ;; Remember any new words as well as what was said.
 (defun learn ()
   (let ((best (car *top*)))
-    (seek-guesses best)
+					;    (seek-guesses best)
+    (agu:clear)
+    (agm:db-start)
     (agm:remember best)
+    (agm:db-commit)
     )
   )
 
@@ -201,8 +198,10 @@
   (parse-words (agu:words-from-file fi))
   )
 
+;; Parse a list of words with functions already assigned.
 (defun parse-msg (words)
   (init-parse)
+  (format T "Parsing ~a~%" words)
   (mapc 'accept-word words)
   (choose-top)
   (judge)

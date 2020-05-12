@@ -155,7 +155,7 @@
 ;; Process messages from Julius.
 (defun jreceive (msg np)
   (declare (ignore np))
-;  (format T "J> |~a|~%" msg)
+  (format T "J> |~a|~%" msg)
   (cond
     ; Ignore the dots
     ((equal "." msg) T)
@@ -179,18 +179,28 @@
 
 	 ; End of recognition output
 	 ((equal msg "</RECOGOUT>")
-	  (setf (recog *jstate*) NIL))
+	  (progn
+	    (setf (recog *jstate*) NIL)
+	    (format T "  -- end of recognition~%")))
 	 )))
 
     ; Start recognition output
     ((equal msg "<RECOGOUT>")
-     (setf (recog *jstate*) T))
+     (progn
+       (setf (recog *jstate*) T)
+       (format T "Fetching recognition~%")))
 
+    ((equal msg "<STARTRECOG/>")
+     (format T "Start Julius processing~%"))
+    
+    ((equal msg "<ENDRECOG/>")
+     (format T "Finish Julius processing~%"))
+    
     ; Input state
     ((matched-input msg) T)
 
     ; Everything else
-    (T (format T "Julius ~a~%" msg))
+    (T (format T "Unhandled Julius ~a~%" msg))
     )
   )
 
