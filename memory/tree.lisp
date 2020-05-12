@@ -7,17 +7,15 @@
 (in-package :AGM)
 
 ;;; Clone a parser tree object into long-term memory.  Note that
-;;; pairs are cloned recursively.  The value returned is always
+;;; pairs are cloned recursively.  The value returned is always the
 ;;; Merkle key of the remembered object.  
 (defgeneric remember (pterm))
 (defmethod remember ((u agp:pusage))
   (let ((m (make-instance 'musage
 	:fn (agc:term-fn u)
 	:spelled (agc:spelled u))))
-    (if (null (get-tree (sig m)))
-	(progn
-	  (put-tree m)
-	  ))
+    ; If it does not already exist, create it in the db.
+    (if (null (get-tree (sig m))) (put-tree m))	  
     (sig m)
     ))
 (defmethod remember ((p agp:ppair))
@@ -29,7 +27,9 @@
 			   :right rc))
 	 (msig (sig m))
 	 )
-    (if (null (get-tree (sig m)))
+    ; If this exact pair is not already in the db, create it
+    ; and the contexts up form the lower nodes.
+    (if (null (get-tree msig))
 	(progn
 	  (put-tree m)
 	  ; do not save contexts for stopwords (a, the, and, etc)
@@ -37,6 +37,6 @@
 	  (add-context rc msig)
 	  )
 	)
-    (sig m)
+    msig
     ))
 (defmethod remember ((s string)) s)

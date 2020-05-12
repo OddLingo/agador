@@ -11,13 +11,13 @@
     (if (null voice) (setf voice "rms"))
 
     ;; Tell Julius to stop listening while we talk.
-    (jsend "PAUSE\n")
+;    (jsend "PAUSE\n")
     (sleep 0.5)
     (uiop:run-program
      (format NIL "mimic -voice ~a \" ~a\"" voice txt)
      :output '(:string :stripped T))
     )
-  (jsend "RESUME\n")
+;  (jsend "RESUME\n")
   (sleep 0.6)
   )
 

@@ -20,7 +20,7 @@
 (defmethod send ((np netport) msg)
   (unwind-protect
        (let ((stream (usocket:socket-stream (cnx np))))
-	 (format stream  "~a" msg)
+	 (write-sequence msg stream)
 	 (force-output stream)
 	 )
     NIL

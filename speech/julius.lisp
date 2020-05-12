@@ -3,25 +3,28 @@
 (in-package :ags)
 
 (defparameter +confidence-threshold+ 0.75 )
-(defparameter +current-sentence+ NIL)
 (defvar *word-classes* (make-array 20 :fill-pointer 0 :adjustable t ))
 
 ;;;; Regex patterns for the important Julius messages.
 (defparameter +shypo+
-  "<\\s*SHYPO RANK=\"([^\"]+)\" SCORE=\"([0-9\.-]+)\" GRAM=\"(\d+)\">" )
+  "\\s*<SHYPO RANK=\"(\\d+)\" SCORE=\"([0-9\\\.\\-]+)\" GRAM=\"(\\d+)\">" )
 
 (defparameter +whypo+
-  "\\*<SHYPO WORD=\"([^\"]+)\" CLASSID=\"(\d+)\" PHONE=\"([^\"]+)\" CM=\"([0-9\.]+)\"/>" )
+  "\\s*<WHYPO WORD=\"(\\w+)\" CLASSID=\"(\\d+)\" PHONE=\"([a-z0-9 ]+)\" CM=\"([0-9\\\.\\-]+)\"/>" )
+
 (defparameter +input+
-  "<INPUT STATUS=\"([^\"]+)\" TIME=\"(\\d+)\"/>" )
+  "<INPUT STATUS=\"(\\w+)\" TIME=\"(\\d+)\"/>" )
+
 (defparameter +inparm+
   "<INPUTPARAM FRAMES=\"(\\d+)\" MSEC=\"(\\d+)\"/>" )
+
 (defparameter +class-num+ "(\\d+)\\s+(\\w+)" )
 
 (defclass jstate () (
   (recognizing :initform NIL :accessor recog)
-  (sent :initform NIL :accessor sent))
-  )
+  (sent :initform NIL :accessor sent)
+  (recstart :accessor starttime :initarg :starttime)
+  ))
 
 (defvar *jstate* (make-instance 'jstate))
 
@@ -43,17 +46,17 @@
 ;; Extract list of consed spelling and class names and send
 ;; it to the tree parser.  We leave out the silence markers at
 ;; the beginning and end.
-(defparameter +stoplist+ (list 'NS_B 'NS_E))
 (defmethod words-to-parser ((s jsent))
   (let* ((wordlist NIL))
-    (dolist (w (sent-words s))
-      (let ((name (elt *word-classes* (word-class w))))
-	(if (not (member name +stoplist+))
-	    (push (cons name w) name)
-	    )
-	)
-      )
-    (agp:parse wordlist)
+    (loop for w across (sent-words s) do
+	 (let ((fn (elt *word-classes* (word-class w))))
+	   (if (not (or (string= fn "NS_B")
+			(string= fn "NS_E")))
+	       (push (cons (spell w) fn) wordlist)
+	       )
+	   )
+	 )
+    (agp::parse-msg wordlist)
     )
   )
 
@@ -63,13 +66,14 @@
 
 (defmethod avgconfidence ((s jsent))
   (let ((total 0))
-    (loop for w in (sent-words s) do (setf total (+ total (word-cm w))))
+    (loop for w across (sent-words s)
+       do (setf total (+ total (word-cm w))))
     (floor (/ total (length (sent-words s))))
     ))
 
 (defmethod minconfidence ((s jsent))
   (let ((minimum 1.0))
-    (loop for w in (sent-words s) do
+    (loop for w across (sent-words s) do
 	 (if (< (word-cm w) minimum) (setf minimum (word-cm w)))
 	 )
     minimum
@@ -98,50 +102,70 @@
 ;  (format T "Classes ~a~%" *word-classes*)
   )
 
+;; Match an INPUT report
+(defun matched-input (jtxt)
+  (ppcre:register-groups-bind
+   (state ('parse-integer stime))
+   (+input+ jtxt :sharedp T)
+   (progn
+     (case state
+       ("LISTEN"  (format T "Listening~%"))
+       ("STARTREC" (setf (starttime *jstate*) stime))
+       ("ENDREC" (format T "  took ~d~%"
+			 (- stime (starttime *jstate*))))
+       )
+     T)
+    ))
+  
 ;; Match a <SHYPO that is the start of a sentence report.
 (defun matched-sent (jtxt)
   (ppcre:register-groups-bind
-   (srank sscore sgram)
+   (('parse-integer srank)
+    ('read-from-string sscore)
+    ('parse-integer sgram))
    (+shypo+ jtxt :sharedp T)
    (make-instance 'jsent
-		  :rank (parse-integer srank)
-		  :score (read-from-string sscore)
-		  :gram (parse-integer sgram))
+		  :rank srank
+		  :score sscore
+		  :gram sgram)
     ))
 
 ;; Match a <WHYPO that is a word report within a sentence.
 (defun matched-word (txt)
-  (ppcre:register-groups-bind (wspell wclass wph wcm)
-   (+shypo+ txt :sharedp T)
+  (ppcre:register-groups-bind
+   (wspell ('parse-integer wclass) wph ('read-from-string wcm))
+   (+whypo+ txt :sharedp T)
    (make-instance 'jword
-		  :spell wspell
-		  :class (parse-integer wclass)
-		  :phonemes wph
-		  :cm (read-from-string wcm))
+		  :spell wspell :class wclass
+		  :phonemes wph :cm wcm)
    ))
 
 ;; Done receiving a complete sentence.  If we are confident
 ;; enough in the recognition, we send it to deep grammar analysis.
 (defun analyze ()
-  (let* ((s +current-sentence+)
+  (let* ((s (sent *jstate*))
 	 (mc (minconfidence s)))
-    (format T "  min confidence ~,2f~%" mc)
     (if (> mc +confidence-threshold+)
 	(words-to-parser s)
+	(format T "** Ignoring noise ~,2f~%" mc)
 	)
     )
   )
 
 ;; Process messages from Julius.
 (defun jreceive (msg np)
+  (declare (ignore np))
+;  (format T "J> |~a|~%" msg)
   (cond
+    ; Ignore the dots
     ((equal "." msg) T)
 
+    ; During recognition reports
     ((recog *jstate*)
      (let ((m))
        (cond
 	 ((setf m (matched-word msg))
-	  (push m (sent-words (sent *jstate*))))
+	  (addword m (sent *jstate*)))
 
 	 ((setf m (matched-sent msg))
 	  (progn
@@ -152,13 +176,20 @@
 	  (progn
 	    (setf (recog *jstate*) NIL)
 	    (analyze)))
+
+	 ; End of recognition output
+	 ((equal msg "</RECOGOUT>")
+	  (setf (recog *jstate*) NIL))
 	 )))
+
+    ; Start recognition output
     ((equal msg "<RECOGOUT>")
      (setf (recog *jstate*) T))
 
-    ((equal msg "</RECOGOUT>")
-     (setf (recog *jstate*) NIL))
+    ; Input state
+    ((matched-input msg) T)
 
+    ; Everything else
     (T (format T "Julius ~a~%" msg))
     )
   )
@@ -180,6 +211,10 @@
 (defun jstart (confname)
   (let ((path (asdf:system-relative-pathname :agador #p"data/")))
     (load-classes (format NIL "~a~a" path confname))
+
+    (uiop:run-program "killall -q julius" :ignore-error-status T)
+    (sleep 1)
+
     (uiop:launch-program
      (format NIL "julius -C ~a~a.jconf"
 	   path
