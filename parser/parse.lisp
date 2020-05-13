@@ -62,13 +62,18 @@
 (defun accept-word (wordpair)
   "Add a word to the sentence and look for matches"
   (let* ((pos (length *right*))
+	 (spell (car wordpair))
+	 (fn (cdr wordpair))
 	 (rt (make-instance 'pusage
-			    :spelled (car wordpair)
-			    :fn (cdr wordpair)
+			    :spelled spell :fn fn
 			    :lpos pos :rpos pos
 			    :seq (nseq)
 			    )))
 
+    ;; Take this opportunity to learn new words from Julius.
+;;    (if (null (get-word spell))
+;;	(put-word spell (list fn)))
+	      
     ;; Create an empty entry at the right end of the sentence.
     (vector-push-extend () *right*)
     ;; The new word is the term in this position
@@ -90,7 +95,7 @@
     (vector-push-extend () *right*)
 
     (if (null funs)
-	(format T "  Guessing about '~a'~%" spell))
+	(agu:term  "  Guessing about '~a'~%" spell))
 
     ;; Create a USAGE for each potential grammatical function of
     ;; this word.  These are just internal to the parser and not
@@ -143,34 +148,38 @@
     ))
 
 ;; Remember any new words as well as what was said.
-(defun learn ()
-  (let ((best (car *top*)))
-					;    (seek-guesses best)
-    (agu:clear)
-    (agm:db-start)
-    (agm:remember best)
-    (agm:db-commit)
-    )
-  )
+(defun learn (best)
+  (if (action best)
+      (funcall (action best) best)
+      )
+      )
 
-;; If there is exactly one satisfactory solution, we can learn from it.
+;; If there is exactly one satisfactory solution, we can learn from it
+;; or act on it.
 (defun judge ()
   (agu:clear)
   (let ((nsoln (length *top*)))
     (cond ((= 0 nsoln)
-	   (format T "No satisfactory solution found~%")
+	   (agu:term  "No satisfactory solution found~%")
 	   (print-all)
 	   NIL
 	   )
 
 	  ((= 1 nsoln)
-	   (paint-parse (car *top*))
-	   (finish-output)
-	   (if (y-or-n-p "-- Is this correct?") (learn) NIL)
+	   (let ((best (car *top*)))
+	     (agu:use-term)
+	     (agu:clear)
+	     (paint-parse best)
+	     (finish-output)
+	     (agu:release-term)
+	     (if (y-or-n-p "-- Is this correct?")
+		 (learn best)
+		 NIL)
+	     )
 	   )
 
 	  (T
-	   (format T "There are ~d solutions~%" nsoln)
+	   (agu:term  "There are ~d solutions~%" nsoln)
 	   (let ((topy 2))
 	     (dolist (sol *top*)
 	       (setf topy (paint-parse sol 2 topy)))
@@ -201,7 +210,7 @@
 ;; Parse a list of words with functions already assigned.
 (defun parse-msg (words)
   (init-parse)
-  (format T "Parsing ~a~%" words)
+  (agu:term  "Parsing ~a~%" words)
   (mapc 'accept-word words)
   (choose-top)
   (judge)
@@ -210,7 +219,6 @@
 (defvar *parser-inbox*)
 
 (defun parse (words)
-  (format T "Parse ~a~%" words)
   (sb-concurrency:send-message *parser-inbox* words)
   )
 

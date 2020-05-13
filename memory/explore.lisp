@@ -6,14 +6,35 @@
 (defvar *contexts* NIL)
 (defvar *leaves* NIL)
 
+(defclass uimode ()
+  (
+   (voice :initform NIL :accessor voice)
+   )
+  )
+
+(defvar *uimode* (make-instance 'uimode))
+
+;; Setting this to true will turn on speech recognition.
+(defun set-voice (yes)
+  (setf (voice *uimode*) yes)
+  (if yes
+      (progn
+	(ags:jsend "RESUME\n")
+	)
+      (progn
+	(ags:jsend "PAUSE\n")
+	)
+      )
+)
+
 ;; Create a list of the terminal words in a tree.
 (defun list-from-tree (mt)
   (let ((m (get-tree mt)))
     (if (equal (type-of m) 'musage)
 	(push (agc:spelled m) *leaves*)
 	(progn
-	  (list-from-tree (agc:right m))
-	  (list-from-tree (agc:left m))
+	  (list-from-tree (agc::right m))
+	  (list-from-tree (agc::left m))
 	  )
 	)
     )
@@ -30,6 +51,7 @@
 ;; Repaint the screen with the current text at the top, followed
 ;; by the contexts it appears in.
 (defun repaint ()
+  (agu:use-term)
   (agu:clear)
   ;; Context lines in white
   (agu:set-color 7 0)
@@ -42,7 +64,7 @@
   (format T "~%~C[K" (code-char 27))
   (if (null *cursor*)
       (progn
-	(format T "Type somehting to set context~%~%"))
+	(format T "Type something to set context~%~%"))
       (progn
 	(format T "~a  ~a~%~%"
 	  (agc:term-fn *cursor*)
@@ -51,6 +73,7 @@
 
   ;; Prompt in white on black.
   (agu:set-color 7 0)
+  (agu:release-term)
 )
 
 ;; Change the explore context to the node with a given signature.
@@ -96,6 +119,7 @@
 	    (dump *dbc*))
 	   ((equal verb "dw") ;; Dump words
 	    (print-words))
+	   ((equal verb "v") (set-voice T))
 
 	   (T
 	    (let ((r (agp:parse-words wds)))

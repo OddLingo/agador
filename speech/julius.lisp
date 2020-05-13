@@ -147,7 +147,7 @@
 	 (mc (minconfidence s)))
     (if (> mc +confidence-threshold+)
 	(words-to-parser s)
-	(format T "** Ignoring noise ~,2f~%" mc)
+	(agu:term"** Ignoring noise ~,2f~%" mc)
 	)
     )
   )
@@ -155,7 +155,7 @@
 ;; Process messages from Julius.
 (defun jreceive (msg np)
   (declare (ignore np))
-  (format T "J> |~a|~%" msg)
+;;  (format T "J> |~a|~%" msg)
   (cond
     ; Ignore the dots
     ((equal "." msg) T)
@@ -169,7 +169,7 @@
 
 	 ((setf m (matched-sent msg))
 	  (progn
-	    (format T "Sentence score ~,0f~%" (sent-score m))
+	    (agu:term "Sentence score ~,0f~%" (sent-score m))
 	    (setf (sent *jstate*) m)))
 
 	 ((search "</SHYPO>" msg)
@@ -181,26 +181,26 @@
 	 ((equal msg "</RECOGOUT>")
 	  (progn
 	    (setf (recog *jstate*) NIL)
-	    (format T "  -- end of recognition~%")))
+	    (agu:term "  -- end of recognition~%")))
 	 )))
 
     ; Start recognition output
     ((equal msg "<RECOGOUT>")
      (progn
        (setf (recog *jstate*) T)
-       (format T "Fetching recognition~%")))
+       (agu:term "Fetching recognition~%")))
 
     ((equal msg "<STARTRECOG/>")
-     (format T "Start Julius processing~%"))
+     (agu:term "Start Julius processing~%"))
     
     ((equal msg "<ENDRECOG/>")
-     (format T "Finish Julius processing~%"))
+     (agu:term "Finish Julius processing~%"))
     
     ; Input state
     ((matched-input msg) T)
 
     ; Everything else
-    (T (format T "Unhandled Julius ~a~%" msg))
+    (T (agu:term "Unhandled Julius ~a~%" msg))
     )
   )
 
@@ -230,7 +230,7 @@
 	   path
 	   confname)
      :output *standard-output*)
-    (format T "Julius started~%")
+    (agu:term "Julius started~%")
     (sleep 2)
     (jconnect)
   ))

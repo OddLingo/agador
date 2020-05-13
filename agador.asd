@@ -27,6 +27,14 @@
 	)
       )
 
+    (:module "action"
+	     :depends-on ("package" "tclass")
+	     :serial T
+      :components (
+        (:file "dispatch")
+	)
+      )
+
     (:module "memory"
 	     :depends-on ("package" "tclass")
 	     :serial T	       

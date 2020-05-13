@@ -20,3 +20,16 @@
   (left :accessor left :initarg :left)
   (right :accessor right :initarg :right)
   ))
+
+;; Walk down a btree seeking a particular function.
+(defgeneric seek (term goal))
+;; A usage either matches or it doesn't.
+(defmethod seek ((u usage) goal) (eq term-fn goal))
+;; A pair might mtach by itslef.  Otherwise we have to apply
+;; knowledge of the grammar rules to find what we want.
+(defmethod seek ((p pair) goal)
+  (cond
+    ((eq (term-fn p) goal) T)
+    (T NIL)
+    )
+  )

@@ -35,9 +35,7 @@
 
 ;;;; A transaction must be started in order to open databases.
 (defun db-start ()
-  (format T "grabbing mutex..")
   (sb-thread:grab-mutex *dbmtx*)
-  (format T " got it~%")
   (setq *dbtxn* (lmdb:make-transaction *dbenv*))
   (lmdb:begin-transaction *dbtxn*)
   (setq *dbw* (lmdb:make-database *dbtxn* "words" :create T))
@@ -49,8 +47,6 @@
     )
 
 (defun db-commit ()
-    (format T "DB commit~%")
-
   (lmdb:commit-transaction *dbtxn*)
   (lmdb:close-database *dbt*) (setq *dbt* NIL)
   (lmdb:close-database *dbw*) (setq *dbw* NIL)
@@ -118,7 +114,7 @@
 				:right (cadddr wds)))
 	    ;; Anything else is an error.
 	    (otherwise (progn
-			 (format T "Bad record in DB ~a~%" data)
+			 (agu:term "Bad record in DB ~a~%" data)
 			 NIL))
 	    )
 	  )
@@ -170,5 +166,5 @@
 
 (defun dump (db)
   (lmdb:do-pairs (db key data)
-    (format T "   ~a: ~a~%"  (to-s key) (to-s data))
+    (agu:term "   ~a: ~a~%"  (to-s key) (to-s data))
     ))

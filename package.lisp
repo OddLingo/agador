@@ -30,6 +30,13 @@
   (:export words-from-file words-from-string gfun-from-string)
   (:export string-from-list clear setxy set-color)
   (:export send connect mbx-server)
+  (:export use-term release-term term)
+  )
+
+(defpackage :AGADOR.ACTION
+  (:nicknames :aga)
+  (:use common-lisp)
+  (:export command query remember)
   )
 
 ;; Long term memory for things the parser learns, both individual words

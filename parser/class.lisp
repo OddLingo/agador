@@ -27,7 +27,10 @@
 
 ;; An adjacent pair of terms have a collective function as well as
 ;; a span of positions.  Uncertainties are summed.
-(defclass ppair (agc:pair agp:pterm) ())
+(defclass ppair (agc:pair agp:pterm)
+  (
+  (action :accessor action :initarg :action)
+  ))
 
 (defmethod initialize-instance :after ((obj ppair) &key)
   (setf (term-unc obj)
@@ -55,8 +58,9 @@
 (defclass rule () (
   (left :accessor rule-left :initarg :left)
   (right :accessor rule-right :initarg :right)
-  (result :accessor rule-result :initarg :result))
-  )
+  (result :accessor rule-result :initarg :result)
+  (action :accessor action :initarg :action :initform NIL)
+  ))
 
 (defmethod print-object ((obj rule) stream)
   (let ((l (rule-left obj))

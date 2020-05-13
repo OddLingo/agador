@@ -23,6 +23,7 @@
 
 ;; Print the entire dictionary.
 (defun print-words ()
+  (agu:use-term)
   (agu:clear)
   (let ((x 1) (y 1))
     (lmdb:do-pairs (*dbw* spell fns)
@@ -38,4 +39,5 @@
     )
   (format T "~%")
   (finish-output)
+  (agu:release-term)
   )
