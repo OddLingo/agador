@@ -2,7 +2,7 @@
 
 (in-package :ags)
 
-(defparameter +confidence-threshold+ 0.75 )
+(defparameter +confidence-threshold+ 0.6 )
 (defvar *word-classes* (make-array 20 :fill-pointer 0 :adjustable t ))
 
 ;;;; Regex patterns for the important Julius messages.
@@ -56,7 +56,7 @@
 	       )
 	   )
 	 )
-    (agp::parse-msg wordlist)
+    (agp::parse-msg (reverse wordlist))
     )
   )
 
@@ -116,6 +116,16 @@
        )
      T)
     ))
+
+(defun matched-param (jtxt)
+  (ppcre:register-groups-bind
+   (('parse-integer frames)
+    ('parse-integer msec))
+   (+inparm+ jtxt :sharedp T)
+   (progn
+     (agu:term "  ~a frames took ~a ms~%" frames msec)
+     T)
+    ))
   
 ;; Match a <SHYPO that is the start of a sentence report.
 (defun matched-sent (jtxt)
@@ -165,12 +175,16 @@
      (let ((m))
        (cond
 	 ((setf m (matched-word msg))
-	  (addword m (sent *jstate*)))
+	  (progn
+	    ;; (agu:term "  Word ~a at ~a~%" (spell m) (word-cm m))
+	    (addword m (sent *jstate*))))
 
 	 ((setf m (matched-sent msg))
 	  (progn
 	    (agu:term "Sentence score ~,0f~%" (sent-score m))
 	    (setf (sent *jstate*) m)))
+
+	 ((matched-param msg) T)
 
 	 ((search "</SHYPO>" msg)
 	  (progn
@@ -178,23 +192,15 @@
 	    (analyze)))
 
 	 ; End of recognition output
-	 ((equal msg "</RECOGOUT>")
-	  (progn
-	    (setf (recog *jstate*) NIL)
-	    (agu:term "  -- end of recognition~%")))
+	 ((search "</RECOGOUT>" msg)
+	  (setf (recog *jstate*) NIL))
 	 )))
 
     ; Start recognition output
     ((equal msg "<RECOGOUT>")
-     (progn
-       (setf (recog *jstate*) T)
-       (agu:term "Fetching recognition~%")))
-
-    ((equal msg "<STARTRECOG/>")
-     (agu:term "Start Julius processing~%"))
-    
-    ((equal msg "<ENDRECOG/>")
-     (agu:term "Finish Julius processing~%"))
+     (setf (recog *jstate*) T))
+    ((equal msg "<STARTRECOG/>") T)    
+    ((equal msg "<ENDRECOG/>") T)
     
     ; Input state
     ((matched-input msg) T)
@@ -230,7 +236,6 @@
 	   path
 	   confname)
      :output *standard-output*)
-    (agu:term "Julius started~%")
     (sleep 2)
     (jconnect)
   ))

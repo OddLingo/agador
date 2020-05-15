@@ -16,7 +16,7 @@
 
 (defun check-match (lt rt r)
   (if (eq (rule-left r) (agc:term-fn lt))
-      (join lt rt (rule-result r)))
+      (join lt rt (rule-result r) (action r)))
   )
 	
 ;; Apply a list of rules to a list of left side candidates.  This is
@@ -24,7 +24,7 @@
 ;; limited to those with the correct right side term, and the candidates
 ;; are only those terms immediatly adjacent in the utterance.
 ;; This recurses through join so we declare that forward.
-(declaim (ftype (function (agc:term agc:term SYMBOL) t) join))
+(declaim (ftype (function (agc:term agc:term SYMBOL SYMBOL) t) join))
 (defun apply-rules (rt rules neighbors)
   (mapc (lambda (lt)
 	  (mapc (lambda (r) (check-match lt rt r)) rules)
@@ -44,10 +44,12 @@
 
 ;; Join two adjacent terms into a pair that spans both terms.
 ;; This recursively then considers additional rules for the new pair.
-(defun join (lt rt fn)
+(defun join (lt rt fn act)
   "Join two adjacent terms"
   (let ((np (make-instance 'ppair
-	   :fn fn :seq (nseq) :left lt :right rt))
+			   :fn fn :seq (nseq)
+			   :left lt :right rt
+			   :action act))
 	)
     (push np (elt *right* (term-rpos np)))
     (consider np)
@@ -149,10 +151,13 @@
 
 ;; Remember any new words as well as what was said.
 (defun learn (best)
-  (if (action best)
-      (funcall (action best) best)
-      )
-      )
+  (let ((dothis (action best)))
+    (if dothis
+	(funcall dothis best)
+	(agu:term "Nothing to do~%")
+	)
+    )
+  )
 
 ;; If there is exactly one satisfactory solution, we can learn from it
 ;; or act on it.
@@ -166,15 +171,16 @@
 	   )
 
 	  ((= 1 nsoln)
+	   ;; Exactly one - we go with it.
 	   (let ((best (car *top*)))
 	     (agu:use-term)
 	     (agu:clear)
-	     (paint-parse best)
+	     (agu:setxy 1 (paint-parse best))
 	     (finish-output)
 	     (agu:release-term)
-	     (if (y-or-n-p "-- Is this correct?")
+;	     (if (y-or-n-p "-- Is this correct?")
 		 (learn best)
-		 NIL)
+;		 NIL)
 	     )
 	   )
 

@@ -10,7 +10,7 @@
 (defpackage :AGADOR.MAIN
   (:nicknames :agc)
   (:use common-lisp)
-  (:export run)
+  (:export run seek)
   (:export term usage pair term-fn spelled left right)
   )
 
@@ -55,5 +55,5 @@
   (:nicknames :agp)
   (:use common-lisp)
   (:export parse-words parse-string parse-line parse-file-line init-rules)
-  (:export pterm ppair pusage start-parser parse)
+  (:export pterm ppair pusage start-parser parse route-path)
   )

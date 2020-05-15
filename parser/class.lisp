@@ -18,18 +18,15 @@
   (let ((s (agc:spelled obj))
 	(f (agc:term-fn obj))
 	(p (term-rpos obj))
-	(q (term-seq obj))
-	(u (term-unc obj))
 	)
-      (if (> u 0) (format stream " [~d] ~2,'0d ~a ~a(~a)" q p s f u)
-	  (format stream " [~d] ~2,'0d ~a ~a" q p s f))
-      ))
+    (format stream " ~2,'0d ~a ~a" p s f))
+      )
 
 ;; An adjacent pair of terms have a collective function as well as
 ;; a span of positions.  Uncertainties are summed.
 (defclass ppair (agc:pair agp:pterm)
   (
-  (action :accessor action :initarg :action)
+  (action :accessor action :initarg :action :initform NIL)
   ))
 
 (defmethod initialize-instance :after ((obj ppair) &key)
@@ -46,12 +43,10 @@
   (let ((f (agc:term-fn obj))
 	(lp (term-lpos obj))
 	(rp (term-rpos obj))
-	(u (term-unc obj))
-	(s (term-seq obj))
+	(a (action obj))
 	)
-    (if (> u 0) (format stream " [~d] ~2,'0d-~2,'0d ~a(~a)" s lp rp f u)
-	  (format stream " [~d] ~2,'0d-~2,'0d ~a" s lp rp f))
-	))
+    (format stream " ~2,'0d-~2,'0d ~a ~a" lp rp f a))
+  )
 
 ;; A rule describes an adjacent pair of grammatical functions that
 ;; should be considered together to collectively have a third function.
@@ -66,8 +61,14 @@
   (let ((l (rule-left obj))
 	(r (rule-right obj))
 	(rs (rule-result obj))
+	(act (action obj))
 	)
-    (format stream " ~a:~a=~a" l r rs)))
+    (if act
+	(format stream " ~a:~a=~a->~a" l r rs act)
+	(format stream " ~a:~a=~a" l r rs)
+	)
+    )
+  )
 
 ;; A vector of lists of all terms with a rpos equal to the vector index.
 (defvar *right*)

@@ -22,12 +22,19 @@
 	(setf (gethash fn *route*) (make-hash-table :size 10)))
     (gethash fn *route*)))
 
+(defun route-path (from toward)
+  (let ((table (route-from from)))
+     (gethash toward table)
+     )
+   )
+
 (defun add-route (startfn goal side)
   (let ((ftable (route-from startfn)))
     (if (null (gethash goal ftable))
 	(setf (gethash goal ftable) side))
     ))
 
+;; Copy lower level routes up so we can find intermediate steps.
 (defun merge-routes ()
   (loop for start being the hash-key
      using (hash-value start-table) of *route*
@@ -35,10 +42,14 @@
        (loop for upper-goal being the hash-key
 	  using (hash-value upper-path) of start-table
 	  do
-	    (loop for lower-goal being the hash-key of *route*
-	       do
-		 (add-route start lower-goal upper-path)
-		 )
+	    (let ((lower-table (gethash upper-goal *route*)))
+	      (if lower-table
+		  (loop for lower-goal being the hash-key of lower-table
+		     do
+		       (add-route start lower-goal upper-path)
+		       )
+		  )
+	      )
 	    )
        )
   )
@@ -76,7 +87,7 @@
 	  (if oldrules (push newrule oldrules)
 	      (list newrule))
 	  )
-    ;; Remember paths through the rules.
+    ;; Remember paths downward through the rules.
     (add-route rslt1 lfn1 'AGC:LEFT)
     (add-route rslt1 rfn1 'AGC:RIGHT)
     )
@@ -86,26 +97,35 @@
 (defun rules-for (fn) (gethash fn *rules*))
 
 (defparameter +rule+ "^(\\w+) (\\w+) (\\w+)\\s?(\\w+)?" )
+(defparameter +cmnt+ "^\\s*#" )
 
 ;; Load the rules at startup.
 (defun load-rules (fname)
   "Load rules from a file"
+  ;; Initialize rules and routes
   (setq *rules* (make-hash-table :size 20))
   (setq *route* (make-hash-table :size 10))
+
+  ;; Load the basic three-term rules.
   (with-open-file (stream fname)
     (loop for line = (read-line stream NIL)
 	 until (eq line NIL)
 	 do (if line
-		 (progn
-		   (ppcre:register-groups-bind
-		    (lfn rfn rslt act)
-		    (+rule+ line)
-		    (add-rule lfn rfn rslt act))
-		   )
-		 )
-	 )
+		(progn
+		  (if (ppcre:scan +cmnt+ line) NIL
+		      (ppcre:register-groups-bind
+		       (lfn rfn rslt act)
+		       (+rule+ line)
+		       (add-rule lfn rfn rslt act))
+		      )
+		  )
+		)
 	 )
     )
+
+  ;; Find the first step of multi-step routes
+  (merge-routes)
+  )
 
 (defun init-rules ()
   (load-rules "data/rules.txt")

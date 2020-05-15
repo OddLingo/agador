@@ -4,6 +4,19 @@
 
 (in-package :AGA)
 
+(defun word-at (start goal)
+  (let ((probe start))
+    (loop named searching do
+       (case (agc:seek probe goal)
+	 (NIL (return-from searching NIL))
+	 ('AGC:LEFT (setf probe (agc:left probe)))
+	 ('AGC:RIGHT (setf probe (agc:right probe)))
+	 (T (return-from searching probe))
+	 )
+       )
+    )
+  )
+
 (defun start (top)
   (agu:term "Acting on 'start' ~a~%" top)
   )
@@ -12,8 +25,13 @@
     (agu:term "Acting on 'stop' ~a~%" top)
   )
 
+;; It is an instruction to do something.
 (defun command (top)
-  (agu:term "Acting on command ~a~%" top)
+  (let ((verb (word-at top 'AGF::ACTION)))
+    (if verb
+	(format T "You want me to '~a' something.~%" (agc:spelled verb))
+	(format T "Seek fail~%"))
+    )
   )
 
 ;; It is some sort of statement about the world.  Just remember it.
@@ -25,9 +43,8 @@
   (agm:db-commit)
 )
 
+
 ;; How we answer a question depends on which query word was used.
 (defun query (top)
-  (let ((q (seek top AGF::QWORD)))
-    )
-
+  (format T "Question about ~a~%" top)
   )

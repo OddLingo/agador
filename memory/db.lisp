@@ -16,7 +16,6 @@
 
 ;; Call open first, which creates the mapping of the files.
 (defun db-open ()
-  (format T "DB open~%")
   (setq *dbenv* (lmdb:make-environment +db-directory+
 				       :max-databases 3
 				       :mapsize (* 1 1024 1024)))
@@ -26,7 +25,6 @@
 
 ;; Call close last.  It releases the mapped file section.
 (defun db-close ()
-  (format T "DB close~%")
   (if *dbw* (progn (lmdb:close-database *dbw*) (setq *dbw* NIL)))
   (if *dbt* (progn (lmdb:close-database *dbt*) (setq *dbt* NIL)))
   (if *dbc* (progn (lmdb:close-database *dbc*) (setq *dbc* NIL)))
