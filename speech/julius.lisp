@@ -198,7 +198,10 @@
      (setf (recog *jstate*) T))
     ((equal msg "<STARTRECOG/>") T)    
     ((equal msg "<ENDRECOG/>") T)
-    
+
+    ((equal msg "<STARTPROC/>") (agu:term "Now listening~%"))    
+    ((equal msg "<STOPPROC/>") (agu:term "Fingers in ears~%"))
+
     ; Input state
     ((matched-input msg) T)
 
@@ -217,7 +220,7 @@
 
 ;; Send a command to Julius.
 (defun jsend (cmd)
-  (agu:send *jport* cmd))
+  (agu:send *jport* (format NIL "~a~%" cmd)))
 
 (defun jstop ()
     (uiop:run-program "killall -q julius" :ignore-error-status T)

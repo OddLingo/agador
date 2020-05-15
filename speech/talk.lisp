@@ -6,18 +6,19 @@
 
 ;; This function sends text to a speech synthesizer.
 (defun speaker (msg)
+  (jsend "PAUSE")
+  (sleep 0.5)
+
   (let ((txt (getf msg :TEXT))
 	(voice (getf msg :VOICE)))
     (if (null voice) (setf voice "rms"))
 
     ;; Tell Julius to stop listening while we talk.
-;    (jsend "PAUSE\n")
-    (sleep 0.5)
     (uiop:run-program
      (format NIL "mimic -voice ~a \" ~a\"" voice txt)
      :output '(:string :stripped T))
     )
-;  (jsend "RESUME\n")
+  (jsend "RESUME")
   (sleep 0.6)
   )
 

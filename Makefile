@@ -6,6 +6,7 @@ default:
 clean:
 	@echo "Removing FASL files"
 	@rm -fr ${CACHE}
+	@rm -f agador.img
 
 run:
 	sbcl --core agador.img

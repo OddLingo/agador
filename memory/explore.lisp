@@ -18,12 +18,8 @@
 (defun set-voice (yes)
   (setf (voice *uimode*) yes)
   (if yes
-      (progn
-	(ags:jsend "RESUME\n")
-	)
-      (progn
-	(ags:jsend "PAUSE\n")
-	)
+	(ags:jsend "RESUME")
+	(ags:jsend "PAUSE")
       )
 )
 
