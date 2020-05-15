@@ -2,7 +2,7 @@
 
 (in-package :ags)
 
-(defparameter +confidence-threshold+ 0.6 )
+(defparameter +confidence-threshold+ 60 )
 (defvar *word-classes* (make-array 20 :fill-pointer 0 :adjustable t ))
 
 ;;;; Regex patterns for the important Julius messages.
@@ -20,10 +20,13 @@
 
 (defparameter +class-num+ "(\\d+)\\s+(\\w+)" )
 
-(defclass jstate () (
-  (recognizing :initform NIL :accessor recog)
-  (sent :initform NIL :accessor sent)
-  (recstart :accessor starttime :initarg :starttime)
+(defclass jstate ()
+  (
+   (active :initform T :accessor active)
+   (ready :initform NIL :accessor ready)
+   (recognizing :initform NIL :accessor recog)
+   (sent :initform NIL :accessor sent)
+   (recstart :accessor starttime :initarg :starttime)
   ))
 
 (defvar *jstate* (make-instance 'jstate))
@@ -111,7 +114,7 @@
    (+input+ jtxt :sharedp T)
    (progn
      (cond
-       ((equal state "LISTEN")  (agu:term "Listening~%"))
+       ((equal state "LISTEN")  (setf (ready *jstate*) T))
        ((equal state "STARTREC") (setf (starttime *jstate*) stime))
        ((equal state "ENDREC") (agu:term "  took ~d~%"
 			 (- stime (starttime *jstate*))))
@@ -125,6 +128,7 @@
     ('parse-integer msec))
    (+inparm+ jtxt :sharedp T)
    (progn
+     (setf (ready *jstate*) NIL)
      (agu:term "  ~a frames took ~a ms~%" frames msec)
      T)
     ))
@@ -156,10 +160,13 @@
 ;; enough in the recognition, we send it to deep grammar analysis.
 (defun analyze ()
   (let* ((s (sent *jstate*))
-	 (mc (minconfidence s)))
+	 (mc (floor (* 100 (minconfidence s)))))
     (if (> mc +confidence-threshold+)
-	(words-to-parser s)
-	(agu:term"** Only ~a% confidence~%" (floor (* 100 mc)))
+	(progn
+	  (agu:set-status "Confidence ~a~%" mc)
+	  (words-to-parser s)
+	  )
+	(agu:set-status "Only ~a% confidence~%" mc)
 	)
     )
   )
@@ -199,8 +206,8 @@
     ((equal msg "<STARTRECOG/>") T)    
     ((equal msg "<ENDRECOG/>") T)
 
-    ((equal msg "<STARTPROC/>") (agu:term "Now listening~%"))    
-    ((equal msg "<STOPPROC/>") (agu:term "Fingers in ears~%"))
+    ((equal msg "<STARTPROC/>") (setf (active *jstate*) T))
+    ((equal msg "<STOPPROC/>") (setf (active *jstate*) NIL))
 
     ; Input state
     ((matched-input msg) T)

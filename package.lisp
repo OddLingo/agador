@@ -30,7 +30,7 @@
   (:export words-from-file words-from-string gfun-from-string)
   (:export string-from-list clear setxy set-color)
   (:export send connect mbx-server)
-  (:export use-term release-term term)
+  (:export use-term release-term term clearw1 set-status)
   )
 
 (defpackage :AGADOR.ACTION

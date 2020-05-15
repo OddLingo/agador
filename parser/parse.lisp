@@ -174,7 +174,7 @@
 	   ;; Exactly one - we go with it.
 	   (let ((best (car *top*)))
 	     (agu:use-term)
-	     (agu:clear)
+	     (agu:clearw1)
 	     (agu:setxy 1 (paint-parse best))
 	     (finish-output)
 	     (agu:release-term)
