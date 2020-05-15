@@ -216,7 +216,6 @@
 ;; Parse a list of words with functions already assigned.
 (defun parse-msg (words)
   (init-parse)
-  (agu:term  "Parsing ~a~%" words)
   (mapc 'accept-word words)
   (choose-top)
   (judge)

@@ -17,20 +17,31 @@
     )
   )
 
-(defun start (top)
-  (agu:term "Acting on 'start' ~a~%" top)
+(defun stop (obj)
+  (let ((oname (agc:spelled obj)))
+    (cond
+      ((equal oname "LISTENING")
+       (agm:set-voice NIL))
+      (T (agu:term "Can't stop ~a~%" oname))
+      )
+    )
   )
 
-(defun stop (top)
-    (agu:term "Acting on 'stop' ~a~%" top)
+(defun start (top)
+    (agu:term "Acting on 'start' ~a~%" top)
   )
 
 ;; It is an instruction to do something.
 (defun command (top)
-  (let ((verb (word-at top 'AGF::ACTION)))
-    (if verb
-	(format T "You want me to '~a' something.~%" (agc:spelled verb))
-	(format T "Seek fail~%"))
+  (let* ((verb (word-at top 'AGF::ACTION))
+	(verbname (if verb (agc:spelled verb) NIL))
+	(obj (word-at top 'AGF::ACTIVITY))
+	)
+    (cond
+      ((equal verbname "STOP") (stop obj))
+      ((equal verbname "START") (start obj))
+      (T (agu:term "No function for ~a~%" verbname))
+      )
     )
   )
 
@@ -39,12 +50,19 @@
   ; (seek-guesses best)
   (agu:clear)
   (agm:db-start)
-  (agm:remember top)
+  (let ((key (agm:remember top)))
+    (agu:term "I remember that at ~a~%" key)
+    )
   (agm:db-commit)
 )
 
 
 ;; How we answer a question depends on which query word was used.
 (defun query (top)
-  (format T "Question about ~a~%" top)
+  (let ((thing (word-at top 'AGF::NOUNP)))
+    (if thing
+	(format T "You are asking about '~a'~%"
+		(agp:string-from-tree thing))
+	(format T "Seek fail~%"))
+    )
   )

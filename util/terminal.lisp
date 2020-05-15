@@ -39,6 +39,7 @@
 ;; Use this in place of direct calls to FORMAT
 (defun term (fmt &rest args)
   (use-term)
-  (apply 'format T fmt args)
+  (apply 'format *standard-output* fmt args)
+  (force-output *standard-output*)
   (release-term)
   )

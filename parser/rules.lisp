@@ -115,7 +115,7 @@
 		  (if (ppcre:scan +cmnt+ line) NIL
 		      (ppcre:register-groups-bind
 		       (lfn rfn rslt act)
-		       (+rule+ line)
+		       (+rule+ (string-upcase line))
 		       (add-rule lfn rfn rslt act))
 		      )
 		  )

@@ -57,6 +57,8 @@
 	   )
 	 )
     (agp::parse-msg (reverse wordlist))
+    (agu:term "Sentence score ~a~%"
+	      (floor (sent-score s)))
     )
   )
 
@@ -108,10 +110,10 @@
    (state ('parse-integer stime))
    (+input+ jtxt :sharedp T)
    (progn
-     (case state
-       ("LISTEN"  (format T "Listening~%"))
-       ("STARTREC" (setf (starttime *jstate*) stime))
-       ("ENDREC" (format T "  took ~d~%"
+     (cond
+       ((equal state "LISTEN")  (agu:term "Listening~%"))
+       ((equal state "STARTREC") (setf (starttime *jstate*) stime))
+       ((equal state "ENDREC") (agu:term "  took ~d~%"
 			 (- stime (starttime *jstate*))))
        )
      T)
@@ -157,7 +159,7 @@
 	 (mc (minconfidence s)))
     (if (> mc +confidence-threshold+)
 	(words-to-parser s)
-	(agu:term"** Ignoring noise ~,2f~%" mc)
+	(agu:term"** Only ~a% confidence~%" (floor (* 100 mc)))
 	)
     )
   )
@@ -165,36 +167,31 @@
 ;; Process messages from Julius.
 (defun jreceive (msg np)
   (declare (ignore np))
-;;  (format T "J> |~a|~%" msg)
+  (let ((m))
+;  (agu:term "J> |~a|~%" msg)
   (cond
     ; Ignore the dots
     ((equal "." msg) T)
 
     ; During recognition reports
-    ((recog *jstate*)
-     (let ((m))
-       (cond
-	 ((setf m (matched-word msg))
-	  (progn
-	    ;; (agu:term "  Word ~a at ~a~%" (spell m) (word-cm m))
-	    (addword m (sent *jstate*))))
+    ((setf m (matched-word msg))
+     (progn
+       ;; (agu:term "  Word ~a at ~a~%" (spell m) (word-cm m))
+       (addword m (sent *jstate*))))
 
-	 ((setf m (matched-sent msg))
-	  (progn
-	    (agu:term "Sentence score ~,0f~%" (sent-score m))
-	    (setf (sent *jstate*) m)))
+    ((setf m (matched-sent msg))
+       (setf (sent *jstate*) m))
 
-	 ((matched-param msg) T)
+    ((matched-param msg) T)
 
-	 ((search "</SHYPO>" msg)
-	  (progn
-	    (setf (recog *jstate*) NIL)
-	    (analyze)))
+    ((search "</SHYPO>" msg)
+     (progn
+       (setf (recog *jstate*) NIL)
+       (analyze)))
 
-	 ; End of recognition output
-	 ((search "</RECOGOUT>" msg)
-	  (setf (recog *jstate*) NIL))
-	 )))
+     ; End of recognition output
+    ((search "</RECOGOUT>" msg)
+     (setf (recog *jstate*) NIL))
 
     ; Start recognition output
     ((equal msg "<RECOGOUT>")
@@ -207,7 +204,7 @@
 
     ; Everything else
     (T (agu:term "Unhandled Julius ~a~%" msg))
-    )
+    ))
   )
 
 (defvar *jport*)
@@ -222,15 +219,17 @@
 (defun jsend (cmd)
   (agu:send *jport* cmd))
 
+(defun jstop ()
+    (uiop:run-program "killall -q julius" :ignore-error-status T)
+    (sleep 1)
+  )
+
 ;;;; Start up Julius, supplying its configuration file.  We also load
 ;;;; the "term" file that maps the word class numbers to their names.
 (defun jstart (confname)
   (let ((path (asdf:system-relative-pathname :agador #p"data/")))
     (load-classes (format NIL "~a~a" path confname))
-
-    (uiop:run-program "killall -q julius" :ignore-error-status T)
-    (sleep 1)
-
+    (jstop)
     (uiop:launch-program
      (format NIL "julius -C ~a~a.jconf"
 	   path
@@ -239,3 +238,4 @@
     (sleep 2)
     (jconnect)
   ))
+

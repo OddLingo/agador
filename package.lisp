@@ -4,7 +4,7 @@
   (:nicknames :ags)
   (:use common-lisp)
   (:import-from :cl-utilities :split-sequence)
-  (:export jstart jsend say tstart)
+  (:export jstart jstop jsend say tstart)
   )
 
 (defpackage :AGADOR.MAIN
@@ -46,7 +46,7 @@
   (:use common-lisp)
   (:export db-open db-close db-start db-commit hash-of)
   (:export put-word get-word init-words print-words)
-  (:export put-tree get-tree remember)
+  (:export put-tree get-tree remember set-voice)
   (:export mterm musage mpair sig goto explore)
   )
 
@@ -56,4 +56,5 @@
   (:use common-lisp)
   (:export parse-words parse-string parse-line parse-file-line init-rules)
   (:export pterm ppair pusage start-parser parse route-path)
+  (:export string-from-tree)
   )

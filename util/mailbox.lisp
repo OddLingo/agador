@@ -19,7 +19,6 @@
 (defun runmbx (e)
   (loop do
        (let ((msg (sb-concurrency:receive-message (queue e))))
-	 (format T "~a message ~a~%" (name e) msg)
 	 (funcall (actor e) msg)
 	 )
        )

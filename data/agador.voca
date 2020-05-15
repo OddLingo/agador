@@ -25,6 +25,10 @@ OFFICE		ao f ah s
 GARAGE		g aa r aa jh
 UPSTAIRS	ah p s t eh r z
 
+# an ACTIVITY is something that Agador knows about or can do.
+% ACTIVITY
+LISTENING	l ih s ah n ih ng
+
 # An ACTION is a VERB
 % ACTION
 #SUGGEST        s ah jh eh s t

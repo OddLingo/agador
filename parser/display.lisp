@@ -76,3 +76,20 @@
     (agu:set-color 7 0)
     (1+ py)
     ))
+(defvar *leaves*)
+;; Create a list of the terminal words in a tree.
+(defun list-from-tree (m)
+  (if (equal (type-of m) 'pusage)
+      (push (agc:spelled m) *leaves*)
+      (progn
+	(list-from-tree (agc::right m))
+	(list-from-tree (agc::left m))
+	)
+      )
+    )
+
+(defun string-from-tree (mt)
+  (setq *leaves* NIL)
+  (list-from-tree mt)
+  (agu:string-from-list *leaves*)
+  )

@@ -17,6 +17,9 @@
 
   ;; Start the visual user interface
   (agm:explore)
+
+  ; Clean up to exit.
+  (ags:jstop)
   (agm:db-close)
   )
 
