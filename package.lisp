@@ -4,13 +4,14 @@
   (:nicknames :ags)
   (:use common-lisp)
   (:import-from :cl-utilities :split-sequence)
-  (:export jstart jstop jsend say tstart)
+  (:export jstart jstop jsend say tstart *minconf*)
+  (:export load-dictionary make-voca)
   )
 
 (defpackage :AGADOR.MAIN
   (:nicknames :agc)
   (:use common-lisp)
-  (:export run seek)
+  (:export run seek set-lang)
   (:export term usage pair term-fn spelled left right)
   )
 
@@ -47,7 +48,7 @@
   (:export db-open db-close db-start db-commit hash-of)
   (:export put-word get-word init-words print-words)
   (:export put-tree get-tree remember set-voice)
-  (:export mterm musage mpair sig goto explore)
+  (:export mterm musage mpair sig goto explore bytes-to-s)
   )
 
 ;; The actual Adjacency Parser that turns text into trees.
@@ -56,5 +57,5 @@
   (:use common-lisp)
   (:export parse-words parse-string parse-line parse-file-line init-rules)
   (:export pterm ppair pusage start-parser parse route-path)
-  (:export string-from-tree)
+  (:export string-from-tree word-at)
   )

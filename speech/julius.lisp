@@ -2,23 +2,23 @@
 
 (in-package :ags)
 
-(defparameter +confidence-threshold+ 60 )
+(defvar *MINCONF* 60 )
 (defvar *word-classes* (make-array 20 :fill-pointer 0 :adjustable t ))
 
 ;;;; Regex patterns for the important Julius messages.
-(defparameter +shypo+
+(defconstant +shypo+
   "\\s*<SHYPO RANK=\"(\\d+)\" SCORE=\"([0-9\\\.\\-]+)\" GRAM=\"(\\d+)\">" )
 
-(defparameter +whypo+
+(defconstant +whypo+
   "\\s*<WHYPO WORD=\"(\\w+)\" CLASSID=\"(\\d+)\" PHONE=\"([a-z0-9 ]+)\" CM=\"([0-9\\\.\\-]+)\"/>" )
 
-(defparameter +input+
+(defconstant +input+
   "<INPUT STATUS=\"(\\w+)\" TIME=\"(\\d+)\"/>" )
 
-(defparameter +inparm+
+(defconstant +inparm+
   "<INPUTPARAM FRAMES=\"(\\d+)\" MSEC=\"(\\d+)\"/>" )
 
-(defparameter +class-num+ "(\\d+)\\s+(\\w+)" )
+(defconstant +class-num+ "(\\d+)\\s+(\\w+)" )
 
 (defclass jstate ()
   (
@@ -116,11 +116,12 @@
      (cond
        ((equal state "LISTEN")  (setf (ready *jstate*) T))
        ((equal state "STARTREC") (setf (starttime *jstate*) stime))
-       ((equal state "ENDREC") (agu:term "  took ~d~%"
-			 (- stime (starttime *jstate*))))
+       ((equal state "ENDREC") T)
+       ;; (agu:term "  took ~d~%" (- stime (starttime *jstate*)))
        )
      T)
-    ))
+     )
+    )
 
 (defun matched-param (jtxt)
   (ppcre:register-groups-bind
@@ -161,7 +162,7 @@
 (defun analyze ()
   (let* ((s (sent *jstate*))
 	 (mc (floor (* 100 (minconfidence s)))))
-    (if (> mc +confidence-threshold+)
+    (if (> mc *minconf*)
 	(progn
 	  (agu:set-status "Confidence ~a~%" mc)
 	  (words-to-parser s)
@@ -183,7 +184,7 @@
     ; During recognition reports
     ((setf m (matched-word msg))
      (progn
-       ;; (agu:term "  Word ~a at ~a~%" (spell m) (word-cm m))
+       (agu:term "  Word ~a at ~a~%" (spell m) (word-cm m))
        (addword m (sent *jstate*))))
 
     ((setf m (matched-sent msg))
@@ -205,7 +206,7 @@
      (setf (recog *jstate*) T))
     ((equal msg "<STARTRECOG/>") T)    
     ((equal msg "<ENDRECOG/>") T)
-
+    ((equal msg "<RECOGFAIL/>") (agu:set-status "Could not recognize"))
     ((equal msg "<STARTPROC/>") (setf (active *jstate*) T))
     ((equal msg "<STOPPROC/>") (setf (active *jstate*) NIL))
 

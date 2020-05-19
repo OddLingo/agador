@@ -21,14 +21,14 @@
   (db-commit)
   )
 
-;; Print the entire dictionary.
+;; Print the entire active dictionary.
 (defun print-words ()
   (agu:use-term)
   (agu:clear)
   (let ((x 1) (y 1))
     (lmdb:do-pairs (*dbw* spell fns)
       (agu:setxy x y)
-      (format T "~a ~a"  (to-s spell) (to-s fns))
+      (format T "~a ~a"  (bytes-to-s spell) (to-s fns))
       (setf x (+ x 14))
       (if (> x 60)
 	  (progn

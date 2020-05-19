@@ -228,8 +228,8 @@
   )
 
 ;; Load the grammar rules and start the grammar analysis thread.
-(defun start-parser ()
-  (init-rules)
+(defun start-parser (lang)
+  (init-rules lang)
   (setq *parser-inbox*
 	(make-instance 'agu:mbx-server
 		       :name "Parser"

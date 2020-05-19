@@ -4,19 +4,6 @@
 
 (in-package :AGA)
 
-(defun word-at (start goal)
-  (let ((probe start))
-    (loop named searching do
-       (case (agc:seek probe goal)
-	 (NIL (return-from searching NIL))
-	 ('AGC:LEFT (setf probe (agc:left probe)))
-	 ('AGC:RIGHT (setf probe (agc:right probe)))
-	 (T (return-from searching probe))
-	 )
-       )
-    )
-  )
-
 (defun stop (obj)
   (let ((oname (agc:spelled obj)))
     (cond
@@ -33,9 +20,9 @@
 
 ;; It is an instruction to do something.
 (defun command (top)
-  (let* ((verb (word-at top 'AGF::ACTION))
+  (let* ((verb (agp:word-at top 'AGF::ACTION))
 	(verbname (if verb (agc:spelled verb) NIL))
-	(obj (word-at top 'AGF::ACTIVITY))
+	(obj (agp:word-at top 'AGF::ACTIVITY))
 	)
     (cond
       ((equal verbname "STOP") (stop obj))
@@ -59,10 +46,16 @@
 
 ;; How we answer a question depends on which query word was used.
 (defun query (top)
-  (let ((thing (word-at top 'AGF::NOUNP)))
+  (let ((thing (agp:word-at top 'AGF::NOUNP)))
     (if thing
-	(format T "You are asking about '~a'~%"
+	(agu:term "You are asking about '~a'~%"
 		(agp:string-from-tree thing))
-	(format T "Seek fail~%"))
+	(agu:term "Seek fail~%"))
+    )
+  (let ((ques (agp:word-at top 'AGF::QWORD)))
+    (if ques
+	(agu:term "The question is '~a'~%"
+		(agp:string-from-tree ques))
+	(agu:term "Seek fail~%"))
     )
   )

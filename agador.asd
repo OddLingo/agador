@@ -2,7 +2,7 @@
 
 (defsystem "agador"
   :description "Natural language experiments using b-trees"
-  :depends-on (:LMDB :SHA1 :CL-UTILITIES :BABEL :CL-PPCRE :USOCKET)
+  :depends-on (:LMDB :SHA1 :CL-UTILITIES :BABEL :CL-PPCRE :USOCKET :UNIX-OPTS)
   :components (
     (:file "package")
     (:file "tclass")
@@ -13,7 +13,8 @@
 	     :serial T
 	:components (
 		     (:file "julius")
-		     (:file "talk"))
+		     (:file "talk")
+		     (:file "makewords"))
 	)
 
     (:module "parser"
@@ -31,7 +32,8 @@
 	     :depends-on ("package" "tclass")
 	     :serial T
       :components (
-        (:file "dispatch")
+		   (:file "dispatch")
+		   (:file "time")
 	)
       )
 

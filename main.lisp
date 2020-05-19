@@ -2,16 +2,43 @@
 
 (in-package :AGC)
 
+(defvar *lang* "english")
+
+(opts:define-opts
+    (:name :language
+           :description "Set natural language"
+           :short #\l
+           :long "lang")
+    (:name :confidence
+           :description "Minimum confidence level"
+           :short #\c
+           :long "conf"
+           :arg-parser #'parse-integer))
+
+(defun get-options ()
+  (multiple-value-bind (options free-args)
+    (opts:get-opts)
+
+    (let ((lang (getf options :lang))
+	  (conf (getf options :confidence))
+	  )
+      (if lang (setq *lang* lang))
+      (if conf (setq AGS:*MINCONF* conf))
+      )
+    ))
+  
 (defun run ()
+  (get-options)
+  
   ;; Open the memory database
   (agm:db-open)
 
   ;; Load grammar analysis rules and start the parser thread.
-  (agp:start-parser)
+  (agp:start-parser *lang*)
 
   ;; Start Julius speech recognizer
   (ags:tstart)
-  (ags:jstart "agador")
+  (ags:jstart *lang*)
 
   (ags:say "I'm here.")
 

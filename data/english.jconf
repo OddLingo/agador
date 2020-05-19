@@ -56,7 +56,7 @@
 ## files.  Do not change these, as the speech program will expect to
 ## find them as named.
 -LM lmen
--gram agador
+-gram english
 
 ## Define search configurations for each language.  Note that the SR
 ## name must be the language name.  ag-speech switches between input

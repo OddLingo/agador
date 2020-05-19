@@ -53,7 +53,7 @@
   )
 
 ;; Convert the vector of bytes returned by LMDB into a string.
-(defun to-s (data)
+(defun bytes-to-s (data)
   (let ((bytes (coerce data '(simple-array (unsigned-byte 8) (*))))
 	)
     (babel:octets-to-string bytes :encoding :utf-8)
@@ -69,7 +69,7 @@
     (if (null data) NIL
 	(mapcar
 	 (lambda (x) (intern x :AGF))
-	 (agu:words-from-string (to-s data))
+	 (agu:words-from-string (bytes-to-s data))
 	 )
 	)
     ))
@@ -96,7 +96,7 @@
     (if data
 	(let* (
 	       ; Got a string.  Split into words.
-	       (wds (agu:words-from-string (to-s data)))
+	       (wds (agu:words-from-string (bytes-to-s data)))
 	       ; The record type is in the first word.
 	       (rty (char (car wds) 0))
 	       )
@@ -127,7 +127,7 @@
   (let ((data (lmdb:get *dbc* k))
 	)
     (if (null data) NIL
-	(agu:words-from-string (to-s data)))
+	(agu:words-from-string (bytes-to-s data)))
     )
   )
 
@@ -136,7 +136,7 @@
   (let* ((c (lmdb:get *dbc* child)))
     (if c
 	;; Child already has contexts - check for duplicates.
-	(let ((previous (agu:words-from-string (to-s c))))
+	(let ((previous (agu:words-from-string (bytes-to-s c))))
 	  (if (null (member parent previous))
 	      (progn
 		(push parent previous)
@@ -164,5 +164,7 @@
 
 (defun dump (db)
   (lmdb:do-pairs (db key data)
-    (agu:term "   ~a: ~a~%"  (to-s key) (to-s data))
+    (agu:term "   ~a: ~a~%"  (bytes-to-s key) (bytes-to-s data))
     ))
+
+

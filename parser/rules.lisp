@@ -67,6 +67,22 @@
        )
   )
 
+;;;; Use the routing table to find specific parts of a sentence.
+;;;; Given an upper node and a desired grammatical Function,
+;;;; find a USAGE.
+(defun word-at (start goal)
+  (let ((probe start))
+    (loop named searching do
+       (case (agc:seek probe goal)
+	 (NIL (return-from searching NIL))
+	 ('AGC:LEFT (setf probe (agc:left probe)))
+	 ('AGC:RIGHT (setf probe (agc:right probe)))
+	 (T (return-from searching probe))
+	 )
+       )
+    )
+  )
+
 ;; Each entry is a list of rules with the same right term.  We
 ;; create the list the first time, and add to it thereafter.  When
 ;; trying out potential rules, we always know what the right side
@@ -127,8 +143,8 @@
   (merge-routes)
   )
 
-(defun init-rules ()
-  (load-rules "data/rules.txt")
+(defun init-rules (lang)
+  (load-rules (format NIL "data/~a.rules" lang))
   )
 
 ;; Print all the rules

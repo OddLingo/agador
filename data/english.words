@@ -1,0 +1,42 @@
+# A THING is a NOUN
+% THING
+MOVIE STATION WEATHER IT TIME LIGHT DOG DOGS EMAIL
+
+# A PLACE is a NOUN which can contain THINGs.  These are often
+# used with Prepositions like IN and AT.
+% PLACE
+KITCHEN BEDROOM STUDY OFFICE GARAGE UPSTAIRS
+
+# an ACTIVITY is something that Agador knows about or can do.
+% ACTIVITY
+LISTENING
+
+# An ACTION is a VERB
+% ACTION
+#SUGGEST
+TELL PLAY STOP START WILL REPEAT FIND REMEMBER SET
+
+# a COPULA is a VERB that expresses some identity between its
+# subject and an object or property.
+% COP
+IS WAS
+
+% STATE
+ON OFF
+
+%DIGIT
+0 1 2 3 4 5 6 7 8 9
+
+% PREP
+IN AT
+
+% QWORD
+WHAT WHEN WHERE
+
+% DTR
+SOME THE MY THIS ANY
+
+#% TIME
+#TOMORROW	t ah m aa r ow
+#NOW		n ah ow
+
