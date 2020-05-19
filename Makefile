@@ -12,4 +12,9 @@ clean:
 run:
 	$(LISP) --core agador.img --noinform
 
+dfa:
+	@rm -f data/english.voca
+	@cd data
+	$(LISP) --eval "(asdf:make :agador)" --eval "(ags:make-voca \"data/english\")" --eval "(quit)"
+	mkdfa english
 

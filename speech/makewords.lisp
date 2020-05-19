@@ -88,6 +88,7 @@
 (defun make-voca (fname)
   (dict-open)
   (dict-start)
+  (agm:db-open)
   (agm:db-start)
   (let ((in (open (format NIL "~a.words" fname)
 		       :direction :input))
@@ -137,6 +138,7 @@
     (format T "Generated ~a words.  Run mkdfa again.~%" count)
 
     (agm:db-commit)
+    (agm:db-close)
     (close in)
     (close out)
     )
