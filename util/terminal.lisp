@@ -35,11 +35,14 @@
 	  (code-char 27)
 	  (+ 30 fg)
 	  (+ 40 bg)))
-(defconstant +w1top+ 1)
-(defconstant +w1bot+ 10)
-(defconstant +sline+ 11)
-(defconstant +rtop+ 12)
-(defconstant +rbot+ 20)
+(defparameter +w1top+ 1)
+(defparameter +w1bot+ 10)
+(defparameter +sline+ 11)
+(defparameter +rtop+ 12)
+(defparameter +rbot+ 35)
+
+(defun set-scroll ()
+  (format T "~C[~d;~dr" (code-char 27) +rtop+ +rbot+))
 
 (defun clearw1 ()
   (set-color 7 0)
@@ -59,10 +62,12 @@
   (release-term)
   )
  
-;; Use this in place of direct calls to FORMAT
+;; Use this in place of direct calls to FORMAT for simple logging.
 (defun term (fmt &rest args)
   (use-term)
+  (setxy 1 +rbot+)
   (apply 'format *standard-output* fmt args)
+;  (format *standard-output* "~CD" (code-char 27))
   (force-output *standard-output*)
   (release-term)
   )

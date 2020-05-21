@@ -10,7 +10,7 @@
 (defvar *dict-txn* NIL)
 (defvar *dict-d* NIL)
 
-(defconstant +dict-directory+
+(defparameter +dict-directory+
   (asdf:system-relative-pathname :agador #p"data/dict/"))
 
 ;; Call open first, which creates the mapping of the files.
@@ -55,11 +55,11 @@
     )
   )
 
-(defconstant +dict+ "^[^ ]+\\s+\\\[([^\\]]+)\\\]\\s+([a-z ]+)")
-(defconstant +class+ "^% (\\w+)")
-(defconstant +word+ "^([A-Z ]+)")
-(defconstant +cmnt+ "^\\s*#")
-(defconstant +dpath+ "~/Develop/Speech/Recognition/English/dict")
+(defparameter +dict+ "^[^ ]+\\s+\\\[([^\\]]+)\\\]\\s+([a-z ]+)")
+(defparameter +class+ "^% (\\w+)")
+(defparameter +word+ "^([A-Z ]+)")
+(defparameter +cmnt+ "^\\s*#")
+(defparameter +dpath+ "~/Develop/Speech/Recognition/English/dict")
 (defun load-dictionary ()
   (dict-open)
   (dict-start)

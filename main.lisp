@@ -15,20 +15,20 @@
            :long "conf"
            :arg-parser #'parse-integer))
 
-(defun get-options ()
-  (multiple-value-bind (options free-args)
-    (opts:get-opts)
-
-    (let ((lang (getf options :lang))
-	  (conf (getf options :confidence))
-	  )
-      (if lang (setq *lang* lang))
-      (if conf (setq AGS:*MINCONF* conf))
-      )
-    ))
+;;(defun get-options ()
+;  (multiple-value-bind (options free-args)
+;    (opts:get-opts)
+;
+;    (let ((lang (getf options :lang))
+;	  (conf (getf options :confidence))
+;	  )
+;      (if lang (setq *lang* lang))
+;      (if conf (setq AGS:*MINCONF* conf))
+;      )
+;    ))
   
 (defun run ()
-  (get-options)
+;  (get-options)
   
   ;; Open the memory database
   (agm:db-open)

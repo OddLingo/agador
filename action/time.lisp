@@ -1,10 +1,10 @@
 ;;;; -*- Mode: Lisp; Syntax: ANSI-Common-Lisp; -*-
 (in-package :AGA)
 
-(defconstant +day-names+
+(defparameter +day-names+
   '("Monday" "Tuesday" "Wednesday" "Thursday" "Friday" "Saturday" "Sunday"))
 
-(defconstant +month-names+
+(defparameter +month-names+
   '("January" "February" "March" "April" "May" "June"
     "July" "august" "September" "October" "november" "December"))
 

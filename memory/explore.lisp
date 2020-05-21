@@ -4,7 +4,6 @@
 
 (defvar *cursor* NIL)
 (defvar *contexts* NIL)
-(defvar *leaves* NIL)
 
 (defclass uimode ()
   (
@@ -23,26 +22,32 @@
       )
 )
 
-;; Create a list of the terminal words in a tree.
-(defun list-from-tree (mt)
-  (let ((m (get-tree mt)))
-    (if (equal (type-of m) 'musage)
-	(push (agc:spelled m) *leaves*)
-	(progn
-	  (list-from-tree (agc::right m))
-	  (list-from-tree (agc::left m))
-	  )
-	)
+;; Create a list of the terminal words in a tree.  We descend the
+;; tree right-side-first but are pushing it onto the list of leaves.
+;; This results in the final list being in the correct order
+;; left-to-right.
+(defun list-from-tree (start)
+  (let ((leaves NIL))
+    (labels ((find-leaf (mt)
+	       (let ((m (get-tree mt)))
+		 (if (equal (type-of m) 'musage)
+		     (push (agc:spelled m) leaves)
+		     (progn
+		       (find-leaf (agc::right m))
+		       (find-leaf (agc::left m))
+		       ))
+		 )))
+      (find-leaf start)
+      )
+    leaves
     )
   )
 
+;; Get a single string of the spelling of the words in a tree.
 (defun string-from-tree (mt)
-  (setq *leaves* NIL)
-  (list-from-tree mt)
-  (agu:string-from-list *leaves*)
-  )
+  (agu:string-from-list (list-from-tree mt)))
 
-(defun prompt () (format T "~%-> ") (finish-output))
+(defun prompt () (agu:term "~%-> "))
 
 ;; Repaint the screen with the current text at the top, followed
 ;; by the contexts it appears in.

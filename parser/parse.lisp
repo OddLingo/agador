@@ -174,8 +174,9 @@
 	   ;; Exactly one - we go with it.
 	   (let ((best (car *top*)))
 	     (agu:use-term)
-	     (agu:clearw1)
+	     (agu:clear)
 	     (agu:setxy 1 (paint-parse best))
+	     (agu:set-scroll)
 	     (finish-output)
 	     (agu:release-term)
 ;	     (if (y-or-n-p "-- Is this correct?")

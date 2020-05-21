@@ -5,11 +5,16 @@
 (in-package :AGA)
 
 (defun stop (obj)
-  (let ((oname (agc:spelled obj)))
-    (cond
-      ((equal oname "LISTENING")
-       (agm:set-voice NIL))
-      (T (agu:term "Can't stop ~a~%" oname))
+  (let ((otype (type-of obj)))
+    (case otype
+      ('pusage
+       (let ((oname (agc:spelled obj)))
+	 (cond
+	   ((equal oname "LISTENING")
+	    (agm:set-voice NIL))
+	   (T (agu:term "Can't stop ~a~%" oname))
+	   )))
+      ('ppair (agu:term "Do not know how to stop~%"))
       )
     )
   )

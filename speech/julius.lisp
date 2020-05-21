@@ -6,19 +6,19 @@
 (defvar *word-classes* (make-array 20 :fill-pointer 0 :adjustable t ))
 
 ;;;; Regex patterns for the important Julius messages.
-(defconstant +shypo+
+(defparameter +shypo+
   "\\s*<SHYPO RANK=\"(\\d+)\" SCORE=\"([0-9\\\.\\-]+)\" GRAM=\"(\\d+)\">" )
 
-(defconstant +whypo+
+(defparameter +whypo+
   "\\s*<WHYPO WORD=\"(\\w+)\" CLASSID=\"(\\d+)\" PHONE=\"([a-z0-9 ]+)\" CM=\"([0-9\\\.\\-]+)\"/>" )
 
-(defconstant +input+
+(defparameter +input+
   "<INPUT STATUS=\"(\\w+)\" TIME=\"(\\d+)\"/>" )
 
-(defconstant +inparm+
+(defparameter +inparm+
   "<INPUTPARAM FRAMES=\"(\\d+)\" MSEC=\"(\\d+)\"/>" )
 
-(defconstant +class-num+ "(\\d+)\\s+(\\w+)" )
+(defparameter +class-num+ "(\\d+)\\s+(\\w+)" )
 
 (defclass jstate ()
   (
@@ -77,7 +77,7 @@
     ))
 
 (defmethod minconfidence ((s jsent))
-  (let ((minimum 1.0))
+  (let ((minimum 100))
     (loop for w across (sent-words s) do
 	 (if (< (word-cm w) minimum) (setf minimum (word-cm w)))
 	 )
@@ -130,7 +130,7 @@
    (+inparm+ jtxt :sharedp T)
    (progn
      (setf (ready *jstate*) NIL)
-     (agu:term "  ~a frames took ~a ms~%" frames msec)
+     (agu:term "  ~d frames took ~d ms~%" frames msec)
      T)
     ))
   
@@ -154,20 +154,20 @@
    (+whypo+ txt :sharedp T)
    (make-instance 'jword
 		  :spell wspell :class wclass
-		  :phonemes wph :cm wcm)
+		  :phonemes wph :cm (floor (* 100.0 wcm)))
    ))
 
 ;; Done receiving a complete sentence.  If we are confident
 ;; enough in the recognition, we send it to deep grammar analysis.
 (defun analyze ()
   (let* ((s (sent *jstate*))
-	 (mc (floor (* 100 (minconfidence s)))))
+	 (mc (minconfidence s)))
     (if (> mc *minconf*)
 	(progn
-	  (agu:set-status "Confidence ~a~%" mc)
+	  (agu:set-status "Confidence ~d~%" mc)
 	  (words-to-parser s)
 	  )
-	(agu:set-status "Only ~a% confidence~%" mc)
+	(agu:set-status "Only ~d% confidence~%" mc)
 	)
     )
   )
@@ -183,9 +183,15 @@
 
     ; During recognition reports
     ((setf m (matched-word msg))
-     (progn
-       (agu:term "  Word ~a at ~a~%" (spell m) (word-cm m))
-       (addword m (sent *jstate*))))
+     (let ((sp (spell m)))
+       (cond
+	 ((equal sp "s") T)
+	 ((equal sp "es") T)
+	 (T (progn
+	      (agu:term "  Word ~a at ~a%~%" (spell m) (word-cm m))
+	      (addword m (sent *jstate*))))
+	   )
+	 ))
 
     ((setf m (matched-sent msg))
        (setf (sent *jstate*) m))

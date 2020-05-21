@@ -4,7 +4,7 @@
   (:nicknames :ags)
   (:use common-lisp)
   (:import-from :cl-utilities :split-sequence)
-  (:export jstart jstop jsend say tstart *minconf*)
+  (:export jstart jstop jsend say tstart *MINCONF*)
   (:export load-dictionary make-voca)
   )
 
@@ -29,7 +29,7 @@
   (:use common-lisp)
   (:import-from :cl-utilities :split-sequence)
   (:export words-from-file words-from-string gfun-from-string)
-  (:export string-from-list clear setxy set-color)
+  (:export string-from-list clear setxy set-scroll set-color)
   (:export send connect mbx-server)
   (:export use-term release-term term clearw1 set-status)
   )

@@ -28,9 +28,9 @@
   (let ((x 1) (y 1))
     (lmdb:do-pairs (*dbw* spell fns)
       (agu:setxy x y)
-      (format T "~a ~a"  (bytes-to-s spell) (bytes-to-s fns))
-      (setf x (+ x 15))
-      (if (> x 60)
+      (format T "~a"  (bytes-to-s spell))
+      (setf x (+ x 10))
+      (if (> x 65)
 	  (progn
 	    (setf x 1)
 	    (setf y (+ y 1)))
