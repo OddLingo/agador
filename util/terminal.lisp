@@ -41,8 +41,11 @@
 (defparameter +rtop+ 12)
 (defparameter +rbot+ 35)
 
-(defun set-scroll ()
-  (format T "~C[~d;~dr" (code-char 27) +rtop+ +rbot+))
+(defun set-scroll (yes)
+  (if yes
+      (format T "~C[~d;~dr" (code-char 27) +rtop+ +rbot+)
+      (format T "~Cr" (code-char 27)))
+  )
 
 (defun clearw1 ()
   (set-color 7 0)

@@ -173,12 +173,7 @@
 	  ((= 1 nsoln)
 	   ;; Exactly one - we go with it.
 	   (let ((best (car *top*)))
-	     (agu:use-term)
-	     (agu:clear)
-	     (agu:setxy 1 (paint-parse best))
-	     (agu:set-scroll)
-	     (finish-output)
-	     (agu:release-term)
+	     (paint-parse best)
 ;	     (if (y-or-n-p "-- Is this correct?")
 		 (learn best)
 ;		 NIL)

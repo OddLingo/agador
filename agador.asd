@@ -2,7 +2,9 @@
 
 (defsystem "agador"
   :description "Natural language experiments using b-trees"
-  :depends-on (:LMDB :SHA1 :CL-UTILITIES :BABEL :CL-PPCRE :USOCKET :UNIX-OPTS)
+  :depends-on (:LMDB :SHA1 :CL-UTILITIES :BABEL :CL-PPCRE :USOCKET
+		     :UNIX-OPTS :dexador :plump :lquery)
+
   :components (
     (:file "package")
     (:file "tclass")
@@ -34,6 +36,7 @@
       :components (
 		   (:file "dispatch")
 		   (:file "time")
+		   (:file "weather")
 	)
       )
 

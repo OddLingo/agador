@@ -48,34 +48,46 @@
 
 (defun average (n1 n2) (floor (/ (+ n1 n2) 2 )))
 (defun hpos (pos) (* pos 7))
-(defgeneric paint-parse (pterm &optional depth top))
-(defmethod paint-parse ((u pusage) &optional (depth 0) (top 1))
+(defgeneric paint-tree (pterm &optional depth top))
+(defmethod paint-tree ((u pusage) &optional (depth 0) (top 1))
   (let ((xpos (hpos (term-lpos u))))
-    (agu:setxy xpos top)
-    (format T "~a" (agc:spelled u))
-    (agu:setxy xpos (1+ top))
-    (format T "~a" (agc:term-fn u))
+    ;; Word text on top line
+    (agu:setxy xpos top) (format T "~a" (agc:spelled u))
+    ;; Function name just below
+    (agu:setxy xpos (1+ top)) (format T "~a" (agc:term-fn u))
     (+ depth top 1)
     ))
-(defmethod paint-parse ((p ppair) &optional (depth 2) (top 1))
+(defmethod paint-tree ((p ppair) &optional (depth 2) (top 1))
   (let* (
 	 (lx (hpos (term-lpos p)))
 	 (rx (+ 4 (hpos (term-rpos p))))
-	 (ly (paint-parse (agc:left p) depth top))
-	 (ry (paint-parse (agc:right p) depth top))
+	 (ly (paint-tree (agc:left p) depth top))
+	 (ry (paint-tree (agc:right p) depth top))
 	 (base (+ top 2))
 	 (py (max ly ry))
 	 )
+    ;; Draw the lines
     (agu:set-color 3 0)
-    (hline py lx rx)
-    (vline lx base py)
-    (vline rx base py)
+    (hline py lx rx) (vline lx base py) (vline rx base py)
+    ;; Draw the function name
     (agu:setxy (- (average lx rx) (1+ base)) py)
     (agu:set-color 0 3)
     (format T " ~a " (agc:term-fn p))
     (agu:set-color 7 0)
+    ;; Report the position below what we just did.
     (1+ py)
     ))
+
+;; Draw the diagram of grammatical functions for a sentence.
+(defun paint-parse (start &optional (depth 2) (top 1) )
+  (agu:use-term)
+  (agu:set-scroll NIL)
+  (agu:clear)
+  (agu:setxy 1 (paint-tree start depth top))
+  (agu:set-scroll T)
+  (finish-output)
+  (agu:release-term)
+  )
 
 ;; Create a list of the terminal words in a tree.  There is a similar
 ;; function in the Memory package, but it deals with remembered statements.
