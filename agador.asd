@@ -9,6 +9,7 @@
     (:file "package")
     (:file "tclass")
     (:file "main" :depends-on ("package"))
+    (:file "schedule" :depends-on ("package"))
 
     (:module "speech"
 	     :depends-on ("package")
