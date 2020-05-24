@@ -41,7 +41,7 @@
 (defparameter +rtop+ 12)
 (defparameter +rbot+ 35)
 
-(defun set-scroll (yes)
+(defun set-scroll (&optional (yes T))
   (if yes
       (format T "~C[~d;~dr" (code-char 27) +rtop+ +rbot+)
       (format T "~Cr" (code-char 27)))
@@ -70,7 +70,6 @@
   (use-term)
   (setxy 1 +rbot+)
   (apply 'format *standard-output* fmt args)
-;  (format *standard-output* "~CD" (code-char 27))
   (force-output *standard-output*)
   (release-term)
   )

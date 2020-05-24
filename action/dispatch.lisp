@@ -12,30 +12,21 @@
 	 (cond
 	   ((equal oname "LISTENING")
 	    (agm:set-voice NIL))
-	   (T (agu:term "Can't stop ~a~%" oname))
-	   )))
-      ('ppair (agu:term "Do not know how to stop~%"))
-      )
-    )
-  )
+	   (T (agu:term "Can't stop ~a~%" oname)))))
+      ('ppair (agu:term "Do not know how to stop~%")))))
 
 (defun start (top)
-    (agu:term "Acting on 'start' ~a~%" top)
-  )
+    (agu:term "Acting on 'start' ~a~%" top))
 
 ;; It is an instruction to do something.
 (defun command (top)
   (let* ((verb (agp:word-at top 'AGF::ACTION))
 	(verbname (if verb (agc:spelled verb) NIL))
-	(obj (agp:word-at top 'AGF::ACTIVITY))
-	)
+	(obj (agp:word-at top 'AGF::ACTIVITY)))
     (cond
       ((equal verbname "STOP") (stop obj))
       ((equal verbname "START") (start obj))
-      (T (agu:term "No function for ~a~%" verbname))
-      )
-    )
-  )
+      (T (agu:term "No function for ~a~%" verbname)))))
 
 ;; It is some sort of statement about the world.  Just remember it.
 (defun remember (top)
@@ -43,8 +34,7 @@
   (agu:clear)
   (agm:db-start)
   (let ((key (agm:remember top)))
-    (agu:term "I remember that at ~a~%" key)
-    )
+    (agu:term "I remember that at ~a~%" key))
   (agm:db-commit)
 )
 

@@ -90,7 +90,10 @@
 
 ;; Top loop for exploring the long-term memory.
 (defun explore ()
-  (agu:clear)(format T "Type something to set context~%")(prompt)
+  (agu:clear)
+  (agu:set-scroll)
+  (agu:term "Type something to set context~%")
+  (prompt)
   (loop for line = (read-line)
      until (equal line "x")
      do

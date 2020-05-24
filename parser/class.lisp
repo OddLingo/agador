@@ -2,16 +2,15 @@
 
 (in-package :AGP)
 
-;; Within the parser, terms add a lexical range and an uncertainty.
+;;; Within the parser, terms add a lexical range and an uncertainty.
 (defclass pterm () (
   (lpos :accessor term-lpos :initarg :lpos :type integer)
   (rpos :accessor term-rpos :initarg :rpos :type integer)
   (unc :accessor term-unc :initarg :unc :type integer :initform 0)
-  (seq :accessor term-seq :initarg :seq :type integer)
   ))
 
-;; The usage of a word puts a spelling and one possible
-;; function at a position in an utterance.
+;;; The usage of a word puts a spelling and one possible
+;;; function at a position in an utterance.
 (defclass pusage (agc:usage agp:pterm) ())
 
 (defmethod print-object ((obj pusage) stream)
@@ -19,15 +18,13 @@
 	(f (agc:term-fn obj))
 	(p (term-rpos obj))
 	)
-    (format stream " ~2,'0d ~a ~a" p s f))
-      )
+    (format stream " ~2,'0d ~a ~a" p s f)))
 
-;; An adjacent pair of terms have a collective function as well as
-;; a span of positions.  Uncertainties are summed.
+;;; An adjacent pair of terms have a collective function as well as
+;;; a span of positions.  Uncertainties are summed.
 (defclass ppair (agc:pair agp:pterm)
-  (
-  (action :accessor action :initarg :action :initform NIL)
-  ))
+  (			      
+  (action :accessor action :initarg :action :initform NIL)))
 
 (defmethod initialize-instance :after ((obj ppair) &key)
   (setf (term-unc obj)
@@ -61,8 +58,7 @@
   (let ((l (rule-left obj))
 	(r (rule-right obj))
 	(rs (rule-result obj))
-	(act (action obj))
-	)
+	(act (action obj)))
     (if act
 	(format stream " ~a:~a=~a->~a" l r rs act)
 	(format stream " ~a:~a=~a" l r rs)

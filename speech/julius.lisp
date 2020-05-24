@@ -32,7 +32,7 @@
 (defvar *jstate* (make-instance 'jstate))
 
 (defclass jword () (
-  (spell :initarg :spell :accessor spell)
+  (spell :initarg :spell :accessor spell :type string)
   (class :initarg :class :accessor word-class :type fixnum)
   (phonemes :initarg :phonemes :accessor word-phonemes :type string)
   (confidence :initarg :cm :accessor word-cm :type float)

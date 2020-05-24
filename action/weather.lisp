@@ -6,11 +6,11 @@
 (defvar *lastnhc* NIL)
 (defvar *nhctext* NIL)
 
-;; Regex patterns for extracing text from the NHC web page.
-;; (defparameter +articlestart+ "<div class='textproduct'><pre>")
+;;; Regex patterns for extracing text from the NHC web page.
 (defparameter +datestart+ "^\\d+ AM|PM EDT|EST")
 (defparameter +textend+ "^</pre>")
 
+;;; General purpose function for fetching a web page.
 (defun web-fetch (url)
   (let* ((request (dex:get url))
 	 (parsed (lquery:$ (initialize request)))
@@ -19,10 +19,10 @@
 	 (text (elt texts 0))
 	 )
     (cl-utilities:split-sequence '#\Linefeed text)
-	 )
     )
+  )
 
-;; 715 PM EDT Sat May 16 2020
+;;; NOAA web pages have dates in this format: 715 PM EDT Sat May 16 2020
 (defparameter +noaatime+
   "^(\\d+) (AM|PM) \\w+ (\\w+) (\\w+) (\\d+) \\d+")
 
@@ -48,13 +48,15 @@
 (setf (gethash "Nov" +months+) "November")
 (setf (gethash "Dec" +months+) "December")
 
+;;;; Use web-fetch to get an Atlantic Tropical Storm forecast.
 (defun get-tropical ()
   (let* ((lines (web-fetch "https://www.nhc.noaa.gov/gtwo.php"))
 	 (date NIL)
-	 (result NIL)
-	 )
+	 (result NIL))
+    ;; Now remove any lines that are not necessary for speech output.
     (dolist (line lines)
       (cond
+	;; Separate out the date line
 	((ppcre:register-groups-bind
 	  (('parse-integer hrs)
 	   ampm dow mon
@@ -66,42 +68,36 @@
 		 (week (gethash dow +weekdays+))
 		 (month (gethash mon +months+)))
 	    (setf date (format NIL "~d:~2d ~a on ~a, ~a ~:R"
-		       hour minute ampm week month day))
-	    )))
+			       hour minute ampm week month day)))))
+
+	;; NNNN marks the end of a message
 	((equal line "NNNN") (return))
+	;; Ignor ethe forecaster's name
 	((ppcre:scan "^Forecaster" line))
 	((equal line "&amp;&amp;") (return))
+	;; Anything else goes into the result.
 	((not (null date)) (push line result))
 	(T T)))
-    (values date (agu:string-from-list (nreverse result)))
-    )
-    )
+    (values date (agu:string-from-list (nreverse result)))))
 
+(defun repeat ()
+  (agu:term
+   "At ~a the National Weather Service reported~%~a~% "
+   *lastnhc* *nhctext*))
+
+;;;; The background operation to check for new forecasts from
+;;;; time to time.
 (defun wx-tropical ()
   (multiple-value-bind (date text) (get-tropical)
     (if (equal date *lastnhc*)
-	(agu:term "No tropical weather updates since ~a~%" *lastnhc*)
+	(agu:term
+	 "There have been no tropical weather updates since ~a.~%"
+	 *lastnhc*)
+	;; We have a new report!  Remember it.
 	(progn
 	  (setq *lastnhc* date)
 	  (setq *nhctext* text)
-	  (agu:term
-	   "At ~a the National Weather Service reported as follows. ~a~% "
-	   date text)
-	  )
-	)
-    ))
+	  (repeat))))
 
-
-;; ("" "For the North Atlantic...Caribbean Sea and the Gulf of Mexico:" ""
-;;  "The National Hurricane Center is issuing advisories on Tropical "
-;;  "Depression One, located over the western Atlantic Ocean off the "
-;;  "east-central coast of Florida." ""
-;;  "Tropical cyclone formation is not expected during the next 5 days." ""
-;;  "Routine issuance of the Tropical Weather Outlook will resume on "
-;;  "June 1, 2020.  Until then, Special Tropical Weather Outlooks will "
-;;  "be issued as conditions warrant." "" "&amp;&amp;"
-;;  "Public Advisories on Tropical Depression One are issued under "
-;;  "WMO header WTNT31 KNHC and under AWIPS header MIATCPAT1."
-;;  "Forecast/Advisories on Tropical Depression One are issued under WMO "
-;;  "header WTNT21 KNHC and under AWIPS header MIATCMAT1." "" "$$"
-;;  "Forecaster Berg" "NNNN" "")
+  ;; Schedule the next report 4 hours ahead.
+  (agu:sked-later 14400 #'wx-tropical))

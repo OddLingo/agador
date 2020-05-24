@@ -85,7 +85,7 @@
 
 ;; This the the hash function used by all tree operations.
 (defun hash-of (v)
-  (subseq (sha1:sha1-base64 v) 0 7))
+  (subseq (sha1:sha1-hex v) 0 10))
 
 ;; We fetch a string from the database and create the coresponding
 ;; mterm object.  The first word in the string is a single character

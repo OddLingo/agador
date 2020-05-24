@@ -42,6 +42,9 @@
 
   (ags:say "I'm here.")
 
+  ;; Start background tasks
+  (agu:sked-later 8 #'aga:wx-tropical)
+  
   ;; Start the visual user interface
   (agm:explore)
 

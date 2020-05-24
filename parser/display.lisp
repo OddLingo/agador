@@ -9,13 +9,10 @@
   (loop for pos from 0 below (length *right*) do
        (format t "~%~2,'0d | " pos)
        (let ((col (elt *right* pos)))
-	 (mapc (lambda (r) (print-object r t)) col)
-	 )
-       )
-  NIL
-  )
+	 (dolist (r col) (print-object r T))))
+  NIL)
 
-;; Print a single parser tree from top down.
+;;; Print a single parser tree from top down.
 (defun indent (sp)
   (loop for n from sp downto 0 do (format T " ") ))
 (defgeneric print-tree (pterm &optional depth ))
@@ -25,6 +22,7 @@
   (print-tree (agc:left p) (+ depth 3))
   (print-tree (agc:right p) (+ depth 3))
   )
+
 (defmethod print-tree ((u pusage) &optional (depth 0))
   (indent depth)
   (print-object u t )
@@ -36,19 +34,17 @@
 (defun vline (x y1 y2)
   (loop for y from y1 to y2 do
        (agu:setxy x y)
-       (format T "|")
-       )
-  )
+       (format T "|")))
+
 (defun hline (y x1 x2)
   (agu:setxy x1 y)
   (loop for x from x1 to x2 do
-       (format T "-")
-       )
-  )
+       (format T "-")))
 
 (defun average (n1 n2) (floor (/ (+ n1 n2) 2 )))
 (defun hpos (pos) (* pos 7))
 (defgeneric paint-tree (pterm &optional depth top))
+
 (defmethod paint-tree ((u pusage) &optional (depth 0) (top 1))
   (let ((xpos (hpos (term-lpos u))))
     ;; Word text on top line
@@ -57,6 +53,7 @@
     (agu:setxy xpos (1+ top)) (format T "~a" (agc:term-fn u))
     (+ depth top 1)
     ))
+
 (defmethod paint-tree ((p ppair) &optional (depth 2) (top 1))
   (let* (
 	 (lx (hpos (term-lpos p)))
@@ -75,8 +72,7 @@
     (format T " ~a " (agc:term-fn p))
     (agu:set-color 7 0)
     ;; Report the position below what we just did.
-    (1+ py)
-    ))
+    (1+ py)))
 
 ;; Draw the diagram of grammatical functions for a sentence.
 (defun paint-parse (start &optional (depth 2) (top 1) )
@@ -99,10 +95,8 @@
 		   (progn
 		     (pleaves (agc::left m))
 		     (pleaves (agc::right m))
-		     ))
-	       ))
-      (nreverse (pleaves start))
-      )))
+		     ))))
+      (nreverse (pleaves start)))))
 
 (defun string-from-tree (mt)
   (agu:string-from-list (list-from-tree mt)))

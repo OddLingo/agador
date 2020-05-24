@@ -13,7 +13,6 @@
   (:use common-lisp)
   (:export run seek set-lang)
   (:export term usage pair term-fn spelled left right)
-  (:export sked-add sked-later)
   )
 
 ;; There are a lot of grammatical function names, so they get their
@@ -33,12 +32,14 @@
   (:export string-from-list clear setxy set-scroll set-color)
   (:export send connect mbx-server)
   (:export use-term release-term term clearw1 set-status)
+  (:export sked-add sked-later)
   )
 
 (defpackage :AGADOR.ACTION
   (:nicknames :aga)
   (:use common-lisp)
   (:export command query remember)
+  (:export wx-tropical)
   )
 
 ;; Long term memory for things the parser learns, both individual words
@@ -60,3 +61,16 @@
   (:export pterm ppair pusage start-parser parse route-path)
   (:export string-from-tree word-at)
   )
+
+(defpackage :AGADOR.SHA1
+  (:nicknames :sha1)
+  (:use :cl)
+  (:export
+   #:sha1-digest
+   #:sha1-hex
+
+   ;; HMAC functions
+   #:hmac-sha1-digest
+   #:hmac-sha1-hex
+   ))
+

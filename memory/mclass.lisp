@@ -8,11 +8,17 @@
 ;;;; could be either a 'string (in which case it is a DB key) or
 ;;;; a 'term reference.  The memory versions add a hashed 'signature'
 ;;;; which is their Merkle database key.
-(defclass mterm (agc:term) (
-   (signature :accessor sig :initarg :sig :initform NIL)))
+(defclass mterm (agc:term)
+  (
+   (signature
+    :accessor sig
+    :initarg :sig
+    :type string
+    :initform NIL)))
+
 (defmethod initialize-instance :after ((mt mterm) &key)
-  (if (null (sig mt))
-      (setf (sig mt) (merkle mt))))
+  (unless (sig mt))
+      (setf (sig mt) (merkle mt)))
 
 (defclass mpair (agc:pair agm:mterm) ())
 
