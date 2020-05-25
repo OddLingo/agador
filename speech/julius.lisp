@@ -15,9 +15,6 @@
 (defparameter +input+
   "<INPUT STATUS=\"(\\w+)\" TIME=\"(\\d+)\"/>" )
 
-(defparameter +inparm+
-  "<INPUTPARAM FRAMES=\"(\\d+)\" MSEC=\"(\\d+)\"/>" )
-
 (defparameter +class-num+ "(\\d+)\\s+(\\w+)" )
 
 (defclass jstate ()
@@ -117,17 +114,6 @@
      )
     )
 
-(defun matched-param (jtxt)
-  (ppcre:register-groups-bind
-   (('parse-integer frames)
-    ('parse-integer msec))
-   (+inparm+ jtxt :sharedp T)
-   (progn
-     (setf (ready *jstate*) NIL)
-     (agu:term "  ~d frames took ~d ms~%" frames msec)
-     T)
-    ))
-  
 ;; Match a <SHYPO that is the start of a sentence report.
 (defun matched-sent (jtxt)
   (ppcre:register-groups-bind
@@ -189,8 +175,6 @@
 
     ((setf m (matched-sent msg)) (setf (sent *jstate*) m))
 
-    ((matched-param msg) T)
-
     ((search "</SHYPO>" msg)
      (progn
        (setf (recog *jstate*) NIL)
@@ -200,8 +184,8 @@
     ((search "</RECOGOUT>" msg) (setf (recog *jstate*) NIL))
 
     ; Start recognition output
-    ((equal msg "<RECOGOUT>")
-     (setf (recog *jstate*) T))
+    ((search "<INPUTPARAM" msg) (setf (ready *jstate*) NIL))
+    ((equal msg "<RECOGOUT>") (setf (recog *jstate*) T))
     ((equal msg "<STARTRECOG/>") T)    
     ((equal msg "<ENDRECOG/>") T)
     ((equal msg "<RECOGFAIL/>") (agu:set-status "Could not recognize"))

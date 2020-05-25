@@ -16,8 +16,7 @@
 	:components (
 		     (:file "julius")
 		     (:file "talk")
-		     (:file "makewords"))
-	)
+		     (:file "makewords")))
 
     (:module "parser"
 	     :depends-on ("package" "tclass")
@@ -37,8 +36,7 @@
 		   (:file "dispatch")
 		   (:file "time")
 		   (:file "weather")
-	)
-      )
+		   (:file "security")))
 
     (:module "memory"
 	     :depends-on ("package" "tclass")
@@ -48,9 +46,7 @@
 	(:file "db")
 	(:file "words")
 	(:file "tree")
-	(:file "explore")
-	)
-    )
+	(:file "explore")))
 
     (:module "util"
 	     :depends-on ("package")
@@ -60,8 +56,6 @@
 		   (:file "mailbox")
 		   (:file "net")
 		   (:file "schedule")
-		   (:file "sha1")
-	)
-    )
+		   (:file "sha1")))
     )
   )

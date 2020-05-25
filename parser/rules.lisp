@@ -114,13 +114,13 @@
   ;; Load the basic three-term rules.
   (with-open-file (stream fname)
     (loop for line = (read-line stream NIL)
-       until (eq line NIL)
+       until (eq line NIL) do
 	 (if (ppcre:scan +cmnt+ line)
 	     NIL
 	     (ppcre:register-groups-bind
 		 (lfn rfn rslt act)
 		 (+rule+ (string-upcase line))
-	       (add-rule lfn rfn rslt act)))))))
+	       (add-rule lfn rfn rslt act)))))
 
   ;; Find the first step of multi-step routes
   (merge-routes))

@@ -127,11 +127,9 @@
 
 	   (T
 	    (let ((r (agp:parse-words wds)))
-	      (if r (goto r) (prompt))
-	      ))
+	      (if r (goto r) (prompt))))
 
-	   )
-	 )
+	   ))
        (prompt)
        (db-commit)
        )

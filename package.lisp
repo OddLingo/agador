@@ -40,6 +40,7 @@
   (:use common-lisp)
   (:export command query remember)
   (:export wx-tropical)
+  (:export start-security)
   )
 
 ;; Long term memory for things the parser learns, both individual words

@@ -138,33 +138,24 @@
 	   ;; Exactly one - we go with it.
 	   (let ((best (car *top*)))
 	     (paint-parse best)
-;	     (if (y-or-n-p "-- Is this correct?")
-		 (learn best)
-;		 NIL)
-	     )
-	   )
+	     (learn best)))
 
 	  (T
 	   (agu:term  "There are ~d solutions~%" nsoln)
 	   (let ((topy 2))
 	     (dolist (sol *top*)
-	       (setf topy (paint-parse sol 2 topy)))
-	     )
-	   NIL
-	   )
-	  ))
-  )
+	       (setf topy (paint-parse sol 2 topy))))
+	   NIL))))
 
 ;;; Parse a list of words
 (defun parse-words (wds)
   (init-parse)
   ;; Feed each word to the parser.
-  (mapc 'see-word wds)
+  (dolist (w wds) (see-word w))
   ;; Find the parses that span the entire input.
   (choose-top)
   ;; Detect a single useful result.
-  (judge)
-  )
+  (judge))
 
 (defun parse-string (s)
   (parse-words (agu:words-from-string s)))
@@ -173,10 +164,10 @@
   (parse-words (agu:words-from-file fi))
   )
 
-;; Parse a list of words with functions already assigned.
 (defun parse-msg (words)
+  "Parse words with functions allready assigned."
   (init-parse)
-  (mapc 'accept-word words)
+  (dolist (w words) (accept-word w))
   (choose-top)
   (judge))
 
@@ -185,11 +176,10 @@
 (defun parse (words)
   (sb-concurrency:send-message *parser-inbox* words))
 
-;; Load the grammar rules and start the grammar analysis thread.
 (defun start-parser (lang)
+  "Initialize parser structures."
   (init-rules lang)
   (setq *parser-inbox*
 	(make-instance 'agu:mbx-server
 		       :name "Parser"
-		       :actor 'parse-msg))
-  )
+		       :actor 'parse-msg)))

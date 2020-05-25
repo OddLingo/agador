@@ -7,13 +7,13 @@
 (defun stop (obj)
   (let ((otype (type-of obj)))
     (case otype
-      ('pusage
+      (pusage
        (let ((oname (agc:spelled obj)))
 	 (cond
 	   ((equal oname "LISTENING")
 	    (agm:set-voice NIL))
 	   (T (agu:term "Can't stop ~a~%" oname)))))
-      ('ppair (agu:term "Do not know how to stop~%")))))
+      (ppair (agu:term "Do not know how to stop~%")))))
 
 (defun start (top)
     (agu:term "Acting on 'start' ~a~%" top))

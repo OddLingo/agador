@@ -21,22 +21,29 @@
   (db-commit)
   )
 
-;; Print the entire active dictionary.
+  ;; (let ((cur (make-cursor *dbw*)))
+  ;;   (with-cursor (cur)
+  ;;     (multiple-value-bind (spell fn)
+  ;; 	  (cursor-get cur :first)
+  ;; 	(loop while spell do
+  ;;            ,@body
+  ;;            (multiple-value-bind (tk tv)
+  ;;                (cursor-get cur :next)
+  ;;              (setf spell tk
+  ;;                    fn tv)))))))
+
 (defun print-words ()
+  "Print the entire active dictionary."
   (agu:use-term)
   (agu:clear)
   (let ((x 1) (y 1))
-    (lmdb:do-pairs (*dbw* spell fns)
+    (lmdb:do-pairs (*dbw* spell fn)
       (agu:setxy x y)
       (format T "~a"  (bytes-to-s spell))
       (setf x (+ x 10))
-      (if (> x 65)
-	  (progn
-	    (setf x 1)
-	    (setf y (+ y 1)))
-	  )
-      )
-    )
+      (when (> x 65)
+	(setf x 1)
+	(setf y (+ y 1)))))
   (format T "~%")
   (finish-output)
   (agu:release-term)
