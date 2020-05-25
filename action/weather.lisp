@@ -5,6 +5,7 @@
 (defparameter +map+ "https://www.nhc.noaa.gov/xgtwo/two_atl_5d0.png")
 (defvar *lastnhc* NIL)
 (defvar *nhctext* NIL)
+(defvar *last* 0)
 
 ;;; Regex patterns for extracing text from the NHC web page.
 (defparameter +datestart+ "^\\d+ AM|PM EDT|EST")
@@ -24,7 +25,7 @@
 
 ;;; NOAA web pages have dates in this format: 715 PM EDT Sat May 16 2020
 (defparameter +noaatime+
-  "^(\\d+) (AM|PM) \\w+ (\\w+) (\\w+) (\\d+) \\d+")
+  "^(\\d+) (AM|PM) \\w+ (\\w+) (\\w+) (\\d+) (\\d+)")
 
 (defparameter +weekdays+ (make-hash-table :test 'equal))
 (setf (gethash "Sat" +weekdays+) "Saturday")
@@ -60,13 +61,18 @@
 	((ppcre:register-groups-bind
 	  (('parse-integer hrs)
 	   ampm dow mon
-	   ('parse-integer day))
+	   ('parse-integer day)
+	   ('parse-integer year))
 	  (+noaatime+ line :sharedp T)
 	  (let* (
 		 (hour (floor (/ hrs 100)))
 		 (minute (mod hrs 100))
+		 (hr24 (if (equal ampm "PM") (+ 12 hour) hour))
 		 (week (gethash dow +weekdays+))
 		 (month (gethash mon +months+)))
+	    (setq *last*
+		  (cl-date-time-parser:parse-date-time
+		   (format NIL "~d:~d ~a ~d ~d" hr24 minute mon day year)))
 	    (setf date (format NIL "~d:~2d ~a on ~a, ~a ~:R"
 			       hour minute ampm week month day)))))
 
@@ -85,11 +91,17 @@
    "At ~a the National Weather Service reported~%~a~% "
    *lastnhc* *nhctext*))
 
+(defun age ()
+  "COmpute the age of a message in seconds"
+  (- (get-universal-time) *last*))
+
 ;;;; The background operation to check for new forecasts from
 ;;;; time to time.
 (defun wx-tropical ()
   (multiple-value-bind (date text) (get-tropical)
-    (if (equal date *lastnhc*)
+    ;; Ignore reports older than one day.
+    (when (< (age) 86400)
+      (if (equal date *lastnhc*)
 	(agu:term
 	 "There have been no tropical weather updates since ~a.~%"
 	 *lastnhc*)
@@ -97,7 +109,7 @@
 	(progn
 	  (setq *lastnhc* date)
 	  (setq *nhctext* text)
-	  (repeat))))
+	  (repeat)))))
 
   ;; Schedule the next report 4 hours ahead.
   (agu:sked-later 14400 #'wx-tropical))

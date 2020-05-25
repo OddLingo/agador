@@ -42,7 +42,7 @@
        (format T "-")))
 
 (defun average (n1 n2) (floor (/ (+ n1 n2) 2 )))
-(defun hpos (pos) (* pos 7))
+(defun hpos (pos) (* pos 8))
 (defgeneric paint-tree (pterm &optional depth top))
 
 (defmethod paint-tree ((u pusage) &optional (depth 0) (top 1))

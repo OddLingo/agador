@@ -107,12 +107,12 @@
 	   ((and (>= cmd 48) (<= cmd 57))
 	    (goto (nth (- cmd 48) *contexts*)))
 	   
-	   ((eq cmd 108) ;; l
+	   ((equal verb "l") ;; l
 	    (if (eq (type-of *cursor*) 'mpair)
 		(goto (agc:left *cursor*))
 		(format T "Can't do that here~%")))
 
-	   ((eq cmd 114) ;; r
+	   ((equal verb "r") ;; r
 	    (if (eq (type-of *cursor*) 'mpair)
 		(goto (agc:right *cursor*))
 		(format T "Can't do that here~%")))

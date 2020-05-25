@@ -19,7 +19,7 @@
      :output '(:string :stripped T))
     )
   (jsend "RESUME")
-  (sleep 0.6)
+  (sleep 3)
   )
 
   
@@ -33,8 +33,8 @@
 				 :actor 'speaker))
   )
 
-(defun say (msg)
-  (agu:send *talking* (list :op :SAY :TEXT msg :voice "slt"))
+(defun say (msg &key (voice "rms"))
+  (agu:send *talking* (list :op :SAY :TEXT msg :voice voice))
   )
 
 

@@ -161,17 +161,14 @@
     ; Ignore the dots
     ((equal "." msg) T)
 
-    ; Recognized a word.  Isnore the utterance start and end markers.
+    ; Recognized a word.  Ignore the utterance start and end markers.
     ((setf m (matched-word msg))
      (let ((sp (spell m)))
        (cond
 	 ((equal sp "s") T)
 	 ((equal sp "es") T)
-	 (T (progn
-	      (agu:term "  ~a ~d%~%" (spell m) (word-cm m))
-	      (addword m (sent *jstate*))))
-	   )
-	 ))
+	 (T (agu:term "  ~a ~d%~%" (spell m) (word-cm m))
+	    (addword m (sent *jstate*))))))
 
     ((setf m (matched-sent msg)) (setf (sent *jstate*) m))
 
@@ -185,7 +182,9 @@
 
     ; Start recognition output
     ((search "<INPUTPARAM" msg) (setf (ready *jstate*) NIL))
-    ((equal msg "<RECOGOUT>") (setf (recog *jstate*) T))
+    ((equal msg "<RECOGOUT>")
+     (setf (recog *jstate*) T)
+     (agu:term "-----~%"))
     ((equal msg "<STARTRECOG/>") T)    
     ((equal msg "<ENDRECOG/>") T)
     ((equal msg "<RECOGFAIL/>") (agu:set-status "Could not recognize"))
