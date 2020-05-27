@@ -4,59 +4,51 @@
 
 (in-package :AGA)
 
-;;; Things we know about
-(defvar *the-time* "26933762FB")
-
-(defun stop (obj)
-  (let ((otype (type-of obj)))
-    (case otype
-      (pusage
-       (let ((oname (agc:spelled obj)))
-	 (cond
-	   ((equal oname "LISTENING")
-	    (agm:set-voice NIL))
-	   (T (agu:term "Can't stop ~a~%" oname)))))
-      (ppair (agu:term "Do not know how to stop~%")))))
-
-(defun start (top)
-    (agu:term "Acting on 'start' ~a~%" top))
+;;; Things we know about, identified by their Merkle key in the
+;;; memory.
+(defparameter *the-time* "26933762FB")
+(defparameter *the-weather* "39B8EB0A2A")
+(defparameter *listening* "")
 
 ;; It is some sort of statement about the world.  Just remember it.
 (defun remember (top)
   (agm:db-start)
   (let ((key (agm:remember top)))
-    (agu:term "I remember that at ~a~%" key)
+    (agu:term "   I remember that at ~a~%" key)
     (agm:db-commit)
     key))
+
+(defun find-again (start goal)
+  (let* ((thing (agp:word-at start goal))
+	 (handle (if thing (agm:recall-p thing) NIL)))
+    handle))
+
+(defun stop (obj)
+  "Stop some ongoing internal process"
+  (let ((handle (find-again obj 'AGF::ACTIVITY)))
+    (cond
+      ((equal handle *listening*) (agm:set-voice NIL))
+      (T (agu:term "")))))
+
+(defun start (top)
+    (agu:term "Acting on 'start' ~a~%" top))
 
 ;; It is an instruction to do something.
 (defun command (top)
   (let* ((verb (agp:word-at top 'AGF::ACTION))
 	(verbname (if verb (agc:spelled verb) NIL)))
     (cond
-      ((equal verbname "STOP") (stop (agp:word-at top 'AGF::ACTIVITY)))
-      ((equal verbname "START") (start (agp:word-at top 'AGF::ACTIVITY)))
-      ((equal verbname "REMEMBER")
-       (remember (agp:word-at top 'AGF::NOUNP)))
+      ((equal verbname "STOP") (stop top))
+      ((equal verbname "START") (start top))
+      ((equal verbname "REMEMBER") (remember (agc:right top)))
       (T (agu:term "No function for ~a~%" verbname)))))
-
-
 
 ;; How we answer a question depends on which query word was used.
 (defun query (top)
-  (let ((thing (agp:word-at top 'AGF::NOUNP)))
-    (when thing
-      (agu:term "You are asking about '~a'~%"
-		(agp:string-from-tree thing))
-      (let ((handle (remember thing)))
-	(when (equal handle *the-time*)
-	  (agu:term "I know what that is!~%")
-	  (saytime)))))
+  (let ((handle (find-again top 'AGF::NOUNP)))
+    (cond
+      ((equal handle *the-time*) (saytime))
+      ((equal handle *the-weather*) (wx-repeat))
+      (T (agu:term "I do not know about '~a'~%"
+	   (agp:string-from-tree (agp:word-at top 'AGF::NOUNP)))))))
 
-  (let ((ques (agp:word-at top 'AGF::QWORD)))
-    (if ques
-	(agu:term "The question is '~a'~%"
-		(agp:string-from-tree ques))
-	(agu:term "Seek fail~%"))
-    )
-  )

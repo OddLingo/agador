@@ -2,11 +2,16 @@
 
 (in-package :AGM)
 
+;;;; Low-level database operations.  The more complex 'tree'
+;;;; operations are in a separate file.   The key-value "Lightning
+;;;; Memory-mapped Database" LMDB is used because it is very fast.
+
 (defvar *dbenv* NIL)
 (defvar *dbtxn* NIL)
 (defvar *dbw* NIL)
 (defvar *dbt* NIL)
 (defvar *dbc* NIL)
+(defvar *dbi* NIL)
 (defvar *dbmtx* NIL)
 
 ;;;; The overall environment, which includes the mapped data files
@@ -16,44 +21,51 @@
 
 ;; Call open first, which creates the mapping of the files.
 (defun db-open ()
+  "Open the database Environment"
   (setq *dbenv* (lmdb:make-environment +db-directory+
-				       :max-databases 3
+				       :max-databases 4
 				       :mapsize (* 1 1024 1024)))
   (lmdb:open-environment *dbenv*)
-  (setq *dbmtx* (sb-thread:make-mutex :name "memory mutex"))
-  )
+  (setq *dbmtx* (sb-thread:make-mutex :name "memory mutex")))
 
 ;; Call close last.  It releases the mapped file section.
 (defun db-close ()
-  (if *dbw* (progn (lmdb:close-database *dbw*) (setq *dbw* NIL)))
-  (if *dbt* (progn (lmdb:close-database *dbt*) (setq *dbt* NIL)))
-  (if *dbc* (progn (lmdb:close-database *dbc*) (setq *dbc* NIL)))
+  "Close the database Environment"
+  (when *dbw* (lmdb:close-database *dbw*) (setq *dbw* NIL))
+  (when *dbt* (lmdb:close-database *dbt*) (setq *dbt* NIL))
+  (when *dbc* (lmdb:close-database *dbc*) (setq *dbc* NIL))
+  (when *dbi* (lmdb:close-database *dbc*) (setq *dbi* NIL))
   (lmdb:close-environment *dbenv*) (setq *dbenv* NIL)
   )
 
 ;;;; A transaction must be started in order to open databases.
 (defun db-start ()
+  "Start a database transaction"
   (sb-thread:grab-mutex *dbmtx*)
   (setq *dbtxn* (lmdb:make-transaction *dbenv*))
   (lmdb:begin-transaction *dbtxn*)
   (setq *dbw* (lmdb:make-database *dbtxn* "words" :create T))
   (setq *dbt* (lmdb:make-database *dbtxn* "tree" :create T))
   (setq *dbc* (lmdb:make-database *dbtxn* "context" :create T))
+  (setq *dbi* (lmdb:make-database *dbtxn* "info" :create T))
   (lmdb:open-database *dbw*)
   (lmdb:open-database *dbt*)
   (lmdb:open-database *dbc*)
-    )
+  (lmdb:open-database *dbi*))
 
 (defun db-commit ()
+  "Commit changes to the database"
   (lmdb:commit-transaction *dbtxn*)
   (lmdb:close-database *dbt*) (setq *dbt* NIL)
   (lmdb:close-database *dbw*) (setq *dbw* NIL)
   (lmdb:close-database *dbc*) (setq *dbc* NIL)
+  (lmdb:close-database *dbi*) (setq *dbi* NIL)
   (sb-thread:release-mutex *dbmtx*)
   )
 
 ;; Convert the vector of bytes returned by LMDB into a string.
 (defun bytes-to-s (data)
+  "Convert byte vectors to strings"
   (let ((bytes (coerce data '(simple-array (unsigned-byte 8) (*))))
 	)
     (babel:octets-to-string bytes :encoding :utf-8)
@@ -64,107 +76,23 @@
 ;;;; grammatical functions.  The list arrives as strings but
 ;;;; we 'intern all of them.
 (defun get-word (k)
-  (let ((data (lmdb:get *dbw* k))
-	)
-    (if (null data) NIL
-	(mapcar
-	 (lambda (x) (intern x :AGF))
-	 (agu:words-from-string (bytes-to-s data))
-	 )
-	)
-    ))
+  (let ((data (lmdb:get *dbw* k)))
+    (if data
+	(dolist (x (agu:words-from-string (bytes-to-s data)))
+	  (intern x :AGF))
+	NIL)))
 
 (defun put-word (spell funs)
   (lmdb:put *dbw* spell
-     (format NIL "~{~a~^ ~}" funs)
-  ))
-
-;;;; The "tree" database contains one record per mterm node,
-;;;; keyed by the node's Merkle signature.  Each stores a single
-;;;; character string of space-separated words.
-
-;; This the the hash function used by all tree operations.
-(defun hash-of (v)
-  (subseq (sha1:sha1-hex v) 0 10))
-
-;; We fetch a string from the database and create the coresponding
-;; mterm object.  The first word in the string is a single character
-;; indicating the object class.
-(defun get-tree (k)
-  (let ((data (lmdb:get *dbt* k))
-	)
-    (if data
-	(let* (
-	       ; Got a string.  Split into words.
-	       (wds (agu:words-from-string (bytes-to-s data)))
-	       ; The record type is in the first word.
-	       (rty (char (car wds) 0))
-	       )
-	  (case rty
-	    ;; Usage nodes:  (#\u BTF:FN spelling)
-	    (#\u (make-instance 'musage
-				:spelled (caddr wds)
-				:fn (cadr wds)))
-	    ;; Pair nodes: (#\p BTF:FN lefthash righthash) 
-	    (#\p (make-instance 'mpair
-				:fn (cadr wds)
-				:left (caddr wds)
-				:right (cadddr wds)))
-	    ;; Anything else is an error.
-	    (otherwise (progn
-			 (agu:term "Bad record in DB ~a~%" data)
-			 NIL))
-	    )
-	  )
-	NIL
-	)
-    )
-  )
-
-;; The 'context' database stores a list of the signatures of all the
-;; immediate parent nodes to the term whose signature is the key.
-(defun get-context (k)
-  (let ((data (lmdb:get *dbc* k))
-	)
-    (if (null data) NIL
-	(agu:words-from-string (bytes-to-s data)))
-    )
-  )
-
-;; Add a new context above a node, avoiding duplicates.
-(defun add-context (child parent)
-  (let* ((c (lmdb:get *dbc* child)))
-    (if c
-	;; Child already has contexts - check for duplicates.
-	(let ((previous (agu:words-from-string (bytes-to-s c))))
-	  (if (null (member parent previous))
-	      (progn
-		(push parent previous)
-		(lmdb:put *dbc* child (agu:string-from-list previous))
-		)
-	      )
-	  )
-	;; First context for this child.
-	(lmdb:put *dbc* child parent)
-	)
-    )
-  )
-
-
-;; The 'to-string' function takes care of creating the proper
-;; stored representation of the data.  The key is then the
-;; hash of that.
-(defun put-tree (mt)
-  (declare (mterm mt))
-  (let* ((data (to-string mt))
-	 (key (hash-of data)))
-    (lmdb:put *dbt* key data)
-    )
-  )
+     (format NIL "~{~a~^ ~}" funs)))
 
 (defun dump (db)
   (lmdb:do-pairs (db key data)
     (agu:term "   ~a: ~a~%"  (bytes-to-s key) (bytes-to-s data))
     ))
 
+(defun get-info (key)
+  (read-from-string (bytes-to-s (lmdb:get *dbi* key))))
 
+(defun put-info (key data)
+  (lmdb:put *dbi* key (format NIL "~S" data)))

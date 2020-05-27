@@ -28,16 +28,17 @@
 (defmethod deref ((s string)) s)
 (defmethod deref ((mt mterm)) (sig mt))
 
-;; to-string creates the database representation of an mterm object.
-(defgeneric to-string (mterm))
-(defmethod to-string ((p mpair))
+;;; to-string creates the database representation of any object,
+;;; either the parser or the memory form.
+(defgeneric to-string (agc:term))
+(defmethod to-string ((p agc:pair))
   (format NIL "p ~a ~a ~a"
 	  (agc:term-fn p)
 	  (deref (agc:left p))
 	  (deref (agc:right p)) )
   )
-(defmethod to-string ((u musage))
+(defmethod to-string ((u agc:usage))
   (format NIL "u ~a ~a" (agc:term-fn u) (agc:spelled u)) )
 
-(defmethod merkle ((mt mterm)) (hash-of (to-string mt)))
+(defmethod merkle ((mt agc:term)) (hash-of (to-string mt)))
 

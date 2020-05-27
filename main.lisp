@@ -43,7 +43,7 @@
   (ags:say "I'm here.")
 
   ;; Start background tasks
-  (agu:sked-later 8 #'aga:wx-tropical)
+  (agu:sked-later 5 #'aga:wx-tropical)
   (aga:start-security)
   
   ;; Start the visual user interface

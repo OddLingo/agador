@@ -96,6 +96,7 @@
   (prompt)
   (loop for line = (read-line)
      until (equal line "x")
+     when line
      do
        ;; A transaction around each command.
        (db-start)
