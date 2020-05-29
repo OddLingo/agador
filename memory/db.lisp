@@ -91,8 +91,11 @@
     (agu:term "   ~a: ~a~%"  (bytes-to-s key) (bytes-to-s data))
     ))
 
+;;; Read and write the scratchpad.
 (defun get-info (key)
-  (read-from-string (bytes-to-s (lmdb:get *dbi* key))))
+  (ignore-errors
+    (read-from-string
+     (bytes-to-s (lmdb:get *dbi* key)) :eof-error-p NIL)))
 
 (defun put-info (key data)
   (lmdb:put *dbi* key (format NIL "~S" data)))

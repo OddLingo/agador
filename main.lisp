@@ -43,11 +43,11 @@
   (ags:say "I'm here.")
 
   ;; Start background tasks
-  (agu:sked-later 5 #'aga:wx-tropical)
-  (aga:start-security)
+;;  (agu:sked-later 5 #'aga:wx-tropical)
+;;  (aga:start-security)
   
   ;; Start the visual user interface
-  (agm:explore)
+  (sleep 60)  ;; (agm:explore)
 
   ; Clean up to exit.
   (ags:jstop)

@@ -96,12 +96,11 @@
   (prompt)
   (loop for line = (read-line)
      until (equal line "x")
-     when line
+     when (> (length line) 0)
      do
        ;; A transaction around each command.
        (db-start)
-       (let* ((wds (agu:words-from-string line))
-	      (verb (car wds))
+       (let* ((verb line)
 	      (cmd (char-code (char verb 0)))
 	      )
 	 (cond
@@ -127,7 +126,7 @@
 	   ((equal verb "v") (set-voice T))
 
 	   (T
-	    (let ((r (agp:parse-words wds)))
+	    (let ((r (agp:parse-words (agu:words-from-string line))))
 	      (if r (goto r) (prompt))))
 
 	   ))

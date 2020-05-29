@@ -19,6 +19,8 @@
     key))
 
 (defun find-again (start goal)
+  (declare (optimize (debug 3)))
+  (break)
   (let* ((thing (agp:word-at start goal))
 	 (handle (if thing (agm:recall-p thing) NIL)))
     handle))

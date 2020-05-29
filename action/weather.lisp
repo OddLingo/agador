@@ -28,28 +28,6 @@
   (agm:put-info key (cons date text))
   (agm:db-commit))
 
-(defparameter +weekdays+ (make-hash-table :test 'equal))
-(setf (gethash "Sat" +weekdays+) "Saturday")
-(setf (gethash "Sun" +weekdays+) "Sunday")
-(setf (gethash "Mon" +weekdays+) "Monday")
-(setf (gethash "Tue" +weekdays+) "Tuesday")
-(setf (gethash "Wed" +weekdays+) "Wednesday")
-(setf (gethash "Thu" +weekdays+) "Thursday")
-(setf (gethash "Fri" +weekdays+) "Friday")
-(defparameter +months+ (make-hash-table :test 'equal))
-(setf (gethash "Jan" +months+) "January")
-(setf (gethash "Feb" +months+) "Febuary")
-(setf (gethash "Mar" +months+) "March")
-(setf (gethash "Apr" +months+) "April")
-(setf (gethash "May" +months+) "May")
-(setf (gethash "Jun" +months+) "June")
-(setf (gethash "Jul" +months+) "July")
-(setf (gethash "Aug" +months+) "August")
-(setf (gethash "Sep" +months+) "September")
-(setf (gethash "Oct" +months+) "October")
-(setf (gethash "Nov" +months+) "November")
-(setf (gethash "Dec" +months+) "December")
-
 ;;; Parse NOAA's unique time format into universal time and speakable
 ;;; formats.
 ;;; NOAA web pages have dates in this format: 715 PM EDT Sat May 16 2020
@@ -58,6 +36,7 @@
   "^(\\d+) (AM|PM) \\w+ \\w+ (\\w+) (\\d+) (\\d+)")
 
 (defun noaa-time (line)
+  "Convert a NOAA-format time to universal seconds"
   (ppcre:register-groups-bind
    (('parse-integer hrs)
     ampm mon
@@ -68,7 +47,7 @@
 	  (minute (mod hrs 100))
 	  (hr24 (if (equal ampm "PM") (+ 12 hour) hour)))
      (cl-date-time-parser:parse-date-time
-	    (format NIL "~d~2,'0d ~a ~d ~d" hr24 minute mon day year)))))
+      (format NIL "~d~2,'0d ~a ~d ~d" hr24 minute mon day year)))))
 
 (defun get-tropical ()
   "Get an Atlantic Tropical Storm forecast."
@@ -92,10 +71,10 @@
     (values uni (agu:string-from-list (nreverse text)))))
 
 (defun wx-repeat ()
+  "Repeat the most recent weather update"
   (agm:db-start)
   (let ((old (agm:get-info "ex-tropical")))
     (when old
-      (setq *last* (car old))
       (agu:term
        "At ~a the National Weather Service reported~%~a~% "
        (speakable-time (car old))
@@ -107,17 +86,15 @@
 (defun wx-tropical ()
   (multiple-value-bind (date text) (get-tropical)
     ;; Ignore reports older than one day.
-    (when (< (age date) 86400)
-      (agu:term "uni |~a|~%" date)
-      (if (equal date *last*)
+    (if (> (age date) 86400)
 	(agu:term
 	 "There have been no tropical weather updates since ~a.~%"
-	 (speakable-time *last*))
+	 (speakable-time date))
 	;; We have a new report!  Remember it.
 	(progn
 	  (setq *last* date)
 	  (save-wx "wx-tropical" date text)
-	  (wx-repeat)))))
+	  (wx-repeat))))
 
   ;; Schedule the next report 4 hours ahead.
   (agu:sked-later 14400 #'wx-tropical))

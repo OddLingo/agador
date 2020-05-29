@@ -79,6 +79,7 @@
   (agu:use-term)
   (agu:set-scroll NIL)
   (agu:clear)
+  (format T "PP |~a| at ~d ~d~%" start depth top)
   (agu:setxy 1 (paint-tree start depth top))
   (agu:set-scroll T)
   (finish-output)
