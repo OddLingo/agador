@@ -61,7 +61,7 @@
 ;;; hash of that.
 (defun put-tree (mt)
   (declare (mterm mt))
-  (let* ((data (to-string mt))
+  (let* ((data (string-representation mt))
 	 (key (hash-of data)))
     (lmdb:put *dbt* key data)))
 

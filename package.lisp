@@ -51,7 +51,7 @@
   (:export db-open db-close db-start db-commit hash-of)
   (:export put-word get-word init-words print-words get-info put-info)
   (:export put-tree get-tree remember recall-p set-voice)
-  (:export mterm musage mpair sig goto explore bytes-to-s)
+  (:export mterm musage mpair sig goto explore bytes-to-s merkle)
   )
 
 ;; The actual Adjacency Parser that turns text into trees.

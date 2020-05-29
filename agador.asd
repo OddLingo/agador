@@ -19,7 +19,7 @@
 		     (:file "makewords")))
 
     (:module "parser"
-	     :depends-on ("package" "tclass")
+	     :depends-on ("package" "classes")
 	     :serial T
       :components (
         (:file "pclass")
@@ -30,7 +30,7 @@
       )
 
     (:module "action"
-	     :depends-on ("package" "tclass")
+	     :depends-on ("package" "classes")
 	     :serial T
       :components (
 		   (:file "dispatch")
@@ -39,7 +39,7 @@
 		   (:file "security")))
 
     (:module "memory"
-	     :depends-on ("package" "tclass")
+	     :depends-on ("package" "classes")
 	     :serial T	       
       :components (
 	(:file "mclass")

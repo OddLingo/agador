@@ -121,10 +121,7 @@
 (defun learn (best)
   (let ((dothis (action best)))
     (if dothis
-	(progn
-	  (agm:db-start)
-	  (funcall dothis best)
-	  (agm:db-commit))
+	(funcall dothis best)
 	(agu:term "Nothing to do~%"))))
 
 ;;; If there is exactly one satisfactory solution, we can learn from it

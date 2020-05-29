@@ -18,9 +18,9 @@
     (agm:db-commit)
     key))
 
-;;; 'find-again' tries to discover the database key for the memory
+;;; 'merkle-of-subtree' tries to discover the database key for the memory
 ;;; representation of some sub-tree of a given parse tree.
-(defun find-again (start goal)
+(defun merkle-of-subtree (start goal)
   (declare (optimize (debug 3))
 	   (type agp::pterm start))
   (let ((subtree (agp:word-at start goal)))
@@ -28,7 +28,7 @@
 
 (defun stop (obj)
   "Stop some ongoing internal process"
-  (let ((handle (find-again obj 'AGF::ACTIVITY)))
+  (let ((handle (merkle-of-subtree obj 'AGF::ACTIVITY)))
     (cond
       ((equal handle *listening*) (agm:set-voice NIL))
       (T (agu:term "")))))
@@ -50,7 +50,7 @@
 ;; How we answer a question depends on which query word was used.
 (defun query (top)
   (declare (type agp::pterm top))
-  (let ((handle (find-again top 'AGF::NOUNP)))
+  (let ((handle (merkle-of-subtree top 'AGF::NOUNP)))
     (cond
       ((equal handle *the-time*) (saytime))
       ((equal handle *the-weather*) (wx-repeat))

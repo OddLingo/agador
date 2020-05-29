@@ -26,6 +26,7 @@
 
 (defgeneric deref (s))
 (defmethod deref ((s string)) s)
+(defmethod deref ((pt agp::pterm)) (merkle pt))
 (defmethod deref ((mt mterm)) (sig mt))
 
 ;;; string-representation creates the database representation of any
@@ -42,6 +43,7 @@
 
 ;;; Creates the merkle hash for generating all keys in the 'tree' and
 ;;; 'context' databases.  We use the high-order 40 bits of a SHA1.
+(defun hash-of (v) (subseq (sha1:sha1-hex v) 0 10))
 (defmethod merkle ((mt agc:term))
-  (subseq (sha1:sha1-hex (string-representation mt)) 0 10))
+  (hash-of (string-representation mt)))
 
