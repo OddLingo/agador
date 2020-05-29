@@ -18,12 +18,13 @@
     (agm:db-commit)
     key))
 
+;;; 'find-again' tries to discover the database key for the memory
+;;; representation of some sub-tree of a given parse tree.
 (defun find-again (start goal)
-  (declare (optimize (debug 3)))
-  (break)
-  (let* ((thing (agp:word-at start goal))
-	 (handle (if thing (agm:recall-p thing) NIL)))
-    handle))
+  (declare (optimize (debug 3))
+	   (type agp::pterm start))
+  (let ((subtree (agp:word-at start goal)))
+    (if subtree (agm:merkle subtree) NIL)))
 
 (defun stop (obj)
   "Stop some ongoing internal process"
@@ -37,6 +38,7 @@
 
 ;; It is an instruction to do something.
 (defun command (top)
+  (declare (type agp::pterm top))
   (let* ((verb (agp:word-at top 'AGF::ACTION))
 	(verbname (if verb (agc:spelled verb) NIL)))
     (cond
@@ -47,6 +49,7 @@
 
 ;; How we answer a question depends on which query word was used.
 (defun query (top)
+  (declare (type agp::pterm top))
   (let ((handle (find-again top 'AGF::NOUNP)))
     (cond
       ((equal handle *the-time*) (saytime))

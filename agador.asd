@@ -7,7 +7,7 @@
 
   :components (
     (:file "package")
-    (:file "tclass")
+    (:file "classes")
     (:file "main" :depends-on ("package"))
 
     (:module "speech"
@@ -22,7 +22,7 @@
 	     :depends-on ("package" "tclass")
 	     :serial T
       :components (
-        (:file "class")
+        (:file "pclass")
 	(:file "rules")
 	(:file "display")
 	(:file "parse")

@@ -28,17 +28,20 @@
 (defmethod deref ((s string)) s)
 (defmethod deref ((mt mterm)) (sig mt))
 
-;;; to-string creates the database representation of any object,
-;;; either the parser or the memory form.
-(defgeneric to-string (agc:term))
-(defmethod to-string ((p agc:pair))
+;;; string-representation creates the database representation of any
+;;; tree object, in either the parser or the memory form.
+(defgeneric string-representation (agc:term))
+(defmethod string-representation ((p agc:pair))
   (format NIL "p ~a ~a ~a"
 	  (agc:term-fn p)
 	  (deref (agc:left p))
 	  (deref (agc:right p)) )
   )
-(defmethod to-string ((u agc:usage))
+(defmethod string-representation ((u agc:usage))
   (format NIL "u ~a ~a" (agc:term-fn u) (agc:spelled u)) )
 
-(defmethod merkle ((mt agc:term)) (hash-of (to-string mt)))
+;;; Creates the merkle hash for generating all keys in the 'tree' and
+;;; 'context' databases.  We use the high-order 40 bits of a SHA1.
+(defmethod merkle ((mt agc:term))
+  (subseq (sha1:sha1-hex (string-representation mt)) 0 10))
 
