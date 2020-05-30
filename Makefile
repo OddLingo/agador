@@ -8,6 +8,7 @@ clean:
 	@echo "Removing FASL files"
 	@rm -fr ${CACHE}
 	@rm -f agador.img
+	@rm -f *.log
 	@find . -name '*.*~' -delete
 
 run:

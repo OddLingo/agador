@@ -19,7 +19,7 @@
 (defparameter +db-directory+
   (asdf:system-relative-pathname :agador #p"data/db/"))
 
-;; Call open first, which creates the mapping of the files.
+;;; Call open first, which creates the mapping of the files.
 (defun db-open ()
   "Open the database Environment"
   (setq *dbenv* (lmdb:make-environment +db-directory+
@@ -28,7 +28,7 @@
   (lmdb:open-environment *dbenv*)
   (setq *dbmtx* (sb-thread:make-mutex :name "memory mutex")))
 
-;; Call close last.  It releases the mapped file section.
+;;; Call close last.  It releases the mapped file section.
 (defun db-close ()
   "Close the database Environment"
   (when *dbw* (lmdb:close-database *dbw*) (setq *dbw* NIL))
@@ -38,7 +38,8 @@
   (lmdb:close-environment *dbenv*) (setq *dbenv* NIL)
   )
 
-;;;; A transaction must be started in order to open databases.
+;;;; A transaction must be started in order to open databases.  Only
+;;;; one thread at a time can open a transaction so we have a mutex too.
 (defun db-start ()
   "Start a database transaction"
   (sb-thread:grab-mutex *dbmtx*)
@@ -87,15 +88,27 @@
      (format NIL "~{~a~^ ~}" funs)))
 
 (defun dump (db)
+  "Dump any database"
   (lmdb:do-pairs (db key data)
     (agu:term "   ~a: ~a~%"  (bytes-to-s key) (bytes-to-s data))
     ))
 
+;;;; Actions can store arbitary data in the "info" database.  Since
+;;;; LMDB only stores bytes, we convert the data to 'readable' format.
+(defun put-info (key data)
+  "Write arbitrary data to the into database."
+  (declare (optimize (debug 3)))
+  (let* ((*print-pretty* NIL)
+	 (str (write-to-string data)))
+    (lmdb:put *dbi* key str)))
+
 ;;; Read and write the scratchpad.
 (defun get-info (key)
-  (ignore-errors
-    (read-from-string
-     (bytes-to-s (lmdb:get *dbi* key)) :eof-error-p NIL)))
+  "Read arbitrary data from the 'info' database."
+  (declare (optimize (debug 3)))
+  (let* ((data (lmdb:get *dbi* key))
+	 (str (if data (bytes-to-s data) NIL)))
+    (if str
+	(read-from-string str :eof-error-p NIL)
+	NIL)))
 
-(defun put-info (key data)
-  (lmdb:put *dbi* key (format NIL "~S" data)))

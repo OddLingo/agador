@@ -11,7 +11,7 @@
 (defpackage :AGADOR.MAIN
   (:nicknames :agc)
   (:use common-lisp)
-  (:export run seek set-lang)
+  (:export run seek set-lang +data-directory+)
   (:export term usage pair term-fn spelled left right)
   )
 

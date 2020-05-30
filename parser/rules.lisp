@@ -127,7 +127,8 @@
 
 (defun init-rules (lang)
   "Load rules from a file."
-  (load-rules (format NIL "data/~a.rules" lang)))
+  (load-rules
+   (format NIL "~a/~a.rules" AGC:+data-directory+ lang)))
 
 (defun print-rules ()
   "Print all rules according to right-hand term."

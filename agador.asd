@@ -3,7 +3,7 @@
 (defsystem "agador"
   :description "Natural language experiments using b-trees"
   :depends-on (:LMDB :CL-UTILITIES :BABEL :CL-PPCRE :USOCKET
-		     :UNIX-OPTS :dexador :plump :lquery :cl-date-time-parser)
+		:CL-DATE-TIME-PARSER :UNIX-OPTS :dexador :plump :lquery)
 
   :components (
     (:file "package")

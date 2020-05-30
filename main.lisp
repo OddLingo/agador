@@ -3,6 +3,9 @@
 (in-package :AGC)
 
 (defvar *lang* "english")
+(defparameter +data-directory+
+  (asdf:system-relative-pathname :agador #p"data"))
+
 
 (opts:define-opts
     (:name :language
@@ -36,16 +39,16 @@
   ;; Load grammar analysis rules and start the parser thread.
   (agp:start-parser *lang*)
 
+  ;; Start background tasks
+  (agu:sked-later 5 #'aga:wx-tropical)
+  (aga:start-security)
+  
   ;; Start Julius speech recognizer
   (ags:tstart)
   (ags:jstart *lang*)
 
   (ags:say "I'm here.")
 
-  ;; Start background tasks
-  (agu:sked-later 5 #'aga:wx-tropical)
-  (aga:start-security)
-  
   ;; Start the visual user interface
   (agm:explore)
 
