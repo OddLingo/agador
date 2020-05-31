@@ -97,7 +97,6 @@
 ;;;; LMDB only stores bytes, we convert the data to 'readable' format.
 (defun put-info (key data)
   "Write arbitrary data to the into database."
-  (declare (optimize (debug 3)))
   (let* ((*print-pretty* NIL)
 	 (str (write-to-string data)))
     (lmdb:put *dbi* key str)))
@@ -105,7 +104,6 @@
 ;;; Read and write the scratchpad.
 (defun get-info (key)
   "Read arbitrary data from the 'info' database."
-  (declare (optimize (debug 3)))
   (let* ((data (lmdb:get *dbi* key))
 	 (str (if data (bytes-to-s data) NIL)))
     (if str

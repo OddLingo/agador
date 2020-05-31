@@ -48,16 +48,13 @@
 ;;;; The "dictionary" database contains one entry per spelling.
 ;;;; They key is the spelling, the value is its phonetic representation.
 (defun get-pronounciation (k)
-  (let ((data (lmdb:get *dict-d* k))
-	)
+  (let ((data (lmdb:get *dict-d* k)))
     (if (null data) NIL
-	(agm:bytes-to-s data))
-    )
-  )
+	(agm:bytes-to-s data))))
 
 (defparameter +dict+ "^[^ ]+\\s+\\\[([^\\]]+)\\\]\\s+([a-z ]+)")
 (defparameter +class+ "^% (\\w+)")
-(defparameter +word+ "^([A-Z ]+)")
+(defparameter +word+ "^([A-Z0-9\\.=/a-z ]+)")
 (defparameter +cmnt+ "^\\s*#")
 (defparameter +dpath+ "~/Develop/Speech/Recognition/English/dict")
 (defun load-dictionary ()
@@ -72,76 +69,103 @@
 		 (spell pronounce) (+dict+ line)
 		 (progn
 		   (lmdb:put *dict-d* spell pronounce)
-		   (setf count (1+ count))
-		   )
-		 ))
-	 ))
-    (format T "Loaded ~a words~%" count)
-    )
+		   (setf count (1+ count)))))))
+    (format T "Loaded ~a words~%" count))
   (dict-commit)
-  (dict-close)
- )
+  (dict-close))
 
-;; Generate the Julius .voca file from a list of classes and words.
-;; This relies on the dictionary to automatically look up the
-;; pronounciations.
+;;; Look for optional alternate spellings and pronounciations.
+;;; This is used for numbers and names.
+;;;     DICTIONARY/SPELLING
+;;;     SPELLING=PHONETICS
+
+;;; Generate the Julius .voca file from a list of classes and words.
+;;; This relies on the dictionary to automatically look up the
+;;; pronounciations.
 (defun make-voca (fname)
+  (declare (optimize (debug 3)))
   (dict-open)
   (dict-start)
   (agm:db-open)
   (agm:db-start)
-  (let ((in (open (format NIL "~a.words" fname)
+  (let (;; Input file
+	(in (open (format NIL "~a.words" fname)
 		       :direction :input))
+	;; Output file
 	(out (open (format NIL "~a.voca" fname)
-			:direction :output))
+		   :direction :output
+		   :if-exists :supersede))
+	;; Sticky group name
 	(cname NIL)
-	(count 0)
-	)
-    (format out "% NS_B~%s	sil~%")
-    (format out "% NS_E~%es	sil~%")
+	;; Counter of words processed
+	(count 0))
 
-    (loop for line = (read-line in NIL)
-	 until (eq line NIL)
-       do (if line
-	      (cond
-		;; Ignore comments
-		((ppcre:scan +cmnt+ line) T)
+    (labels
+	;; Extract spelling and phonetics in various ways.
+	((modify-spelling (class inword)
+	   (format T "Class ~a word ~a~%" class inword)
+	   (let ((spell NIL) (phon NIL))
+	     (cond
+	       ;; Provide a custom spelling for numbers, etc
+	       ((search "/" inword)
+		(let* ((parts (cl-utilities:split-sequence '#\/ inword))
+		       (dspell (first parts)))
+		  (setf spell (second parts))
+		  (setf phon (get-pronounciation dspell))))
 
-		;; Pick up group names
-		((ppcre:register-groups-bind
-		  (gname) (+class+ line)
-		  (progn
-		    (setf cname gname)
-		    (format out "~%% ~a~%" gname))) T)
+	       ;; Provide a custom pronounciation for proper names, etc
+	       ((search "=" inword)
+		(let ((parts (cl-utilities:split-sequence '#\= inword)))
+		      (setf spell (first parts))
+		      (setf phon
+			(ppcre:regex-replace-all
+			 "[\\.]"
+			 (second parts)
+			 " "))))
 
-		;; Pick up words.  Tell Julius the pronounciation
-		;; and the small dictionary the function.
-		((ppcre:register-groups-bind
-		  (spells) (+word+ line)
-		  (progn
-		    (let ((words (agu:words-from-string spells)))
-		      (dolist (w words)
-		      (let ((spell (format NIL "~a" w)))
-			(format out "~a~C~a~%"
-				spell #\tab (get-pronounciation spell))
-			(setf count (1+ count))
-			(agm:put-word spell (list cname))
-			)
-		      )
-		    )
-		  )) T)
-		;;
-		(T T)
-		)
-	      )
-	 )
+	       ;; Just use the dicitonary pronounciation and spelling
+	       (T (setf spell inword)
+		  (setf phon (get-pronounciation spell))))
+
+	     ;; Now we can add the new word to both places.
+	     (format out "~a~C~a~%" spell '#\Tab phon)
+	     (agm:put-word spell (list class)))))
+
+      ;; Always need the end markers.
+      (format out "% NS_B~%s	sil~%")
+      (format out "% NS_E~%es	sil~%")
+
+      ;; Now process the .words file.
+      (loop for line = (read-line in NIL)
+	 until (eq line NIL) do
+	   (cond
+	     ;; Ignore comments
+	     ((ppcre:scan +cmnt+ line) T)
+
+	     ;; Pick up group names
+	     ((ppcre:register-groups-bind
+	       (gname) (+class+ line)
+	       (setf cname gname)
+	       (format out "~%% ~a~%" gname)))
+
+	     ;; Pick up words.  Tell Julius the pronounciation
+	     ;; and the small dictionary the function.
+	     ((ppcre:register-groups-bind
+	       (spells) (+word+ line)
+	       (let ((words (agu:words-from-string spells)))
+		 (dolist (w words)
+		   (modify-spelling cname w)
+		   (setf count (1+ count))))))
+       
+	     ;; Ignore everything else
+	     (T T))))
+
+    ;; Report the count.
     (format T "Generated ~a words.  Run mkdfa again.~%" count)
 
     (agm:db-commit)
     (agm:db-close)
     (close in)
-    (close out)
-    )
-  )
+    (close out)))
 
        

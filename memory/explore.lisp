@@ -22,10 +22,10 @@
       )
 )
 
-;; Create a list of the terminal words in a tree.  We descend the
-;; tree right-side-first but are pushing it onto the list of leaves.
-;; This results in the final list being in the correct order
-;; left-to-right.
+;;; Create a list of the terminal words in a tree.  We descend the
+;;; tree right-side-first but are pushing it onto the list of leaves.
+;;; This results in the final list being in the correct order
+;;; left-to-right.
 (defun list-from-tree (start)
   (let ((leaves NIL))
     (labels ((find-leaf (mt)
@@ -37,13 +37,10 @@
 		       (find-leaf (agc::left m))
 		       ))
 		 )))
-      (find-leaf start)
-      )
-    leaves
-    )
-  )
+      (find-leaf start))
+    leaves))
 
-;; Get a single string of the spelling of the words in a tree.
+;;; Get a single string of the spelling of the words in a tree.
 (defun string-from-tree (mt)
   (agu:string-from-list (list-from-tree mt)))
 

@@ -21,8 +21,7 @@
 ;;; 'merkle-of-subtree' tries to discover the database key for the memory
 ;;; representation of some sub-tree of a given parse tree.
 (defun merkle-of-subtree (start goal)
-  (declare (optimize (debug 3))
-	   (type agp::pterm start))
+  (declare (type agp::pterm start))
   (let ((subtree (agp:word-at start goal)))
     (if subtree (agm:merkle subtree) NIL)))
 

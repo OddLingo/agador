@@ -4,6 +4,7 @@
 
 (in-package :AGA)
 (defparameter +map+ "https://www.nhc.noaa.gov/xgtwo/two_atl_5d0.png")
+(defparameter +info-trop+ "wx-tropical")
 
 ;;; Regex patterns for extracing text from the NHC web page.
 (defparameter +datestart+ "^\\d+ AM|PM EDT|EST")
@@ -42,9 +43,10 @@
      uni
      )))
 
+;;; Fetch the latest tropical storm forecast fro the National Hurricane
+;;; Center web site.
 (defun get-tropical ()
   "Get an Atlantic Tropical Storm forecast."
-  (declare (optimize (debug 3)))
   (let* ((lines (web-fetch "https://www.nhc.noaa.gov/gtwo.php"))
 	 (univ 0)
 	 (temp 0)
@@ -64,36 +66,36 @@
 	(T T)))
     (cons univ (agu:string-from-list (nreverse text)))))
 
+;;; The most recent tropical forecast is in the 'info' databse.
+;;; We can fetch it from there when requested.
 (defun wx-repeat ()
   "Repeat the most recent weather update"
-  (declare (optimize (debug 3)))
   (agm:db-start)
-  (let ((old (agm:get-info "wx-tropical")))
-    (when old
+  (let ((old (agm:get-info +info-trop+)))
+    (agm:db-commit)
+    (if old
       (agu:term
        "At ~a, the National Weather Service reported~%~a~% "
        (speakable-time (car old))
-       (cdr old))))
-  (agm:db-commit))
+       (cdr old))
+      (agu:term "No tropical forecast is available~%"))))
 
 ;;;; The background operation to check for new forecasts from
 ;;;; time to time.
 (defun wx-tropical ()
-  (declare (optimize (debug 3)))
   (let* ((latest (get-tropical))
-	 (date (car latest))
-	 (text (cdr latest)))
+	 (date (car latest)))
     ;; Ignore reports older than one day.
     (if (> (age date) 86400)
 	(agu:term
 	 "There have been no tropical weather updates since ~a.~%"
 	 (speakable-time date))
-	;; We have a new report!  Remember it.
+	;; We have a new report!  Remember and report it.
 	(progn
 	  (agm:db-start)
-	  (agm:put-info "wx-tropical" latest)
+	  (agm:put-info +info-trop+ latest)
 	  (agm:db-commit)
-	  (wx-repeat))))
+	  (wx-repeat)))
 
   ;; Schedule the next report 4 hours ahead.
-  (agu:sked-later 14400 #'wx-tropical))
+  (agu:sked-later 14400 #'wx-tropical)))
