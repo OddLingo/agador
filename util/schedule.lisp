@@ -58,7 +58,3 @@
    (local-time:timestamp+
     (local-time:now) secs :sec)
    action ))
-
-(defun test ()
-  (format T "tick~%" )
-  (sked-later 4 #'test))

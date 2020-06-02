@@ -6,11 +6,16 @@
 ;;;; keyed by the node's Merkle signature.  Each stores a single
 ;;;; character string of space-separated words.
 
-;; We fetch a string from the database and create the coresponding
-;; mterm object.  The first word in the string is a single character
-;; indicating the object class.
+;;; We fetch a string from the database and create the coresponding
+;;; mterm object.  The first word in the string is a single character
+;;; indicating the object class.  Numbers are a special case where
+;;; the key starts with the letter "N" and the rest is a decimal number.
 (defun get-tree (key)
   "Create mterm object from the database."
+  (declare (type string key))
+  (when (equal (char key 0) '#\N)
+    (return-from get-tree (parse-integer key :start 1)))
+
   (let ((data (lmdb:get *dbt* key)))
     (if data
 	(let* (
@@ -69,7 +74,10 @@
 ;;; pairs are cloned recursively.  The value returned is always the
 ;;; Merkle key of the remembered object.  
 (defgeneric remember (pterm))
-(defmethod remember ((u agp:pusage))
+(defmethod remember ((n agp:pnumb))
+  (format NIL "N~d" (agc:nvalue n))
+
+  (defmethod remember ((u agp:pusage))
   (let ((m (make-instance 'musage
 	:fn (agc:term-fn u)
 	:spelled (agc:spelled u))))
@@ -104,7 +112,7 @@
 (defgeneric recall-p (agp:pterm))
 (defmethod recall-p ((node agp:pusage))
   (get-tree (merkle node)))
-
+(defmethod recall-p ((num agp:pnumb)) T)
 (defmethod recall-p ((p agp:ppair))
   (unless (recall-p (agc:left p)) (return-from recall-p NIL))
   (unless (recall-p (agc:right p)) (return-from recall-p NIL))

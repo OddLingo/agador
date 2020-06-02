@@ -69,8 +69,8 @@
 		 (spell pronounce) (+dict+ line)
 		 (progn
 		   (lmdb:put *dict-d* spell pronounce)
-		   (setf count (1+ count)))))))
-    (format T "Loaded ~a words~%" count))
+		   (incf count)))))
+    (format T "Loaded ~a words~%" count)))
   (dict-commit)
   (dict-close))
 
@@ -155,7 +155,7 @@
 	       (let ((words (agu:words-from-string spells)))
 		 (dolist (w words)
 		   (modify-spelling cname w)
-		   (setf count (1+ count))))))
+		   (incf count)))))
        
 	     ;; Ignore everything else
 	     (T T))))

@@ -21,6 +21,9 @@
   (right :accessor right :initarg :right)
   ))
 
+(defclass numb (term) (
+  (nvalue :accessor nvalue :initarg :nvalue :initform 0)))
+  
 ;; Walk down a btree seeking a particular function.
 (defgeneric seek (term goal))
 

@@ -45,6 +45,15 @@
 (defun hpos (pos) (* pos 8))
 (defgeneric paint-tree (pterm &optional depth top))
 
+(defmethod paint-tree ((n pnumb) &optional (depth 0) (top 1))
+  (let ((xpos (hpos (term-lpos u))))
+    ;; Word text on top line
+    (agu:setxy xpos top) (format T "~d" (agc:nvalue n))
+    ;; Function name just below
+    (agu:setxy xpos (1+ top)) (format T "~a" (agc:term-fn u))
+    (+ depth top 1)
+    ))
+
 (defmethod paint-tree ((u pusage) &optional (depth 0) (top 1))
   (let ((xpos (hpos (term-lpos u))))
     ;; Word text on top line
@@ -91,12 +100,14 @@
 (defun list-from-tree (start)
   (let ((leaves NIL))
     (labels ((pleaves (m)
-	       (if (equal (type-of m) 'pusage)
-		   (push (agc:spelled m) leaves)
-		   (progn
-		     (pleaves (agc::left m))
-		     (pleaves (agc::right m))
-		     ))))
+	       (case (type-of m)
+		 ('pusage (push (agc:spelled m) leaves))
+		 ('pnumb (push
+			  (format NIL "~d" (agc:nvalue m)) leaves))
+		 ((T) (progn
+			(pleaves (agc::left m))
+			(pleaves (agc::right m))
+		     )))))
       (nreverse (pleaves start)))))
 
 (defun string-from-tree (mt)

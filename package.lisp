@@ -12,7 +12,7 @@
   (:nicknames :agc)
   (:use common-lisp)
   (:export run seek set-lang +data-directory+)
-  (:export term usage pair term-fn spelled left right)
+  (:export term usage pair numb term-fn spelled left right nvalue)
   )
 
 ;; There are a lot of grammatical function names, so they get their
@@ -59,7 +59,7 @@
   (:nicknames :agp)
   (:use common-lisp)
   (:export parse-words parse-string parse-line parse-file-line init-rules)
-  (:export pterm ppair pusage start-parser parse route-path)
+  (:export pterm ppair pusage pnumb start-parser parse route-path)
   (:export string-from-tree word-at)
   )
 

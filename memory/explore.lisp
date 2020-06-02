@@ -18,9 +18,7 @@
   (setf (voice *uimode*) yes)
   (if yes
 	(ags:jsend "RESUME")
-	(ags:jsend "PAUSE")
-      )
-)
+	(ags:jsend "PAUSE")))
 
 ;;; Create a list of the terminal words in a tree.  We descend the
 ;;; tree right-side-first but are pushing it onto the list of leaves.
@@ -28,15 +26,22 @@
 ;;; left-to-right.
 (defun list-from-tree (start)
   (let ((leaves NIL))
-    (labels ((find-leaf (mt)
-	       (let ((m (get-tree mt)))
-		 (if (equal (type-of m) 'musage)
-		     (push (agc:spelled m) leaves)
-		     (progn
-		       (find-leaf (agc::right m))
-		       (find-leaf (agc::left m))
-		       ))
-		 )))
+    (labels
+	((find-leaf (mt)
+	   (let ((m (get-tree mt))
+		 (ty (type-of m)))
+	     (cond
+	       ((eq ty 'musage) (push (agc:spelled m) leaves))
+	       ((eq ty 'mpair)
+		(progn
+		  (find-leaf (agc::right m))
+		  (find-leaf (agc::left m))))
+	       ((eq ty 'integer)
+		(push
+		  (if (> m 100)
+		      (speakable-time m)
+		      (format NIL "~d" m))
+		  leaves))))))
       (find-leaf start))
     leaves))
 

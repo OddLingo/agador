@@ -26,6 +26,7 @@
 	(:file "rules")
 	(:file "display")
 	(:file "parse")
+	(:file "number")
 	)
       )
 

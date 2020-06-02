@@ -48,20 +48,26 @@
   "Add a word to the sentence and look for matches"
   (let* ((pos (length *right*))
 	 (spell (car wordpair))
-	 (fn (cdr wordpair))
-	 (rt (make-instance 'pusage
+	 (fn (cdr wordpair)))
+    (if (eq fn 'AGC::DIGIT)
+	(progn
+	  (unless *current-number*
+	    (setq *current-number*
+		  (make-instance 'pnumb :lpos pos :rpos pos)))
+	  (number-add spell)
+	  (vector-push-extend () *right*)
+	  (push *current-number* (elt *right* pos)))
+	(progn
+	  (when *current-number*
+	    (consider *current-number*)
+	    (number-reset))
+	  (vector-push-extend () *right*)
+	  (let ((rt (make-instance 'pusage
 			    :spelled spell :fn fn
 			    :lpos pos :rpos pos
 			    )))
-
-    ;; Create an empty entry at the right end of the sentence.
-    (vector-push-extend () *right*)
-    ;; The new word is the term in this position
-    (push rt (elt *right* pos))
-    ;; Look at its left context.
-    (consider rt)
-    )
-  )
+	    (push rt (elt *right* pos))
+	    (consider rt))))))
 
 (defun see-word (spell)
   "Add a word to the sentence and look for matches"

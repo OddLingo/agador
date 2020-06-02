@@ -20,6 +20,12 @@
 	)
     (format stream " ~2,'0d ~a ~a" p s f)))
 
+(defclass pnumb (agc:numb agp:pterm) ())
+
+(defmethod print-object ((obj pnumb) stream)
+  (let ((v (agc::value obj)))
+    (format stream " #~d" v)))
+	  
 ;;; An adjacent pair of terms have a collective function as well as
 ;;; a span of positions.  Uncertainties are summed.
 (defclass ppair (agc:pair agp:pterm)
