@@ -23,7 +23,7 @@
 (defclass pnumb (agc:numb agp:pterm) ())
 
 (defmethod print-object ((obj pnumb) stream)
-  (let ((v (agc::value obj)))
+  (let ((v (agc::nvalue obj)))
     (format stream " #~d" v)))
 	  
 ;;; An adjacent pair of terms have a collective function as well as

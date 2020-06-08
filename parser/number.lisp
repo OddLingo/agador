@@ -21,7 +21,7 @@
     ("FOURTEEN" . 14) ("FIFTEEN" . 15) ("SIXTEEN" . 16)
     ("SEVENTEEN" . 17) ("EIGHTEEN" . 18) ("NINETEEN" . 19)
     ("TWENTY" . 20) ("THIRTY" . 30) ("FOURTY" . 40) ("FIFTY" . 50)))
-  (setf (gethash +nummap+ (car num)) (cdr num)))
+  (setf (gethash (car num) +nummap+) (cdr num)))
 
 ;;; Find the power of ten of a number.
 (defun number-factor (n)

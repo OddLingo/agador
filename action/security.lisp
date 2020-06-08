@@ -16,8 +16,8 @@
       (T (agu:term "Unexpected ~d byte ~a message ~a~%"
 		 size (type-of msg) msg)))))
 
-;;; Try to listen to the UDP port.  In case of quick restarts, it
-;;; might still be bound, so we delay a bit and retry.
+;;; Try to listen to the UDP port.  In case of quick restarts of this
+;;; program, it might still be bound, so we delay a bit and retry.
 (defun try-connect ()
   "Retry port listen"
   (let ((sock NIL))

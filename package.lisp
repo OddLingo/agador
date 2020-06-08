@@ -40,7 +40,7 @@
   (:use common-lisp)
   (:export command query remember)
   (:export wx-tropical)
-  (:export start-security)
+  (:export start-security speakable-time)
   )
 
 ;; Long term memory for things the parser learns, both individual words
@@ -60,7 +60,7 @@
   (:use common-lisp)
   (:export parse-words parse-string parse-line parse-file-line init-rules)
   (:export pterm ppair pusage pnumb start-parser parse route-path)
-  (:export string-from-tree word-at)
+  (:export string-from-tree word-at term-lpos term-rpos)
   )
 
 (defpackage :AGADOR.SHA1

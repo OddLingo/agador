@@ -1,8 +1,9 @@
 ;;;; -*- Mode: Lisp; Syntax: ANSI-Common-Lisp; -*-
 (in-package :AGA)
 
-;;;; Dates and times are accumulated in this structure, so be converted
-;;;; to universal time after all fields have bene filled in.
+;;;; Dates and times are accumulated in this structure, to be converted
+;;;; to universal time after all fields have bene filled in.  When
+;;;; first created, fields are set to the current time.
 (defclass datetime ()
   (
    (year :accessor year :type integer)
@@ -31,7 +32,7 @@
 
 (defun init-hash (h v)
   (dolist (kv v)
-    (setf (gethash (car kv) (cdr kv)))))
+    (setf (gethash (car kv) h) (cdr kv))))
 
 (defparameter +day-names+
   '("Monday" "Tuesday" "Wednesday" "Thursday" "Friday" "Saturday" "Sunday"))
@@ -74,57 +75,142 @@
 ;;;; Here we process time expressions in prepositional phrases, to convert
 ;;;; them into single universal-time integers.  So a sequence of phrases like
 ;;;; "ON JANUARY THIRTEENTH AT TWO THIRTY" becomes a single short phrase
-;;;; like "AT nnnnnnn" where the number is in universal-time form.  That
+;;;; "AT nnnnnnn" where the number is in universal-time form.  That
 ;;;; is the form that would get 'remembered'.
 ;;;;
 ;;;; The applicable grammer fragments are:
-;;;;   (DATEP (PREP (DATE MONTH NUMBER)) with PREP="ON" -> set month + day
-;;;;   (TIMEP (PREP NUMBER)) with PREP="AT" -> set hour + minute
-;;;;   (TIMEP (PREP NUMBER)) with PREP="IN" -> set year
+;;;;   (PP (PREP (DATE MONTH NUMBER)) with PREP="ON" -> set month + day
+;;;;   (PP (PREP NUMBER)) with PREP="AT" -> set hour + minute
+;;;;   (PP (PREP NUMBER)) with PREP="IN" -> set year
+;;;;   (PP (PREP MONTH)) with PREP="IN" -> set first of month
+;;;; These patterns are encoded in the +prep-rules+ list.
 
-;;; Which preposition is used is a clue as to which part of a time
-;;; is being described.
-(defun prep-name (pr)
-  "Get the name of a preposition"
-  (declare (type ppair pr))
-  (let* ((prep (agp:word-at pr 'AGF::PREP)))
-    (if prep (agc:spelled pr) NIL)))
-
-(defun extract-month (pr dt)
+(defun analyze-date (pr dt)
   "Set a date from a MONTH NUMBER pair"
-  (declare (type (ppair pr) (datetime dt)))
-  (let* ((mname (spell (left pr)))
-	 (mnum (gethash +month-numbers+ mname)))
+  (declare (type agp:ppair pr)
+	   (type datetime dt))
+  (let* ((mname (agc:spelled (agc:left pr)))
+	 (mnum (gethash +month-numbers+ mname))
+	 (dnum (agc:nvalue (agc:right pr))))
     (when (< mnum (month dt))
       (incf (year dt)))
     (setf (month dt) mnum)
+    (setf (day dt) dnum)
     dt))
 
-(defun extract-year (n dt)
+(defun analyze-month (mon dt)
+  "Set a date given just a month name"
+  (declare (type agp:pusage mon)
+	   (type datetime dt))
+  (let* ((mname (agc:spelled mon))
+	 (mnum (gethash mname +month-numbers+)))
+    ;; Bump to next year if month in the past
+    (when (< mnum (month dt))
+      (incf (year dt)))
+    (setf (month dt) mnum)
+    (setf (day dt) 1)
+    dt))
+  
+(defun analyze-year (n dt)
   "Set the year part of a date from a value NNNN"
-  (declare (type (pnumb pr) (datetime dt)))
-  (setf (year dt) (agc:value n))
+  (declare (type agp:pnumb n)
+	   (type datetime dt))
+  (setf (year dt) (agc:nvalue n))
   dt)
 
-(defun extract-time (n dt)
+(defun analyze-time (n dt)
   "Set a time from a numeric value HHMM"
-  (declare (type (pnumb n) (datetime dt)))
-  (let* ((v (agc:value n))
+  (declare (type agp:pnumb n)
+	   (type datetime dt))
+  (let* ((v (agc:nvalue n))
 	 (hr (floor (/ v 100)))
 	 (min (mod v 100)))
     (setf (hour dt) hr)
     (setf (minute dt) min)
     dt))
 
-;;; Each prepositional phrase can set a subset of the fields in
-;;; a date-time.
-(defun analyze-prep (pr dt)
-  "Analyze a preopostional phrase for time expressions"
-  (let ((which (prep-name pr))
-	(obj (agc:right pr)))
-    (cond
-      ((equal which "ON") (extract-date obj dt))
-      ((equal which "IN") (extract-year obj dt))
-      ((equal which "AT") (extract-time obj dt))
-      (T NIL))))
+;;; Here is a list of the patterns we look for.  The first term is
+;;; the spelling of the preposition itself.  The second term is the
+;;; gramatical function of the right side of the phrase.  The last
+;;; term is the function to call to set datetime fields.  These phrases
+;;; appear on the right side of an MSTMT 'modified statement' pair.
+(defparameter +prep-rules+
+'(("AT" 'AGF::NUMBER 'analyze-time)  ;; "at 1115"
+  ("IN" 'AGF::MONTH 'analyze-month)  ;; "in January"
+  ("BY" 'AGF::MONTH 'analyze-month)  ;; "by January"
+  ("IN" 'AGF::NUMBER 'analyze-year)  ;; "in 2021"
+  ("BY" 'AGF::DATE 'analyze-date)
+  ("ON" 'AGF::DATE 'analyze-date)))  ;; "on July tenth"  
 
+(defun prep-patterns (pp dt)
+  "Look for patterns in the name of a preposition and its object type"
+  (declare (type agp:ppair pp)
+	   (type datetime dt))
+  (let* ((pname (agc:spelled (agc:left pp)))
+	(arg (agc:right pp))
+	(fn (agc:term-fn arg)))
+    (dolist (pattern +prep-rules+)
+      (destructuring-bind
+	    (rule-name rule-fun process)
+	  pattern
+	(when (and
+	   (equal rule-name pname)
+	   (eq rule-fun fn))
+	  (format T "PP ~a~%" pattern)
+	  (funcall process arg dt)
+	  (return-from prep-patterns T))))
+    NIL))		
+
+;;; We need to sweep through a statement watching for prepositional
+;;; phrases and analyzing each one for time information.
+(defun scan-preps (start)
+  (declare (type agp:ppair start))
+  (let* ((dt (make-instance 'datetime)))
+    (labels
+	((pp-scan (node dt)
+	   (declare (type agp:pterm node)
+		    (type datetime dt))
+	   (let ((nty (type-of node))
+		 (nfn (agc:term-fn node)))
+	     (cond
+	       ((eq nfn 'AGF::PP) (prep-patterns node dt))
+	       ((eq nty 'AGP:PPAIR)
+		(progn
+		  (pp-scan (agc:left node) dt)
+		  (pp-scan (agc:right node) dt)))))))
+      (pp-scan start dt))
+    (to-universal dt)))
+
+;;; Replace complex time specifiing phrases with a standardized
+;;; numeric time reference.  The idea is that
+;;; "KELBY HAS AN APPOINTMENT WITH SEVO ON JULY FIFTEENTH AT TWO THIRTY"
+;;;    is turned into
+;;; "KELBY HAS AN APPOINTMENT WITH SEVO AT nnnnnnnnn" where the nnnnnnn
+;;; is the universal time representation of "14:30 on 7/15/yyyy".
+
+(defun time-check (start)
+  (declare (type AGP:PPAIR start))
+
+  ;; This only applies to the right side of MSTMT terms.
+  (unless (eq (agc:term-fn start) 'AGC::MSTMT)
+    (return-from time-check NIL))
+
+  (let* ((top-right (AGC:RIGHT start))
+	 (uni-time (scan-preps top-right))
+	 (lside (AGP:TERM-LPOS top-right))
+	 (rside (AGP:TERM-RPOS top-right))
+	 ;; Fake up a prepositional phrase "AT nnnn"
+	 (prep (make-instance 'AGP::PUSAGE
+			      :fn 'AGF::PREP
+			      :spelled "AT"
+			      :lpos lside :rpos lside))
+	 (ts (make-instance 'AGP::PNUMB
+			    :nvalue uni-time
+			    :lpos rside :rpos rside))
+	 (pp (make-instance 'AGP::PPAIR
+			    :fn 'AGF::PP
+			    :left prep :lpos lside
+			    :right ts :rpos rside)))
+    ;; Replace the entire right side of the statement with the numeric
+    ;; phrase.
+    (setf (agc:right start) pp)))

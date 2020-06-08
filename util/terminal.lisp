@@ -38,9 +38,9 @@
 ;;; Line numbers of various screen regions.
 (defparameter +w1top+ 1)
 (defparameter +w1bot+ 10)
-(defparameter +sline+ 11)
-(defparameter +rtop+ 12)
-(defparameter +rbot+ 37)
+(defparameter +sline+ 11)   ;; Status line
+(defparameter +rtop+ 12)    ;; Top of scrolling region
+(defparameter +rbot+ 37)    ;; Bottom of scrolling region
 
 (defun set-scroll (&optional (yes T))
   "Enable/disable scrolling regions"

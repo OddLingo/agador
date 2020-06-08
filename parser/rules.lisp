@@ -46,6 +46,7 @@
 		       (add-route start lower-goal upper-path)))))))
 
 (defun print-routes ()
+  "Print out the entire route table"
   (loop for s being the hash-key
      using (hash-value st) of *route*
      do

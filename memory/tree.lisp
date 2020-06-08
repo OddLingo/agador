@@ -75,9 +75,9 @@
 ;;; Merkle key of the remembered object.  
 (defgeneric remember (pterm))
 (defmethod remember ((n agp:pnumb))
-  (format NIL "N~d" (agc:nvalue n))
+  (format NIL "N~d" (agc:nvalue n)))
 
-  (defmethod remember ((u agp:pusage))
+(defmethod remember ((u agp:pusage))
   (let ((m (make-instance 'musage
 	:fn (agc:term-fn u)
 	:spelled (agc:spelled u))))

@@ -1,25 +1,29 @@
-# Each rules describes a situation where two adjacent grammatical
-# functions unite to form a third.
+# Each rule describes a situation where two adjacent grammatical
+# functions unite to form a third.  Top-level functions (that span an
+# entire input phrase) can have an optional action.
+
 # Noun phrases
-DTR THING NOUNP
-PLACE THING NOUNP
-DTR NOUN NOUNP
+DTR THING NOUNP		# A thing
+PLACE THING NOUNP	# A thing at a place "KITCHEN LIGHT"
 
-# Parts of dates and times that appear in prepositional phrases
+# Prepositional phrases can modify nouns or verbs.  The nature of
+# what is being related depends on the specific preposiion used,
+# and the word class of the referent.
+DTR PLACE LOC		# A specific location "the garage"
+PREP LOC PP		# Specifices a location (N+V) "in the garage"
 MONTH NUMBER DATE
-
-# Prepositional phrases
-PREP NOUNP PP
-DTR PLACE LOC
-PREP LOC LOCP
-PREP DATE DATEP
-PREP NUMBER TIMEP
-PREP NAME WHO
+PREP DATE PP		# Specifies a date for a Verb. "on July 12"
+PREP MONTH PP		# Specifies a date like "in January"
+PREP NUMBER PP		# Specifies a time like "at eleven fifteen" (V)
+PREP NAME PP		# "with" or "to"
+STMT PP MSTMT REMEMBER	# Modified statement
+MSTMT PP MSTMT REMEMBER
 
 # Predicate phrases
 COP NOUNP PRED
 COP STATE PRED
 COP LOCP PRED
+POSESS NOUNP PRED
 QWORD COP PQUES
 
 # Top level sentences with optional action functions

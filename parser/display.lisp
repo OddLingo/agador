@@ -46,11 +46,11 @@
 (defgeneric paint-tree (pterm &optional depth top))
 
 (defmethod paint-tree ((n pnumb) &optional (depth 0) (top 1))
-  (let ((xpos (hpos (term-lpos u))))
+  (let ((xpos (hpos (term-lpos n))))
     ;; Word text on top line
     (agu:setxy xpos top) (format T "~d" (agc:nvalue n))
     ;; Function name just below
-    (agu:setxy xpos (1+ top)) (format T "~a" (agc:term-fn u))
+    (agu:setxy xpos (1+ top)) (format T "~a" (agc:term-fn n))
     (+ depth top 1)
     ))
 

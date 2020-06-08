@@ -28,7 +28,7 @@
   (let ((leaves NIL))
     (labels
 	((find-leaf (mt)
-	   (let ((m (get-tree mt))
+	   (let* ((m (get-tree mt))
 		 (ty (type-of m)))
 	     (cond
 	       ((eq ty 'musage) (push (agc:spelled m) leaves))
@@ -39,7 +39,7 @@
 	       ((eq ty 'integer)
 		(push
 		  (if (> m 100)
-		      (speakable-time m)
+		      (aga:speakable-time m)
 		      (format NIL "~d" m))
 		  leaves))))))
       (find-leaf start))
@@ -59,8 +59,7 @@
   ;; Context lines in white
   (agu:set-color 7 0)
   (loop for c in *contexts* for cnum from 0
-    do (format T "~d: ~a~%" cnum (string-from-tree c))
-       )
+    do (format T "~d: ~a~%" cnum (string-from-tree c)))
 
   ;; Highlight focus line in yellow
   (agu:set-color 0 3)
@@ -71,8 +70,7 @@
       (progn
 	(format T "~a  ~a~%~%"
 	  (agc:term-fn *cursor*)
-	  (string-from-tree (sig *cursor*)))
-	))
+	  (string-from-tree (sig *cursor*)))))
 
   ;; Prompt in white on black.
   (agu:set-color 7 0)
