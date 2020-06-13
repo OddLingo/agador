@@ -21,7 +21,7 @@
 ;;; Each mailbox has a processing thread running this function.
 ;;; When it receives a message it will call the designated action
 ;;; function.  It waits for that function to complete before
-;;; looking for more messages for an 'actor'-like functionality.
+;;; looking for more messages for an 'actor'-like behavior.
 (defun runmbx (e)
   (loop do
        (let ((msg (sb-concurrency:receive-message (queue e))))

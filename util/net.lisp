@@ -23,10 +23,12 @@
 	 (force-output stream))
     NIL))
 
+;;; This is the main function of the thread that listens for incoming
+;;; data and calls the handler.
 (defun netreceiver (np)
-  (format T "Starting listener for ~a~%" (name np))
+  "TCP data listener"
   (let* ((sock (cnx np))
-	(stream (usocket:socket-stream sock)))
+	 (stream (usocket:socket-stream sock)))
     (loop do
        (unwind-protect
 	    (progn
@@ -34,8 +36,8 @@
 	      (funcall (handler np) (read-line stream) np))
 	 NIL))))
 
-;; Create a TCP/IP connection and a thread to listen for incoming
-;; messages.  Messages will be delivered to a handler function.
+;;; Create a TCP/IP connection and a thread to listen for incoming
+;;; messages.  Messages will be delivered to a handler function.
 (defun connect (ip port &key handler (name "TCP"))
   (let ((np (make-instance 'netport
 	  :name name

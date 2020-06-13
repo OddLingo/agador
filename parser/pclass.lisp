@@ -16,8 +16,7 @@
 (defmethod print-object ((obj pusage) stream)
   (let ((s (agc:spelled obj))
 	(f (agc:term-fn obj))
-	(p (term-rpos obj))
-	)
+	(p (term-rpos obj)))
     (format stream " ~2,'0d ~a ~a" p s f)))
 
 (defclass pnumb (agc:numb agp:pterm) ())
@@ -35,21 +34,18 @@
 (defmethod initialize-instance :after ((obj ppair) &key)
   (setf (term-unc obj)
 	(+ (term-unc (agc:left obj))
-	   (term-unc (agc:right obj)))
-	)
+	   (term-unc (agc:right obj))))
+
   ; Span from the lpos of the left to the rpos of the right.
   (setf (term-lpos obj) (term-lpos (agc:left obj)))
-  (setf (term-rpos obj) (term-rpos (agc:right obj)))
-  )
+  (setf (term-rpos obj) (term-rpos (agc:right obj))))
 
 (defmethod print-object ((obj ppair) stream)
   (let ((f (agc:term-fn obj))
 	(lp (term-lpos obj))
 	(rp (term-rpos obj))
-	(a (action obj))
-	)
-    (format stream " ~2,'0d-~2,'0d ~a ~a" lp rp f a))
-  )
+	(a (action obj)))
+    (format stream " ~2,'0d-~2,'0d ~a ~a" lp rp f a)))
 
 ;; A rule describes an adjacent pair of grammatical functions that
 ;; should be considered together to collectively have a third function.

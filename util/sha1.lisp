@@ -21,8 +21,7 @@
 
 (in-package :sha1)
 
-;;; ----------------------------------------------------
-
+;;; Low-level bit manipulation functions.
 (defun word (v chunk byte)
   "Read a 32-bit, big-endian word from a message chunk."
   (logior (ash (aref v (+ chunk byte 0)) 24)
@@ -30,28 +29,21 @@
           (ash (aref v (+ chunk byte 2)) 8)
           (ash (aref v (+ chunk byte 3)) 0)))
 
-;;; ----------------------------------------------------
-
 (defun rotate-word (w &optional (bits 1))
   "Rotate a 32-bit word left by bits."
   (logior (logand (ash w (- bits 32)) (1- (ash 1 bits)))
           (logand (ash w bits) #xffffffff)))
 
-;;; ----------------------------------------------------
-
+;;; Functions that ocmpute hashes. 
 (defun hash-digest (hh)
   "Convert a 160-bit hash to a 20-byte digest list."
   (loop for i from 152 downto 0 by 8 collect (logand (ash hh (- i)) #xff)))
-
-;;; ----------------------------------------------------
 
 (defun hash-vector (seq)
   "Convert x to an unsigned-byte vector."
   (if (not (stringp seq))
       seq
     (map '(vector (unsigned-byte 8)) #'char-code seq)))
-
-;;; ----------------------------------------------------
 
 (defun digest (seq)
   "Create a SHA-1 digest from an adjustable vector containing the message."
@@ -136,19 +128,14 @@
         (setf h3 (logand (+ h3 d) #xffffffff))
         (setf h4 (logand (+ h4 e) #xffffffff))))))
 
-;;; ----------------------------------------------------
-
+;;; High-level functions that hash data.
 (defun sha1-digest (message)
   "Return the SHA1 digest for a byte sequence."
   (digest (hash-vector message)))
 
-;;; ----------------------------------------------------
-
 (defun sha1-hex (message)
   "Return the SHA1 hex digest for a byte sequence."
   (format nil "~{~16,2,'0r~}" (sha1-digest message)))
-
-;;; ----------------------------------------------------
 
 (defun hmac-sha1-digest (key message)
   "Return the HMAC-SHA1 digest for a byte sequence."
@@ -173,8 +160,6 @@
 
     ;; generate the HMAC hash
     (sha1-digest (append o-key (sha1-digest l-msg)))))
-
-;;; ----------------------------------------------------
 
 (defun hmac-sha1-hex (key message)
   "Return the HMAC-SHA1 hex digest for a byte sequence."

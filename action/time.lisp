@@ -179,14 +179,8 @@
 		  (pp-scan (agc:left node) dt)
 		  (pp-scan (agc:right node) dt)))))))
       (pp-scan start dt))
+    ;; The datetime is now fillled in.  Convert to standard seconds format.
     (to-universal dt)))
-
-;;; Replace complex time specifiing phrases with a standardized
-;;; numeric time reference.  The idea is that
-;;; "KELBY HAS AN APPOINTMENT WITH SEVO ON JULY FIFTEENTH AT TWO THIRTY"
-;;;    is turned into
-;;; "KELBY HAS AN APPOINTMENT WITH SEVO AT nnnnnnnnn" where the nnnnnnn
-;;; is the universal time representation of "14:30 on 7/15/yyyy".
 
 (defun time-check (start)
   (declare (type AGP:PPAIR start))
@@ -196,21 +190,7 @@
     (return-from time-check NIL))
 
   (let* ((top-right (AGC:RIGHT start))
-	 (uni-time (scan-preps top-right))
-	 (lside (AGP:TERM-LPOS top-right))
-	 (rside (AGP:TERM-RPOS top-right))
-	 ;; Fake up a prepositional phrase "AT nnnn"
-	 (prep (make-instance 'AGP::PUSAGE
-			      :fn 'AGF::PREP
-			      :spelled "AT"
-			      :lpos lside :rpos lside))
-	 (ts (make-instance 'AGP::PNUMB
-			    :nvalue uni-time
-			    :lpos rside :rpos rside))
-	 (pp (make-instance 'AGP::PPAIR
-			    :fn 'AGF::PP
-			    :left prep :lpos lside
-			    :right ts :rpos rside)))
-    ;; Replace the entire right side of the statement with the numeric
-    ;; phrase.
-    (setf (agc:right start) pp)))
+	 (uni-time (scan-preps top-right)))
+    (AGU:TERM "Sentence references ~a~%" (speakable-time uni-time))
+    uni-time))
+

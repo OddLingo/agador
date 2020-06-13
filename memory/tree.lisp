@@ -16,11 +16,11 @@
   (when (equal (char key 0) '#\N)
     (return-from get-tree (parse-integer key :start 1)))
 
-  (let ((data (lmdb:get *dbt* key)))
+  (let ((data (db-get :TREE key)))
     (if data
 	(let* (
 	       ; Got a string.  Split into words.
-	       (wds (agu:words-from-string (bytes-to-s data)))
+	       (wds (agu:words-from-string data))
 	       ; The record type is in the first word.
 	       (rty (char (car wds) 0))
 	       )
@@ -43,22 +43,22 @@
 ;;; The 'context' database stores a list of the signatures of all the
 ;;; immediate parent nodes to the term whose signature is the key.
 (defun get-context (key)
-  (let ((data (lmdb:get *dbc* key)))
+  (let ((data (db-get :CNTX key)))
     (if data
-	(agu:words-from-string (bytes-to-s data))
+	(agu:words-from-string data)
 	NIL)))
 
 ;;; Add a new context above a node, avoiding duplicates.
 (defun add-context (child parent)
-  (let* ((c (lmdb:get *dbc* child)))
+  (let* ((c (get :CNTX child)))
     (if c
 	;; Child already has contexts - check for duplicates.
 	(let ((previous (agu:words-from-string (bytes-to-s c))))
 	  (unless (member parent previous)
 		(push parent previous)
-		(lmdb:put *dbc* child (agu:string-from-list previous))))
+		(db-put :CNTX child (agu:string-from-list previous))))
 	;; First context for this child.
-	(lmdb:put *dbc* child parent)
+	(db-put :CNTX child parent)
 	)))
 
 ;;; The 'to-string' function takes care of creating the proper
@@ -68,7 +68,7 @@
   (declare (mterm mt))
   (let* ((data (string-representation mt))
 	 (key (hash-of data)))
-    (lmdb:put *dbt* key data)))
+    (db-put :TREE key data)))
 
 ;;; Clone a parser tree structure into long-term memory.  Note that
 ;;; pairs are cloned recursively.  The value returned is always the

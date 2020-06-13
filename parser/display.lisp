@@ -20,8 +20,7 @@
   (indent depth)
   (print-object p T) (terpri)
   (print-tree (agc:left p) (+ depth 3))
-  (print-tree (agc:right p) (+ depth 3))
-  )
+  (print-tree (agc:right p) (+ depth 3)))
 
 (defmethod print-tree ((u pusage) &optional (depth 0))
   (indent depth)
@@ -32,17 +31,20 @@
 (defun dashes (n)
   (loop for x from 0 below n do (format T "-")))
 (defun vline (x y1 y2)
+  "Draw a vertical line"
   (loop for y from y1 to y2 do
        (agu:setxy x y)
        (format T "|")))
 
 (defun hline (y x1 x2)
+  "Draw a horizontal line"
   (agu:setxy x1 y)
   (loop for x from x1 to x2 do
        (format T "-")))
 
 (defun average (n1 n2) (floor (/ (+ n1 n2) 2 )))
 (defun hpos (pos) (* pos 8))
+
 (defgeneric paint-tree (pterm &optional depth top))
 
 (defmethod paint-tree ((n pnumb) &optional (depth 0) (top 1))
@@ -51,8 +53,7 @@
     (agu:setxy xpos top) (format T "~d" (agc:nvalue n))
     ;; Function name just below
     (agu:setxy xpos (1+ top)) (format T "~a" (agc:term-fn n))
-    (+ depth top 1)
-    ))
+    (+ depth top 1)))
 
 (defmethod paint-tree ((u pusage) &optional (depth 0) (top 1))
   (let ((xpos (hpos (term-lpos u))))
@@ -60,8 +61,7 @@
     (agu:setxy xpos top) (format T "~a" (agc:spelled u))
     ;; Function name just below
     (agu:setxy xpos (1+ top)) (format T "~a" (agc:term-fn u))
-    (+ depth top 1)
-    ))
+    (+ depth top 1)))
 
 (defmethod paint-tree ((p ppair) &optional (depth 2) (top 1))
   (let* (
@@ -70,8 +70,8 @@
 	 (ly (paint-tree (agc:left p) depth top))
 	 (ry (paint-tree (agc:right p) depth top))
 	 (base (+ top 2))
-	 (py (max ly ry))
-	 )
+	 (py (max ly ry)))
+ 
     ;; Draw the lines
     (agu:set-color 3 0)
     (hline py lx rx) (vline lx base py) (vline rx base py)
@@ -92,8 +92,7 @@
   (agu:setxy 1 (paint-tree start depth top))
   (agu:set-scroll T)
   (finish-output)
-  (agu:release-term)
-  )
+  (agu:release-term))
 
 ;; Create a list of the terminal words in a tree.  There is a similar
 ;; function in the Memory package, but it deals with remembered statements.
@@ -101,9 +100,12 @@
   (let ((leaves NIL))
     (labels ((pleaves (m)
 	       (case (type-of m)
-		 ('pusage (push (agc:spelled m) leaves))
+		 ('pusage (push
+			   (agc:spelled m)
+			   leaves))
 		 ('pnumb (push
-			  (format NIL "~d" (agc:nvalue m)) leaves))
+			  (format NIL "~d" (agc:nvalue m))
+			  leaves))
 		 ((T) (progn
 			(pleaves (agc::left m))
 			(pleaves (agc::right m))

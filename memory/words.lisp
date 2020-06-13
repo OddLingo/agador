@@ -36,8 +36,11 @@
   "Print the entire active dictionary."
   (agu:use-term)
   (agu:clear)
-  (let ((x 1) (y 1))
-    (lmdb:do-pairs (*dbw* spell fn)
+  (let (
+	(x 1)
+	(y 1)
+	(hdl (assoc :DICT *open-databases*)))
+    (lmdb:do-pairs (hdl spell fn)
       (agu:setxy x y)
       (format T "~a"  (bytes-to-s spell))
       (setf x (+ x 10))

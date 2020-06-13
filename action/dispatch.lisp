@@ -13,7 +13,11 @@
 ;; It is some sort of statement about the world.  Just remember it.
 (defun remember (top)
   (agm:db-start)
-  (let ((key (agm:remember top)))
+  (let ((uni-time (time-check top))
+	(key (agm:remember top)))
+    ;; If the statement contains a time reference, keep track of that.
+    (when uni-time
+      (AGM:DB-PUT :TIME key (format NIL "~d" uni-time)))
     (agu:term "   I remember that at ~a~%" key)
     (agm:db-commit)
     key))
@@ -51,8 +55,11 @@
   (declare (type agp::pterm top))
   (let ((handle (merkle-of-subtree top 'AGF::NOUNP)))
     (cond
+      ;; What is the time?
       ((equal handle *the-time*) (saytime))
+      ;; What is the weather forecast?
       ((equal handle *the-weather*) (wx-repeat))
+      ;; Anyting else.
       (T (agu:term "I do not know about '~a'~%"
 	   (agp:string-from-tree (agp:word-at top 'AGF::NOUNP)))))))
 

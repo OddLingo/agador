@@ -26,24 +26,24 @@
 ;;; Find the power of ten of a number.
 (defun number-factor (n)
   (cond
-    ((< n 10) 1)
-    ((< n 100) 10)
+    ((< n 10) 1)     ;; 0-9
+    ((< n 100) 10)   ;; 10-90
     (T 100)))
 
-;;; Add successive numbers such that "twenty seven"
+;;; Add successive digits so that "twenty seven"
 ;;; becomes 27 and "eight fifteen" becomes 815.
 (defun number-shift (newval)
   (let* ((lf (number-factor *last-digit*))
 	 (rf (number-factor newval))
 	 (ef (cond
-	       ((> rf lf) rf)
-	       ((< rf lf) lf)
-	       (T (* 10 rf)))))
+	       ((> rf lf) rf)   ;; 815
+	       ((< rf lf) lf)   ;; 23
+	       (T (* 10 rf))))) ;; 2019
     (setf (agc:nvalue *current-number*)
 	(+ newval
 	   (* ef (agc:nvalue *current-number*))))))
 
-;;; Add the value represented by the 'name' of a number to the current
+;;; Add the value represented by the 'name' of a digit to the current
 ;;; accumulating value.  "one two three" will become 123 and
 ;;; "thirty seven" will become 37.
 (defun number-add (spell)

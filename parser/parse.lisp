@@ -1,4 +1,9 @@
 ;;;; -*- Mode: Lisp; Syntax: ANSI-Common-Lisp; -*-
+;;;; This is the Adjacency Parser.  It applies simple 3-term rules to
+;;;; a sequence of words in order to discover the syntactic structure
+;;;; of the sentence, much like "diagramming" in an English calss.
+;;;; Unlike most parsers for programming languages, it can deal with
+;;;; local ambiguities.
 
 (in-package :AGP)
 
@@ -11,7 +16,7 @@
 ;;; Apply a list of rules to a list of left side candidates.  This is
 ;;; not as bad as it looks because the list of rules has already been
 ;;; limited to those with the correct right side term, and the candidates
-;;; are only those terms immediatly adjacent in the utterance.
+;;; are only those terms immediately adjacent to the left in the utterance.
 ;;; This recurses through join so we declare that forward.
 (declaim (ftype (function (agc:term agc:term SYMBOL SYMBOL) t) join))
 (defun apply-rules (rt rules neighbors)
@@ -28,8 +33,8 @@
     (apply-rules rt rules neighbors))
   NIL)
 
-;; Join two adjacent terms into a pair that spans both terms.
-;; This recursively then considers additional rules for the new pair.
+;;; Join two adjacent terms into a pair that spans both terms.
+;;; This recursively then considers additional rules for the new pair.
 (defun join (lt rt fn act)
   "Join two adjacent terms"
   (let ((np (make-instance 'ppair
@@ -40,10 +45,10 @@
     (consider np))
   NIL)
 
-;; Add a new word to the current utterance being analyzed.
-;; A postulated word might be any of the non-functional types,
-;; but we mark it as a guess to be verified later by setting
-;; the 'uncertainty' to 1.
+;;; Add a new word to the current utterance being analyzed.
+;;; A postulated word might be any of the non-functional types,
+;;; but we mark it as a guess to be verified later by setting
+;;; the 'uncertainty' to 1.
 (defun accept-word (wordpair)
   "Add a word to the sentence and look for matches"
   (let* ((pos (length *right*))
@@ -51,16 +56,22 @@
 	 (fn (cdr wordpair)))
     (if (eq fn 'AGC::DIGIT)
 	(progn
+	  ;; Special case handling of numbers.
 	  (unless *current-number*
+	    ;; First of a run of digits.
 	    (setq *current-number*
-		  (make-instance 'pnumb :lpos pos :rpos pos)))
-	  (number-add spell)
-	  (vector-push-extend () *right*)
-	  (push *current-number* (elt *right* pos)))
+		  (make-instance 'pnumb :lpos pos :rpos pos))
+	    (vector-push-extend () *right*)
+	    (push *current-number* (elt *right* pos)))
+	  ;; Process this digit.
+	  (number-add spell))
 	(progn
+	  ;; If we were just handling a number, look for its
+	  ;; rules first.
 	  (when *current-number*
 	    (consider *current-number*)
 	    (number-reset))
+	  ;; Now deal with the new non-digit word.
 	  (vector-push-extend () *right*)
 	  (let ((rt (make-instance 'pusage
 			    :spelled spell :fn fn
@@ -115,7 +126,9 @@
 	(seek-guesses (agc:left p))
 	(seek-guesses (agc:right p)))))
 
-;; Set *top* to all pairs that span the entire input string.
+;;; Set *top* to all pairs that span the entire input string.
+;;; Hopefully there is just one, and it will have all local
+;;; ambiguities dealt with.
 (defun choose-top ()
   (let ((rt (elt *right* (minus1 (length *right*)))))
     (setq *top*
@@ -123,7 +136,7 @@
 	   (lambda (x) (> (term-lpos x) 0))
 	   rt))))
 
-;; Remember any new words as well as what was said.
+;;; Remember any new words as well as what was said.
 (defun learn (best)
   (let ((dothis (action best)))
     (if dothis

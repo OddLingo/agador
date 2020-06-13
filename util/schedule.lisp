@@ -5,12 +5,12 @@
 
 (in-package :AGU)
 
-;; Sorted list of (time . function) pairs.
+;;; Sorted list of (time . function) pairs.
 (defvar *schedule* NIL)
 (defvar *sked-thread* NIL)
 (defvar *sked-mutex* (sb-thread:make-mutex))
 
-;; Comparison function for sorting the event list.
+;;; Comparison function for sorting the event list.
 (defun sked-less (x y) (< (car x) (car y)))
 
 ;;; The main loop of the scheduler thread.  It sleeps waiting for
@@ -23,6 +23,7 @@
 		(togo (- (car nxt) (get-universal-time))))
 	   ;; If there is time to go, wait that long.
 	   (when (> togo 0) (sleep togo))
+	   ;; Call the action function.
 	   (funcall (cdr nxt))
 
 	   ;; Remove this event from the list and re-sort.

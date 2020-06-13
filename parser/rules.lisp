@@ -2,18 +2,18 @@
 
 (in-package :AGP)
 
-;; A 'routing table' of grammatical functions, derived from the
-;; rules. It is a two-dimensional hash-table, first keyed by
-;; the function of a 'current' node and then keyed by the function
-;; of a 'goal' node.  The value at the intersection can be:
-;; 1) Missing or NIL => do not proceed down this branch.
-;; 2) T => This is the goal node
-;; 3) AGP:LEFT => Take the left downward path
-;; 4) AGP:RIGHT => Take the right downward path.
+;;;; A 'routing table' of grammatical functions, derived from the
+;;;; rules. It is a two-dimensional hash-table, first keyed by
+;;;; the function of a 'current' node and then keyed by the function
+;;;; of a 'goal' node.  The value at the intersection can be:
+;;;; 1) Missing or NIL => do not proceed down this branch.
+;;;; 2) T => This is the goal node
+;;;; 3) AGP:LEFT => Take the left downward path
+;;;; 4) AGP:RIGHT => Take the right downward path.
 (defvar *route* (make-hash-table :size 10))
 
-;; A hash table of rules, keyed on the right hand term.  The parser
-;; uses this to detect interesting adjacent terms.
+;;; A hash table of rules, keyed on the right hand term.  The parser
+;;; uses this to detect interesting adjacent terms.
 (defvar *rules*)
 
 (defun route-from (fn)
@@ -95,9 +95,7 @@
 
     ;; Remember paths downward through the rules.
     (add-route rslt1 lfn1 'AGC:LEFT)
-    (add-route rslt1 rfn1 'AGC:RIGHT)
-    )
-  )
+    (add-route rslt1 rfn1 'AGC:RIGHT)))
 
 ;; Get a list of the rules with a specified right side term.
 (defun rules-for (fn) (gethash fn *rules*))

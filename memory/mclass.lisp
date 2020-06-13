@@ -6,7 +6,7 @@
 ;;;; and Pair relationships.  They lack the lexical attributes of
 ;;;; the parser versions, and the LEFT and RIGHT slots of a PAIR
 ;;;; could be either a 'string (in which case it is a DB key) or
-;;;; a 'term reference.  The memory versions add a hashed 'signature'
+;;;; a term reference.  The memory versions add a hashed 'signature'
 ;;;; which is their Merkle database key.
 (defclass mterm (agc:term)
   (
@@ -28,9 +28,12 @@
 (defmethod deref ((s string)) s)
 (defmethod deref ((pt agp::pterm)) (merkle pt))
 (defmethod deref ((mt mterm)) (sig mt))
+(defmethod deref ((n agc:numb)) (format NIL "N~d" (agc:nvalue n)))
 
 ;;; string-representation creates the database representation of any
-;;; tree object, in either the parser or the memory form.
+;;; tree object, in either the parser or the memory form.  Note that
+;;; numbers are not stored separately, but are represented by a
+;;; special form of a reference in an mpair.
 (defgeneric string-representation (agc:term))
 (defmethod string-representation ((p agc:pair))
   (format NIL "p ~a ~a ~a"

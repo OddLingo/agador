@@ -118,9 +118,9 @@
 		(format T "Can't do that here~%")))
 
 	   ((equal verb "dt") ;; Dump tree
-	    (dump *dbt*))
+	    (dump :TREE))
 	   ((equal verb "dc") ;; Dump contexts
-	    (dump *dbc*))
+	    (dump :CNTX))
 	   ((equal verb "dw") ;; Dump words
 	    (print-words))
 	   ((equal verb "v") (set-voice T))
