@@ -2,7 +2,7 @@
 
 (defsystem "agador"
   :description "Natural language experiments using b-trees"
-  :depends-on (:LMDB :CL-UTILITIES :BABEL :CL-PPCRE :USOCKET
+  :depends-on (:LMDB :CL-UTILITIES :BABEL :CL-PPCRE :USOCKET :LOG4CL
 		:CL-DATE-TIME-PARSER :UNIX-OPTS :dexador :plump :lquery)
 
   :components (

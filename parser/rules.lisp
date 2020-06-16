@@ -50,11 +50,11 @@
   (loop for s being the hash-key
      using (hash-value st) of *route*
      do
-       (format T "~a to~%" s)
+       (agu:term "~a to~%" s)
        (loop for g being the hash-key
 	  using (hash-value p) of st
 	  do
-	    (format T "    ~a go ~a~%" g p))))
+	    (agu:term "    ~a go ~a~%" g p))))
 
 ;;; Use the routing table to find specific parts of a sentence.
 ;;; Given an upper node and a desired grammatical Function,
@@ -63,7 +63,7 @@
   (let ((probe start))
     (loop named searching do
 	 (case (agc:seek probe goal)
-	   ;; Can't get there form here
+	   ;; Can't get there from here
 	   ((NIL) (return-from searching NIL))
 	   ;; Go to left child
 	   (AGC:LEFT (setf probe (agc:left probe)))
@@ -104,14 +104,16 @@
 (defparameter +cmnt+ "^\\s*#" )
 
 ;;; Load the rules at startup.
-(defun load-rules (fname)
+(defun init-rules (lang)
   "Load rules from a file"
   ;; Initialize rules and routes
   (setq *rules* (make-hash-table :size 20))
   (setq *route* (make-hash-table :size 10))
 
   ;; Load the basic three-term rules.
-  (with-open-file (stream fname)
+  (with-open-file
+      (stream
+       (format NIL "~a/~a.rules" AGC:+data-directory+ lang))
     (loop for line = (read-line stream NIL)
        until (eq line NIL) do
 	 (if (ppcre:scan +cmnt+ line)
@@ -124,17 +126,12 @@
   ;; Find the first step of multi-step routes
   (merge-routes))
 
-(defun init-rules (lang)
-  "Load rules from a file."
-  (load-rules
-   (format NIL "~a/~a.rules" AGC:+data-directory+ lang)))
-
 (defun print-rules ()
   "Print all rules according to right-hand term."
   (loop for rfn being the hash-key
      using (hash-value llist) of *rules*
      do
-       (format T "For ~a: " rfn)
+       (agu:term "For ~a: " rfn)
        (dolist (r llist) (print-object r T))
        (terpri)))
        

@@ -1,14 +1,10 @@
 ;;;; Obtains weather information from the National Hurricane
-;;;; Center.  TWO (Tropical Weather Outlook)
+;;;; Center TWO (Tropical Weather Outlook)
 ;;; See https://lispcookbook.github.io/cl-cookbook/web-scraping.html
 
 (in-package :AGA)
 (defparameter +map+ "https://www.nhc.noaa.gov/xgtwo/two_atl_5d0.png")
 (defparameter +info-trop+ "wx-tropical")
-
-;;; Regex patterns for extracing text from the NHC web page.
-(defparameter +datestart+ "^\\d+ AM|PM EDT|EST")
-(defparameter +textend+ "^</pre>")
 
 ;;; General purpose function for fetching preformatted text from
 ;;; a web page.  The result is a list of text lines.
@@ -17,14 +13,12 @@
 	 (parsed (lquery:$ (initialize request)))
 	 (dom (lquery:$ parsed "div" ".textproduct" "pre"))
 	 (texts (lquery:$ dom (serialize)))
-	 (text (elt texts 0))
-	 )
+	 (text (elt texts 0)))
     (cl-utilities:split-sequence '#\Linefeed text)))
 
-;;; Parse NOAA's unique time format into universal time and speakable
-;;; formats.  NOAA web pages have dates in this format:
-;;; 715 PM EDT Sat May 16 2020 but we need
-;;; Sat Mar 1 19:42:34 2008
+;;; Parse NOAA's unique time format into universal time format.
+;;; NOAA web pages have dates in this format:
+;;;     715 PM EDT Sat May 16 2020.
 (defun noaa-time (line)
   "Convert a NOAA-format time to universal seconds"
   (ppcre:register-groups-bind
@@ -39,14 +33,15 @@
 	  ;; Thu Jul 23 19:42:23 2013” 'asctime' format
 	  (cnv (format NIL "~a ~a ~d ~2,'0d:~2,'0d:00 EDT ~d"
 		       dow mon day hr24 minute year))
-	  (uni (+ (* 8 3600) (cl-date-time-parser:parse-date-time cnv))))
-     uni
-     )))
+	  (uni (+ (* 8 3600)
+		  (cl-date-time-parser:parse-date-time cnv))))
+     uni)))
 
-;;; Fetch the latest tropical storm forecast fro the National Hurricane
-;;; Center web site.
+;;; Fetch the latest tropical storm forecast from the National Hurricane
+;;; Center web site.  We return a cons of the time and text.
 (defun get-tropical ()
   "Get an Atlantic Tropical Storm forecast."
+  (log:info "Getting tropical weather")
   (let* ((lines (web-fetch "https://www.nhc.noaa.gov/gtwo.php"))
 	 (univ 0)
 	 (temp 0)
@@ -64,6 +59,7 @@
 	;; Anything else goes into the result.
 	((> univ 0) (push line text))
 	(T T)))
+    (log:info "Tropical weather is from ~a" (speakable-time univ))
     (cons univ (agu:string-from-list (nreverse text)))))
 
 ;;; The most recent tropical forecast is in the 'info' databse.
@@ -81,8 +77,9 @@
       (agu:term "No tropical forecast is available~%"))))
 
 ;;;; The background operation to check for new forecasts from
-;;;; time to time.
+;;;; time to time.  This gets called from the event scheduler.
 (defun wx-tropical ()
+  "Check for tropical weather updates"
   (let* ((latest (get-tropical))
 	 (date (car latest)))
     ;; Ignore reports older than one day.

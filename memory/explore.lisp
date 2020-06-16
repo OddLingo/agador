@@ -25,6 +25,7 @@
 ;;; This results in the final list being in the correct order
 ;;; left-to-right.
 (defun list-from-tree (start)
+  (declare (type string start))
   (let ((leaves NIL))
     (labels
 	((find-leaf (mt)

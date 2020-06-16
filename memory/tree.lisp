@@ -13,36 +13,40 @@
 (defun get-tree (key)
   "Create mterm object from the database."
   (declare (type string key))
+
+  ;; If it is a numeric reference, we return the integer value.
   (when (equal (char key 0) '#\N)
     (return-from get-tree (parse-integer key :start 1)))
 
+  ;; Otherwise it is a key into the TREE database.
   (let ((data (db-get :TREE key)))
     (if data
 	(let* (
-	       ; Got a string.  Split into words.
-	       (wds (agu:words-from-string data))
-	       ; The record type is in the first word.
-	       (rty (char (car wds) 0))
+	       ;; Got a string.  Split into words.
+	       (words (agu:words-from-string data))
+	       ;; The record type is in the first word.
+	       (record-type (char (car words) 0))
 	       )
-	  (case rty
+	  (case record-type
 	    ;; Usage nodes:  (#\u AGF:FN spelling)
 	    (#\u (make-instance 'musage
-				:spelled (caddr wds)
-				:fn (intern (cadr wds) :AGF)))
+				:spelled (caddr words)
+				:fn (intern (cadr words) :AGF)))
 	    ;; Pair nodes: (#\p AGF:FN lefthash righthash) 
 	    (#\p (make-instance 'mpair
-				:fn (intern (cadr wds) :AGF)
-				:left (caddr wds)
-				:right (cadddr wds)))
+				:fn (intern (cadr words) :AGF)
+				:left (caddr words)
+				:right (cadddr words)))
 	    ;; Anything else is an error.
 	    (otherwise
-	     (agu:term "Bad record in DB ~a~%" data)
+	     (error "Bad record in TREE DB at ~a: ~a~%" key data)
 	     NIL))))
 	NIL))
 
 ;;; The 'context' database stores a list of the signatures of all the
 ;;; immediate parent nodes to the term whose signature is the key.
 (defun get-context (key)
+  (declare (type string key))
   (let ((data (db-get :CNTX key)))
     (if data
 	(agu:words-from-string data)
@@ -50,6 +54,7 @@
 
 ;;; Add a new context above a node, avoiding duplicates.
 (defun add-context (child parent)
+  (declare (type string child parent))
   (let* ((c (get :CNTX child)))
     (if c
 	;; Child already has contexts - check for duplicates.

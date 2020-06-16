@@ -29,16 +29,14 @@
 	(lmdb:close-database *dict-d*)
 	(setq *dict-d* NIL)))
   (lmdb:close-environment *dict-env*)
-  (setq *dict-env* NIL)
-  )
+  (setq *dict-env* NIL))
 
 ;;;; A transaction must be started in order to open databases.
 (defun dict-start ()
   (setq *dict-txn* (lmdb:make-transaction *dict-env*))
   (lmdb:begin-transaction *dict-txn*)
   (setq *dict-d* (lmdb:make-database *dict-txn* "dictionary" :create T))
-  (lmdb:open-database *dict-d*)
-    )
+  (lmdb:open-database *dict-d*))
 
 (defun dict-commit ()
   (lmdb:commit-transaction *dict-txn*)

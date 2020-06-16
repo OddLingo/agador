@@ -32,6 +32,13 @@
   
 (defun run ()
 ;  (get-options)
+
+  (log:config
+   :STREAM (open "agador.log"
+		 :IF-EXISTS :SUPERSEDE
+		 :DIRECTION :OUTPUT)
+   :THREAD)
+  (log:info "Start")
   
   ;; Open the memory database
   (agm:db-open)
@@ -50,11 +57,16 @@
   (ags:say "I'm here.")
 
   ;; Start the visual user interface
-  (agm:explore)
+  (handler-case
+      (agm:explore)
+    (error (e)
+      (log:error e)))
 
   ; Clean up to exit.
   (ags:jstop)
   (agm:db-close)
+  (log:info "Finish")
+  (log:close-log)
   )
 
 

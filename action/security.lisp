@@ -7,14 +7,16 @@
 (defun security-alert (buffer size)
   "Handle security messages."
   (let ((msg (subseq buffer 0 size)))
+    (log:info msg)
     (cond
       ((equal msg "TMAIL") (ags:say "The mail has arrived."))
       ((equal msg "TGARB") (ags:say "The trash is being collected."))
       ((equal msg "TDWAY") (ags:say "We have a visitor."))
       ((equal msg "TWALK") (ags:say "People are walking by."))
       ((equal msg "TPKG") (ags:say "A package is being delivered."))
-      (T (agu:term "Unexpected ~d byte ~a message ~a~%"
-		 size (type-of msg) msg)))))
+      (T (log:warn
+	  "Unexpected ~d byte ~a security message ~a~%"
+	  size (type-of msg) msg)))))
 
 ;;; Try to listen to the UDP port.  In case of quick restarts of this
 ;;; program, it might still be bound, so we delay a bit and retry.
@@ -23,12 +25,13 @@
   (let ((sock NIL))
     (loop until sock do
 	 (setf sock (usocket:socket-connect nil nil
-					:protocol :datagram
-					:element-type '(unsigned-byte 8)
-					:local-port 5399))
+			:protocol :datagram
+			:element-type '(unsigned-byte 8)
+			:local-port 5399))
 	 (unless sock
-	   (agu:term "Retry UDP listen~%")
+	   (log:info "Retry UDP listen~%")
 	   (sleep 15)))
+    (agu:info "Listening for security messages")
     sock))
 
 ;;; This is the top level of the Security thread.

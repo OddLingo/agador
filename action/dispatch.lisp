@@ -37,7 +37,7 @@
       (T (agu:term "")))))
 
 (defun start (top)
-    (agu:term "Acting on 'start' ~a~%" top))
+    (log:info "Acting on 'start' ~a~%" top))
 
 ;; It is an instruction to do something.
 (defun command (top)
@@ -48,7 +48,7 @@
       ((equal verbname "STOP") (stop top))
       ((equal verbname "START") (start top))
       ((equal verbname "REMEMBER") (remember (agc:right top)))
-      (T (agu:term "No function for ~a~%" verbname)))))
+      (T (log:warn "No action for ~a~%" verbname)))))
 
 ;; How we answer a question depends on which query word was used.
 (defun query (top)

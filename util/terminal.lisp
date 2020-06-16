@@ -1,4 +1,5 @@
 ;;;; -*- Mode: Lisp; Syntax: ANSI-Common-Lisp; -*-
+;;;; Managing the console window.
 
 (in-package :AGU)
 
@@ -28,8 +29,10 @@
 (defun clear-eol ()
   (format T "~C[K" (code-char 27)))
 (defun setxy (x y)
+  (declare (type integer x y))
   (format T "~C[~d;~dH" (code-char 27) y x))
 (defun set-color (fg bg)
+  (declare (type integer fg bg))
   (format T "~C[~d;~dm"
 	  (code-char 27)
 	  (+ 30 fg)
@@ -66,9 +69,10 @@
   (force-output *standard-output*)
   (release-term))
  
-;;; Use this in place of direct calls to FORMAT for simple logging.
+;;; Use this in place of direct calls to FORMAT for simple logging
+;;; to the console.
 (defun term (fmt &rest args)
-  "Write text to the scrolling region"
+  "Write text to the console scrolling region"
   (use-term)
   (setxy 1 +rbot+)
   (apply 'format *standard-output* fmt args)

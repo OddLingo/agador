@@ -15,7 +15,7 @@
 (defvar *dbtxn* NIL)   ;; Transaction handle
 (defvar *dbmtx* NIL)   ;; Transaction Mutex
 
-;;; WHen we start a transaction, we keep an a-list of the open
+;;; When we start a transaction, we keep an a-list of the open
 ;;; database handles, keyed by DB ID.
 (defvar *open-databases* NIL)
 
@@ -50,7 +50,9 @@
   (sb-thread:grab-mutex *dbmtx*)
   (setq *dbtxn* (lmdb:make-transaction *dbenv*))
   (lmdb:begin-transaction *dbtxn*)
-  ;; Open DB's identified in the dbi list.
+
+  ;; Open DB's identified in the dbi list and keep track of which
+  ;; ones have been opened.
   (dolist (dbi dbis)
     (let* ((dbname (assoc dbi +database-names+))
 	  (hdl (lmdb:make-database *dbtxn* (cdr dbname) :create T)))
@@ -59,10 +61,14 @@
 
 (defun db-commit ()
   "Commit changes to the database"
+  ;; Commit any changes.
   (lmdb:commit-transaction *dbtxn*)
+  ;; Close any DBs we opened.
   (dolist (db *open-databases*)
     (lmdb:close-database (cdr db)))
+  (setq *open-databases* NIL)
   (setq *dbtxn* NIL)
+  ;; Allow other threads.
   (sb-thread:release-mutex *dbmtx*))
 
 ;; Convert the vector of bytes returned by LMDB into a string.
@@ -103,10 +109,10 @@
 (defun dump (dbi)
   "Dump any database"
   (let ((hdl (assoc dbi *open-databases*)))
-    (when hdl
+    (if hdl
       (lmdb:do-pairs ((cdr hdl) key data)
-	(agu:term "   ~a: ~a~%"  (bytes-to-s key) (bytes-to-s data))
-    ))))
+	(agu:term "   ~a: ~a~%"  (bytes-to-s key) (bytes-to-s data)))
+      (error "Bad DB handle ~a to Dump" dbi))))
 
 ;;;; Actions can store arbitary data in the "info" database.  Since
 ;;;; LMDB only stores bytes, we convert the data to 'readable' format.
@@ -120,9 +126,8 @@
 ;;; Read and write the scratchpad.
 (defun get-info (key)
   "Read arbitrary data from the 'info' database."
-  (let* ((data (db-get :INFO key))
-	(str (if data (bytes-to-s data) NIL)))
-    (if str
-	(read-from-string str :eof-error-p NIL)
+  (let* ((data (db-get :INFO key)))
+    (if data
+	(read-from-string data :eof-error-p NIL)
 	NIL)))
 

@@ -138,9 +138,14 @@
 
 ;;; Remember any new words as well as what was said.
 (defun learn (best)
+  (declare (type pterm best))
+  (log:info (string-from-tree best))
   (let ((dothis (action best)))
     (if dothis
-	(funcall dothis best)
+	(handler-case
+	    (funcall dothis best)
+	  (error (e)
+	    (log:error "~a" e)))
 	(agu:term "Nothing to do~%"))))
 
 ;;; If there is exactly one satisfactory solution, we can learn from it
@@ -149,7 +154,7 @@
   (agu:clear)
   (let ((nsoln (length *top*)))
     (cond ((= 0 nsoln)
-	   (agu:term  "No satisfactory solution found~%")
+	   (log:warn "No satisfactory solution found~%")
 	   (print-all)
 	   NIL)
 
@@ -184,9 +189,11 @@
   )
 
 (defun parse-msg (words)
-  "Parse words with functions allready assigned."
+  "Parse words with functions already assigned."
   (init-parse)
+  ;; Feed the words in one at a time.
   (dolist (w words) (accept-word w))
+  ;; Find parses that span it all.
   (choose-top)
   (judge))
 
