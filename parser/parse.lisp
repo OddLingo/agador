@@ -139,7 +139,7 @@
 ;;; Remember any new words as well as what was said.
 (defun learn (best)
   (declare (type pterm best))
-  (log:info (string-from-tree best))
+  (log:info "Recognized: ~a" (string-from-tree best))
   (let ((dothis (action best)))
     (if dothis
 	(handler-case

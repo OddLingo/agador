@@ -31,7 +31,7 @@
 	 (unless sock
 	   (log:info "Retry UDP listen~%")
 	   (sleep 15)))
-    (agu:info "Listening for security messages")
+    (log:info "Listening for security messages")
     sock))
 
 ;;; This is the top level of the Security thread.

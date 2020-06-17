@@ -24,9 +24,9 @@
       :components (
         (:file "pclass")
 	(:file "rules")
+	(:file "number")
 	(:file "display")
 	(:file "parse")
-	(:file "number")
 	)
       )
 

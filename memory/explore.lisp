@@ -31,13 +31,13 @@
 	((find-leaf (mt)
 	   (let* ((m (get-tree mt))
 		 (ty (type-of m)))
-	     (cond
-	       ((eq ty 'musage) (push (agc:spelled m) leaves))
-	       ((eq ty 'mpair)
+	     (case ty
+	       (musage (push (agc:spelled m) leaves))
+	       (mpair
 		(progn
 		  (find-leaf (agc::right m))
 		  (find-leaf (agc::left m))))
-	       ((eq ty 'integer)
+	       (integer
 		(push
 		  (if (> m 100)
 		      (aga:speakable-time m)

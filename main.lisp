@@ -33,11 +33,10 @@
 (defun run ()
 ;  (get-options)
 
+  ;; Set up the standard logging package.
   (log:config
-   :STREAM (open "agador.log"
-		 :IF-EXISTS :SUPERSEDE
-		 :DIRECTION :OUTPUT)
-   :THREAD)
+   :NOPACKAGE :THREAD
+   :SANE :DAILY "agador.log" :BACKUP NIL)
   (log:info "Start")
   
   ;; Open the memory database
@@ -66,7 +65,6 @@
   (ags:jstop)
   (agm:db-close)
   (log:info "Finish")
-  (log:close-log)
   )
 
 
