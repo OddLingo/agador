@@ -46,6 +46,7 @@
 ;;; The 'context' database stores a list of the signatures of all the
 ;;; immediate parent nodes to the term whose signature is the key.
 (defun get-context (key)
+  "Get list of contexts for a term"
   (declare (type string key))
   (let ((data (db-get :CNTX key)))
     (if data
@@ -55,7 +56,7 @@
 ;;; Add a new context above a node, avoiding duplicates.
 (defun add-context (child parent)
   (declare (type string child parent))
-  (let* ((c (get :CNTX child)))
+  (let ((c (get :CNTX child)))
     (if c
 	;; Child already has contexts - check for duplicates.
 	(let ((previous (agu:words-from-string (bytes-to-s c))))
@@ -66,7 +67,7 @@
 	(db-put :CNTX child parent)
 	)))
 
-;;; The 'to-string' function takes care of creating the proper
+;;; The 'string-representation' function takes care of creating the proper
 ;;; stored representation of the data.  The key is then the
 ;;; hash of that.
 (defun put-tree (mt)

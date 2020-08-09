@@ -60,21 +60,19 @@
 
 (defun set-status (fmt &rest args)
   "Replace text on the status line"
-  (use-term)
-  (setxy 1 +sline+)
-  (set-color 0 6)
-  (clear-eol)
-  (apply 'format *standard-output* fmt args)
-  (set-color 7 0)
-  (force-output *standard-output*)
-  (release-term))
+  (sb-thread:with-mutex (*tmtx*)
+    (setxy 1 +sline+)
+    (set-color 0 6)
+    (clear-eol)
+    (apply 'format *standard-output* fmt args)
+    (set-color 7 0)
+    (force-output *standard-output*)))
  
 ;;; Use this in place of direct calls to FORMAT for simple logging
 ;;; to the console.
 (defun term (fmt &rest args)
   "Write text to the console scrolling region"
-  (use-term)
-  (setxy 1 +rbot+)
-  (apply 'format *standard-output* fmt args)
-  (force-output *standard-output*)
-  (release-term))
+  (sb-thread:with-mutex (*tmtx*)
+    (setxy 1 +rbot+)
+    (apply 'format *standard-output* fmt args)
+    (force-output *standard-output*)))

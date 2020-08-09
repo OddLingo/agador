@@ -1,3 +1,7 @@
+# These are the grammar rules understood by Julius to recognize words.
+# But everything that matches these rules does not necessarily make sense.
+# The following Adjacency Parser and action routines will narrow that down.
+
 # Statements about identity.
 S: NS_B NOUNP COP NOUNP NS_E
 
@@ -13,12 +17,14 @@ S: NS_B ACTION NOUNP NS_E
 S: NS_B ACTION ACTIVITY NS_E
 S: NS_B ACTION THING NS_E
 S: NS_B ACTION NOUNP PREP DIGIT NS_E
-S: NS_B ACTION NOUNP LOC NS_E
+S: NS_B ACTION NOUNP PP NS_E
 
 # Fragments
 PP: PREP NOUNP
-LOC: PREP DTR PLACE
 NOUNP: DTR THING
+NOUNP: DTR PLACE
+NOUNP: NAME
+NOUNP: DTR PLACE THING
 NUMBER: NUMBER DIGIT
 NUMBER: DIGIT
 ATDATE: PREP MONTH NUMBER PREP NUMBER

@@ -33,7 +33,10 @@
   "Stop some ongoing internal process"
   (let ((handle (merkle-of-subtree obj 'AGF::ACTIVITY)))
     (cond
-      ((equal handle *listening*) (agm:set-voice NIL))
+      ((equal handle *listening*)
+       (progn
+	 (log:info "Stopped listening")
+	 (agm:set-voice NIL)))
       (T (agu:term "")))))
 
 (defun start (top)
@@ -50,7 +53,8 @@
       ((equal verbname "REMEMBER") (remember (agc:right top)))
       (T (log:warn "No action for ~a~%" verbname)))))
 
-;; How we answer a question depends on which query word was used.
+;;;; Questions come here.  How we answer a question depends on which
+;;;; query word was used.
 (defun query (top)
   (declare (type agp::pterm top))
   (let ((handle (merkle-of-subtree top 'AGF::NOUNP)))
@@ -59,7 +63,7 @@
       ((equal handle *the-time*) (saytime))
       ;; What is the weather forecast?
       ((equal handle *the-weather*) (wx-repeat))
-      ;; Anyting else.
-      (T (agu:term "I do not know about '~a'~%"
-	   (agp:string-from-tree (agp:word-at top 'AGF::NOUNP)))))))
+      ;; Anything else.
+      (T (ags:say (format NIL "I do not know about '~a'~%"
+	   (agp:string-from-tree (agp:word-at top 'AGF::NOUNP))))))))
 

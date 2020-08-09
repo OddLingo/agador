@@ -35,8 +35,8 @@
 
   ;; Set up the standard logging package.
   (log:config
-   :NOPACKAGE :THREAD
-   :SANE :DAILY "agador.log" :BACKUP NIL)
+   :SANE :DAILY "agador.log" :BACKUP NIL
+   :NOFILE)
   (log:info "Start")
   
   ;; Open the memory database

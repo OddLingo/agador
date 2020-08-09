@@ -2,9 +2,13 @@
 # functions unite to form a third.  Top-level functions (that span an
 # entire input phrase) can have an optional action.
 
+# The Julius internal terms do not appear at this parser's input -
+# only the word functions.
+
 # Noun phrases
 DTR THING NOUNP		# A thing
-PLACE THING NOUNP	# A thing at a place "KITCHEN LIGHT"
+PLACE THING TPLAC	# A thing at a place "KITCHEN LIGHT"
+DTR TPLAC NOUNP
 
 # Prepositional phrases can modify nouns or verbs.  The nature of
 # what is being related depends on the specific preposiion used,

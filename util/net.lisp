@@ -24,7 +24,8 @@
     NIL))
 
 ;;; This is the main function of the thread that listens for incoming
-;;; data and calls the handler.
+;;; data and calls the handler.  It has to be prepared for the
+;;; stream closing from the other end.
 (defun netreceiver (np)
   "TCP data listener"
   (let* ((sock (cnx np))

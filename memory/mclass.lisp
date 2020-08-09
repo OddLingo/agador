@@ -46,7 +46,10 @@
 
 ;;; Creates the merkle hash for generating all keys in the 'tree' and
 ;;; 'context' databases.  We use the high-order 40 bits of a SHA1.
-(defun hash-of (v) (subseq (sha1:sha1-hex v) 0 10))
+(defun hash-of (v)
+  (declare (type string v))
+  (subseq (sha1:sha1-hex v) 0 10))
+
 (defmethod merkle ((mt agc:term))
   (hash-of (string-representation mt)))
 
