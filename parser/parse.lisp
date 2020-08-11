@@ -46,9 +46,6 @@
   NIL)
 
 ;;; Add a new word to the current utterance being analyzed.
-;;; A postulated word might be any of the non-functional types,
-;;; but we mark it as a guess to be verified later by setting
-;;; the 'uncertainty' to 1.
 (defun accept-word (wordpair)
   "Add a word to the sentence and look for matches"
   (let* ((pos (length *right*))
@@ -83,26 +80,23 @@
 (defun see-word (spell)
   "Add a word to the sentence and look for matches"
   (let* ((funs (agm:get-word spell))
-	 (lfuns (if (null funs)
-		    '(AGF::ADJ AGF::NOUN AGF::VERB AGF::ADV)
-		    funs))
 	 (pos (length *right*)))
 
     ;; Create an empty entry at the right end of the sentence.
     (vector-push-extend () *right*)
 
     (unless funs
-	(agu:term  "  Guessing about '~a'~%" spell))
+	(agu:term  "  Unknown word '~a'~%" spell))
 
     ;; Create a USAGE for each potential grammatical function of
     ;; this word.  These are just internal to the parser and not
     ;; saved until a complete parse is accepted.
-    (dolist (f lfuns)
+    (dolist (f funs)
       (let (
 	    (rt (make-instance 'pusage
 	       :spelled spell :fn f
 	       :lpos pos :rpos pos
-	       :unc (if (null funs) 1 0) )))
+	       :unc 0)))
 	 (push rt (elt *right* pos))
 	 (consider rt)))))
 
@@ -111,20 +105,6 @@
   "Initialize the parser"
   (setq *right*  (make-array 10 :fill-pointer 0 :adjustable t ))
   (setq *top* NIL))
-
-;;; Remember all the guessed words used in an accepted parser output.
-;;; There might be none, but non-zero uncertainty values will lead
-;;; us to them.
-(defgeneric seek-guesses (pterm))
-(defmethod seek-guesses ((u pusage))
-  (when (> (term-unc u) 0)
-    (agm:put-word (agc:spelled u) (list (agc:term-fn u)))))
-
-(defmethod seek-guesses ((p ppair))
-  (when (> (term-unc p) 0)
-      (block recurse
-	(seek-guesses (agc:left p))
-	(seek-guesses (agc:right p)))))
 
 ;;; Set *top* to all pairs that span the entire input string.
 ;;; Hopefully there is just one, and it will have all local

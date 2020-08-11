@@ -80,7 +80,7 @@
 ;;; Generate the Julius .voca file from a list of classes and words.
 ;;; This relies on the dictionary to automatically look up the
 ;;; pronounciations.
-(defun make-voca (fname)
+(defun old-make-voca (fname)
   (declare (optimize (debug 3)))
   (dict-open)
   (dict-start)

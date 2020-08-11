@@ -16,6 +16,7 @@
 	:components (
 		     (:file "julius")
 		     (:file "talk")
+		     (:file "maketoki")
 		     (:file "makewords")))
 
     (:module "parser"
