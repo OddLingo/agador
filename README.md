@@ -1,12 +1,12 @@
 # Agador, voice response in toki pona
 
-*Agador* combines several technologies to process spoken human language and generate responses.
+*Agador* is an experiment in computer recognition of the toki pona artificial language.  It combines several technologies to process spoken human language and generate responses.
 
-* The [toki pona](tokipona.org) artificial language is extremely simple to learn and analyze, making it a prime candidate for computer input.  It's widely separated phonemes provide for a robustness in recognition not found in most languages, natural or [constructed](https://en.wikipedia.org/wiki/Constructed_language).
+* The [toki pona](tokipona.org) language is extremely simple to learn and analyze, making it a prime candidate for computer input.  It's widely separated phonemes provide for a robustness in recognition not found in most languages, natural or [constructed](https://en.wikipedia.org/wiki/Constructed_language).
 
-* The [Julius](https://github.com/julius-speech/julius) speech recognition system converts audio into a sequence of words in text.  It uses a simple grammar to tell it what sequences of sounds can form words in toki pona.
+* The [Julius](https://github.com/julius-speech/julius) speech recognition system converts audio into a sequence of words in text.  It uses a very simple grammar to tell it what sequences of sounds can form words in toki pona, and in what combinations those words can appear.
 
-* An Adjacency Parser converts the sequence of words into a syntax tree, following the very simple grammar of the toki pona language.  The parser has the unique property of being able to handle local ambiguity.  Most parsers developed for computer programming languages can not deal with that.
+* An Adjacency Parser then converts the sequence of words into a syntax tree, following the very simple grammar of the toki pona language.  The parser has the unique property of being able to handle local ambiguity.  Most parsers developed for computer programming languages can not deal with that.
 
 * A tree database (implemented on top of the [LMDB key/value store](https://en.wikipedia.org/wiki/Lightning_Memory-Mapped_Database) remembers previous statements.  [Merkle keys](https://en.wikipedia.org/wiki/Merkle_signature_scheme) are used to provide pointers within the tree.
 
@@ -25,5 +25,5 @@ speech recognition engine originally developed at Kyoto University and now conti
 
 ### Speech Input
 
-With Agador, Julius is operating with a _recognition grammar_.    Julius is faster and more accurate in this mode.  Julius _can_ operate in free-form dictation mode, but that makes the problem of matching up utterances with intended actions more difficult.  A grammar also reduces the possible number of interpretations on what has been said.
+The Julius recognizer does no noise cancellation.  That will have to be done externally by choice of microphone and environment.
 

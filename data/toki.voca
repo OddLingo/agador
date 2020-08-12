@@ -12,8 +12,14 @@ e	eh
 % SUBJ
 li	l iy
 
-% CTX
+% VOCTX
 o	ow
+
+% OR
+anu	ah n uw
+
+% CTX
+la	l ah
 
 % CNJ
 en	eh n
@@ -25,6 +31,15 @@ tawa	t ah w ah
 same	s ah m eh
 kepeken	k eh p eh k eh n
 poka	p ow k ah
+
+% PREV
+kama	k ah m ah
+ken	k eh n
+wile	w iy l eh
+
+% FIRST
+mi	m iy
+sina	s iy n ah
 
 % V
 anpa	ah n p ah
@@ -51,6 +66,10 @@ moli	m ow l iy
 musi	m uw s iy
 mute	m uw t eh
 nasa	n ah s ah
+pali	p ah l iy
+pana	p ah n ah
+pilin	p iy l iy n
+pimeja	p iy m eh zh ah
 pini	p iy n iy
 poka	p ow k ah
 pona	p ow n ah
@@ -239,4 +258,4 @@ pona	p ow n ah
 toki	t ow k iy
 
 % NAME
-Akato	A k ah t ow
+akato	ah k ah t ow
