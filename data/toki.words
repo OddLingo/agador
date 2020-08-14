@@ -4,15 +4,19 @@
 % NEG
 ala
 
+# Direct Objects are intoduced by this particle.
 % DO
 e
 
 % OF
 pi
 
+# Separate the Subject from its Predicate, except for 1st and 2nd pronouns.
+# Similar to 'ga' in Japanese.
 % SUBJ
 li
 
+# Vocative Context marker
 % VOCTX
 o
 
@@ -22,43 +26,42 @@ anu
 % CTX
 la
 
-% CNJ
+# This Conjunction works between noun phrases.
+% AND
 en
 
 % PREP
 lon tan tawa same kepeken poka
 
+# Pre-verbs augment a following verb.  Coming, able, must.
+# But these are also Verbs.
 % PREV
 kama ken wile
 
-% FIRST
+# First- and Second-person pronouns are special.
+% WE
 mi sina
 
-% V
-anpa ante awen ijo ike jaki jan jo kalama kama ken kepeken kule lape
-lawa lete lili lon lukin moku moli musi mute nasa |olin open pakala
-pali pana pilin pimeja pini poka pona seli sin sitelen sona suli suwi
-tawa telo toki tomo tu unpa utala wan wawa weka wile
+# The distinctions between Verbs, Modifiers, and Nouns seems arbitrary
+# in the speech recognition phase.  There are 51 verbs, 67 modifiers,
+# and 91 nouns.  This is the merged list, exclduing the first and second
+# person pronouns, which are treated specially.
+% NOUN
+akesi ala ale ali All anpa ante awen ijo ike ilo insa jaki jan jelo jo
+kala kalama kama kasi ken kepeken kili kin kiwen kule kulupu kute lape
+laso lawa len lete lili linja lipu loje lon luka lukin lupa ma mama
+mani meli mi mije moku moli monsi mun musi mute nanpa nasa nasin nena
+ni nimi noka nouns oko olin ona open pakala pali palisa pana pilin
+pimeja pini pipi poka poki pona sama seli selo seme sewi sijelo sike
+sima.  sin sina sinpin sitelen sona soweli suli suno supa suwi tan
+taso tawa telo tenpo the toki tomo tu unpa uta utala walo wan waso
+wawa weka wike wile
 
-% MOD
-ala ale ali ante awen ijo ike insa jaki jan jelo kalama kama kin
-kiwen kule kute kulupu laso lape lawa lete lili loje lukin mama meli
-mi mije moku moli monsi mun musi| mute nasa ni olin ona pakala pali
-pimeja pini poka pona sama seli seme sewi sike sin sina suli suwi
-taso tawa telo toki tomo tu unpa uta walo wan wawa weka wike
-
-% N_NOMISINA
-akesi ala ale ali ante ijo ike ilo insa jaki jan jo kala kalama kama
-kasi ken kili kiwen kule kute kulupu lawa len lete lili linja lipu
-luka lupa ma mama mani meli mije moku moli monsi mun musi mute nanpa
-nasin nena ni nimi noka oko olin ona pakala pali palisa pana pilin
-pimeja pini pipi poki poka pona seli selo seme sewi sijelo sike sinpin
-sitelen sona soweli suli suno supa suwi tan tawa telo tenpo toki tomo
-tu unpa uta utala walo wan waso wawa weka wile
-
+# Interjections can stand alone.
 % INT
 a ala ike jaki mu o pakala pona toki
 
+# Proper names are capitalized but this does change pronunciation.
 % NAMES
 Akato
 
