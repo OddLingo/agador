@@ -41,8 +41,10 @@
   (rank :initarg :rank :accessor sent-rank :type float)
   (score :initarg :score :accessor sent-score :type float)
   (gram :initarg :gram :accessor sent-gram :type fixnum)
-  (words :initform (make-array 10 :fill-pointer 0 :adjustable t )
-	 :accessor sent-words :type list)
+  (words :initform (make-array 20
+			       :fill-pointer 0
+			       :adjustable t )
+	 :accessor sent-words :type vector)
   ))
 
 ;;; Add a Word to a Sentence.
@@ -65,14 +67,12 @@
     minimum
     ))
 
-;; Extract list of consed spelling and class names and send
-;; it to the tree parser.
+;; Extract list of word spellings and send it to the tree parser.
 (defmethod words-to-parser ((s jsent))
   (let* ((wordlist NIL))
     (loop for w across (sent-words s) do
-	 (let ((fn (elt *word-classes* (word-class w))))
-	   (push (cons (spell w) fn) wordlist)))
-    (agp::parse-msg (nreverse wordlist))
+	 (push (spell w) wordlist))
+    (agp::parse (nreverse wordlist))
     (log:info "Sentence score ~a~%"
 	      (floor (sent-score s)))))
 

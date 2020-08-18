@@ -38,6 +38,7 @@
 ;;; This counts on the "word" database having been initialized to
 ;;; empty in advance.
 (defun add-word-fun (spell fn)
+  (format T "Adding function ~a to word ~a~%" fn spell)
   (let* ((old-classes (agm:get-word spell))
 	 (new-classes (if old-classes
 			  (push fn old-classes)

@@ -13,7 +13,7 @@
 # from each other.  The complete list of words is in file 'toki.words'.
 
 # Basic phrases
-NOUN NOUN NOUN		# a modified noun phrase
+NOUN NOUN NOUN		# A modified noun phrase, left-heavy preferred
 PREP NOUN PP		# Prepositional phrase
 NOUN PP NOUN		# Prepositions can modify nouns too
 NOUN SUBJ SSUB		# A marked Sentence subject

@@ -79,14 +79,11 @@
 
 (defun see-word (spell)
   "Add a word to the sentence and look for matches"
-  (let* ((funs (agm:get-word spell))
+  (let* ((funs (lookup spell))
 	 (pos (length *right*)))
 
     ;; Create an empty entry at the right end of the sentence.
     (vector-push-extend () *right*)
-
-    (unless funs
-	(agu:term  "  Unknown word '~a'~%" spell))
 
     ;; Create a USAGE for each potential grammatical function of
     ;; this word.  These are just internal to the parser and not
@@ -95,8 +92,7 @@
       (let (
 	    (rt (make-instance 'pusage
 	       :spelled spell :fn f
-	       :lpos pos :rpos pos
-	       :unc 0)))
+	       :lpos pos :rpos pos)))
 	 (push rt (elt *right* pos))
 	 (consider rt)))))
 
@@ -116,7 +112,7 @@
 	   (lambda (x) (> (term-lpos x) 0))
 	   rt))))
 
-;;; Remember any new words as well as what was said.
+;;; Remember what was said.
 (defun learn (best)
   (declare (type pterm best))
   (log:info "Recognized: ~a" (string-from-tree best))
@@ -168,15 +164,6 @@
   (parse-words (agu:words-from-file fi))
   )
 
-(defun parse-msg (words)
-  "Parse words with functions already assigned."
-  (init-parse)
-  ;; Feed the words in one at a time.
-  (dolist (w words) (accept-word w))
-  ;; Find parses that span it all.
-  (choose-top)
-  (judge))
-
 (defvar *parser-inbox*)
 
 (defun parse (words)
@@ -188,4 +175,4 @@
   (setq *parser-inbox*
 	(make-instance 'agu:mbx-server
 		       :name "Parser"
-		       :actor 'parse-msg)))
+		       :actor 'parse-words)))

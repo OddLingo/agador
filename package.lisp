@@ -13,6 +13,7 @@
   (:use common-lisp)
   (:export run seek set-lang +data-directory+)
   (:export term usage pair numb term-fn spelled left right nvalue)
+  (:export contains-p depth shape)
   )
 
 ;; There are a lot of grammatical function names, so they get their
@@ -32,7 +33,7 @@
   (:export string-from-list clear setxy set-scroll set-color)
   (:export send connect mbx-server)
   (:export use-term release-term term clearw1 set-status)
-  (:export sked-add sked-later)
+  (:export sked-add sked-later init-hash)
   )
 
 (defpackage :AGADOR.ACTION

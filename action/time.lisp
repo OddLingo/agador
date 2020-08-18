@@ -30,10 +30,6 @@
    0 (minute dt) (hour dt)
    (day dt) (month dt) (year dt)))
 
-(defun init-hash (h v)
-  (dolist (kv v)
-    (setf (gethash (car kv) h) (cdr kv))))
-
 (defparameter +day-names+
   '("Monday" "Tuesday" "Wednesday" "Thursday" "Friday" "Saturday" "Sunday"))
 
@@ -42,7 +38,7 @@
     "September" "October" "november" "December"))
 
 (defparameter +month-numbers+ (make-hash-table :test 'equal :size 12))
-(init-hash
+(agu:init-hash
  +month-numbers+
  '(("JANUARY" . 1) ("FEBRUARY" . 2) ("MARCH" . 3) ("APRIL" . 4)
    ("MAY" . 5) ("JUNE" . 6) ("JULY" . 7) ("AUGUST" . 8)

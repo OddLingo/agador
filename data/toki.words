@@ -42,21 +42,6 @@ kama ken wile
 % WE
 mi sina
 
-# The distinctions between Verbs, Modifiers, and Nouns seems arbitrary
-# in the speech recognition phase.  There are 51 verbs, 67 modifiers,
-# and 91 nouns.  This is the merged list, exclduing the first and second
-# person pronouns, which are treated specially.
-% NOUN
-akesi ala ale ali All anpa ante awen ijo ike ilo insa jaki jan jelo jo
-kala kalama kama kasi ken kepeken kili kin kiwen kule kulupu kute lape
-laso lawa len lete lili linja lipu loje lon luka lukin lupa ma mama
-mani meli mi mije moku moli monsi mun musi mute nanpa nasa nasin nena
-ni nimi noka nouns oko olin ona open pakala pali palisa pana pilin
-pimeja pini pipi poka poki pona sama seli selo seme sewi sijelo sike
-sima.  sin sina sinpin sitelen sona soweli suli suno supa suwi tan
-taso tawa telo tenpo the toki tomo tu unpa uta utala walo wan waso
-wawa weka wike wile
-
 # Interjections can stand alone.
 % INT
 a ala ike jaki mu o pakala pona toki
@@ -70,4 +55,19 @@ jan
 
 % CONTEXT
 ante ken
+
+# The distinctions between Verbs, Modifiers, and Nouns seems arbitrary
+# in the speech recognition phase.  There are 51 verbs, 67 modifiers,
+# and 91 nouns.  This is the merged list, exclduing the first and second
+# person pronouns, which are treated specially.
+% NOUN
+akesi ala ale ali All anpa ante awen ijo ike ilo insa jaki jan jelo jo
+kala kalama kama kasi ken kepeken kili kin kiwen kule kulupu kute lape
+laso lawa len lete lili linja lipu loje lon luka lukin lupa ma mama
+mani meli mi mije moku moli monsi mun musi mute nanpa nasa nasin nena
+ni nimi noka nouns oko olin ona open pakala pali palisa pana pilin
+pimeja pini pipi poka poki pona sama seli selo seme sewi sijelo sike
+sima sin sina sinpin sitelen sona soweli suli suno supa suwi tan
+taso tawa telo tenpo the toki tomo tu unpa uta utala walo wan waso
+wawa weka wike wile
 

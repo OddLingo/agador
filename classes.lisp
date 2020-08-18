@@ -47,3 +47,23 @@
 	)
     )
   )
+
+(defgeneric contains-p (term goal))
+(defmethod contains-p ((u usage) goal)
+  (equal goal (spelled u)))
+(defmethod contains-p ((p pair) goal)
+  (if (contains-p (left p) goal)
+      T
+      (contains-p (right p) goal)))
+
+(defgeneric depth (term))
+(defmethod depth ((u usage)) '(0 0))
+(defmethod depth ((p pair))
+  (list (1+ (max (depth (left p))))
+	(1+ (max (depth (right p))))))
+;;; This returns >0 if the left subtree is deeper and <0 if the
+;;; right subtree is deeper.  It is used to break ties between
+;;; overlapping parses of the same grammatical type.
+(defun shape (term)
+  (reduce '- (depth term)))
+

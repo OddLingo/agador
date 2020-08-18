@@ -7,8 +7,6 @@
 ;;;; (defvar *syscmd* (make-instance 'mbx-server :actor 'docmd))
 ;;;; (send *syscmd* "date")
 
-(require :sb-concurrency)
-
 (in-package :agu)
 
 (defclass mbx-server () (

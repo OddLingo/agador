@@ -42,7 +42,7 @@
 (defun start (top)
     (log:info "Acting on 'start' ~a~%" top))
 
-;; It is an instruction to do something.
+;;; It is an instruction to do something.
 (defun command (top)
   (declare (type agp::pterm top))
   (let* ((verb (agp:word-at top 'AGF::ACTION))
@@ -52,6 +52,12 @@
       ((equal verbname "START") (start top))
       ((equal verbname "REMEMBER") (remember (agc:right top)))
       (T (log:warn "No action for ~a~%" verbname)))))
+
+;;; Detect questions by the presense of the universal query word.
+(defun question-p (top)
+  "Detect word 'seme' anywhere in the sentence."
+  (declare (type agp::pterm top))
+  (agc:contains-p top "seme"))
 
 ;;;; Questions come here.  How we answer a question depends on which
 ;;;; query word was used.
