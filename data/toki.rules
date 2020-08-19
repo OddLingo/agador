@@ -26,8 +26,8 @@ NOUN DOBJ NOUN		# Only verbs can have direct objects
 # Forms of sentence.  If the word 'seme' appears, it is probably
 # a question but that gets detected at the semantic level.
 # Yes/no questions look different.
-WE NOUN SENT REMEMBER		# I or you do something
-SSUB NOUN SENT REMEMBER		# Something not us does something
+WE NOUN SENT SEMANTICS		# I or you do something
+SSUB NOUN SENT SEMANTICS	# Something not us does something
 
 # mi ijo. ; sina ijo. ; ona li ijo. ; mi mute li ijo.
 #     a! ; ...a ; noun a

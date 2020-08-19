@@ -169,9 +169,9 @@
 (defun parse (words)
   (sb-concurrency:send-message *parser-inbox* words))
 
-(defun start-parser (lang)
+(defun start-parser ()
   "Initialize parser structures."
-  (init-rules lang)
+  (init-rules)
   (setq *parser-inbox*
 	(make-instance 'agu:mbx-server
 		       :name "Parser"

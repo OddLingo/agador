@@ -8,7 +8,7 @@
 (in-package :AGC)
 
 ;;;; Pairs and Words are subclasses of Terms.  All terms have
-;;;; a grammatical function.
+;;;; a grammatical function taken from the AGF package.
 (defclass term () (
   (fn :accessor term-fn :initarg :fn)
   ))
@@ -26,28 +26,29 @@
   (right :accessor right :initarg :right)
   ))
 
+;; -----------------------------------------------
 ;;;; A number is like a usage, but has a numeric value (which might
 ;;;; also represent a date) and they are not indexed in a dictionary.
 (defclass numb (term) (
   (nvalue :accessor nvalue :initarg :nvalue :initform 0)))
   
-;; Walk down a btree seeking a particular function.
+;; -----------------------------------------------
+;;;; Walk down a btree seeking a particular grammatical function.
 (defgeneric seek (term goal))
 
 ;; A usage either matches or it doesn't.
 (defmethod seek ((u usage) goal) (eq (term-fn u) goal))
 
-;; A pair might match by itslef.  Otherwise we have to apply
+;; A pair might match by itself.  Otherwise we have to apply
 ;; knowledge of the grammar rules to find what we want.
 (defmethod seek ((p pair) goal)
   (let ((start (term-fn p)))
     (if (eq start goal)
 	T
-	(agp:route-path start goal)
-	)
-    )
-  )
+	(agp:route-path start goal))))
 
+;; -----------------------------------------------
+;;;; Scan the leaves of a tree for a specific word.
 (defgeneric contains-p (term goal))
 (defmethod contains-p ((u usage) goal)
   (equal goal (spelled u)))
@@ -56,14 +57,19 @@
       T
       (contains-p (right p) goal)))
 
+;; -----------------------------------------------
+;;;; Queries about the shape of a parse tree.
 (defgeneric depth (term))
 (defmethod depth ((u usage)) '(0 0))
 (defmethod depth ((p pair))
   (list (1+ (max (depth (left p))))
 	(1+ (max (depth (right p))))))
+
 ;;; This returns >0 if the left subtree is deeper and <0 if the
 ;;; right subtree is deeper.  It is used to break ties between
-;;; overlapping parses of the same grammatical type.
+;;; overlapping parses of the same grammatical type when there is
+;;; a preference for left- or right-association.  In toki pona, usually
+;;; left-association is preferred.
 (defun shape (term)
   (reduce '- (depth term)))
 

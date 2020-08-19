@@ -123,7 +123,7 @@
 	   ((equal verb "dc") ;; Dump contexts
 	    (dump :CNTX))
 	   ((equal verb "dw") ;; Dump words
-	    (print-words))
+	    (agp:print-words))
 	   ((equal verb "v") (set-voice T))
 
 	   (T

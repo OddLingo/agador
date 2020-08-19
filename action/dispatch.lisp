@@ -6,9 +6,9 @@
 
 ;;; Things we know about, identified by their Merkle key in the
 ;;; memory.
-(defparameter *the-time* "26933762FB")
-(defparameter *the-weather* "39B8EB0A2A")
-(defparameter *listening* "")
+(defparameter *the-time* "26933762FB") ;; tenpo
+(defparameter *the-weather* "39B8EB0A2A") ;; kon sewi
+(defparameter *listening* "")  ;; kute ala
 
 ;; It is some sort of statement about the world.  Just remember it.
 (defun remember (top)
@@ -73,3 +73,9 @@
       (T (ags:say (format NIL "I do not know about '~a'~%"
 	   (agp:string-from-tree (agp:word-at top 'AGF::NOUNP))))))))
 
+(defun semantics (top)
+  (declare (type agp::pterm top))
+  (when (agc:contains-p top "seme")
+    (query top)
+    (return-from semantics))
+  )

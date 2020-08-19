@@ -104,7 +104,7 @@
 (defparameter +cmnt+ "^\\s*#" )
 
 ;;; Load the rules at startup.
-(defun init-rules (lang)
+(defun init-rules ()
   "Load rules from a file"
   ;; Initialize rules and routes
   (setq *rules* (make-hash-table :size 20))
@@ -113,7 +113,7 @@
   ;; Load the basic three-term rules.
   (with-open-file
       (stream
-       (format NIL "~a/~a.rules" AGC:+data-directory+ lang))
+       (format NIL "~a/toki.rules" AGC:+data-directory+))
     (loop for line = (read-line stream NIL)
        until (eq line NIL) do
 	 (if (ppcre:scan +cmnt+ line)
