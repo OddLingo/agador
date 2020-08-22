@@ -4,174 +4,180 @@ s	sil
 % NS_E
 es	sil
 
-% NAMES
+% NAM
 Akato	ah k ah t ow
 
-% PREV
-wile	w iy l eh
-kama	k ah m ah
-ken	k eh n
+% BUT
+taso	t ah s ow
 
-% CONTEXT
-ken	k eh n
-ante	ah n t eh
+% QUE
+seme	s eh m eh
 
-% NCLASS
-jan	y ah n
+% POF
+pi	p iy
 
-% WE
+% VOC
+o	ow
+
+% P12
 sina	s iy n ah
 mi	m iy
 
-% PREP
-tawa	t ah w ah
-tan	t ah n
-lon	l ow n
-
-% AND
-en	eh n
-
-% SUBJ
+% SBJ
 li	l iy
 
 % CTX
 la	l ah
 
-% OR
-anu	ah n uw
+% PRP
+tawa	t ah w ah
+tan	t ah n
+sama	s ah m ah
+lon	l ow n
+kepeken	k eh p eh k eh n
 
-% VOCTX
-o	ow
+% AND
+en	eh n
 
-% OF
-pi	p iy
-
-% DO
+% PDO
 e	eh
 
-% NEG
+% PRV
+wile	w iy l eh
+sona	s ow n ah
+lukin	l uw k iy n
+ken	k eh n
+kama	k ah m ah
+awen	ah w eh n
+
+% POR
+anu	ah n uw
+
+% VRB
+utala	uw t ah l ah
+unpa	uw n p ah
+toki	t ow k iy
+sona	s ow n ah
+pana	p ah n ah
+pali	p ah l iy
+open	ow p eh n
+olin	ow l iy n
+moku	m ow k uw
+lukin	l uw k iy n
+lawa	l ah w ah
+kalama	k ah l ah m ah
+jo	y ow
+alasa	ah l ah s ah
+
+% NUM
+wan	w ah n
+tu	t uw
+nanpa	n ah n p ah
+luka	l uw k ah
+ale	ah l eh
 ala	ah l ah
+
+% ADJ
+weka	w eh k ah
+wawa	w ah w ah
+wan	w ah n
+walo	w ah l ow
+tawa	t ah w ah
+taso	t ah s ow
+suwi	s uw w iy
+suli	s uw l iy
+sin	s iy n
+sike	s iy k eh
+sewi	s eh w iy
+seli	s eh l iy
+sama	s ah m ah
+pu	p uw
+pona	p ow n ah
+pini	p iy n iy
+pimeja	p iy m eh y ah
+pilin	p iy l iy n
+pakala	p ah k ah l ah
+ni	n iy
+nasa	n ah s ah
+mute	m uw t eh
+musi	m uw s iy
+moli	m ow l iy
+loje	l ow y eh
+lili	l iy l iy
+lete	l eh t eh
+laso	l ah s ow
+lape	l ah p eh
+kule	k uw l eh
+ken	k eh n
+kama	k ah m ah
+jelo	y eh l ow
+jaki	y ah k iy
+ike	iy k eh
+awen	ah w eh n
+ante	ah n t eh
+anpa	ah n p ah
+ale	ah l eh
+ala	ah l ah
+
+% NON
+waso	w ah s ow
+uta	uw t ah
+tomo	t ow m ow
+tenpo	t eh n p ow
+telo	t eh l ow
+supa	s uw p ah
+suno	s uw n ow
+soweli	s ow w eh l iy
+sitelen	s iy t eh l eh n
+sinpin	s iy n p iy n
+sina	s iy n ah
+sike	s iy k eh
+sijelo	s iy y eh l ow
+sewi	s eh w iy
+selo	s eh l ow
+pu	p uw
+poka	p ow k ah
+pipi	p iy p iy
+pilin	p iy l iy n
+pan	p ah n
+palisa	p ah l iy s ah
+ona	ow n ah
+noka	n ow k ah
+nimi	n iy m iy
+nena	n eh n ah
+nasin	n ah s iy n
+nanpa	n ah n p ah
+mute	m uw t eh
+mun	m uw n
+monsi	m ow n s iy
+moku	m ow k uw
+mike	m iy k eh
+mi	m iy
+meli	m eh l iy
+mani	m ah n iy
+mama	m ah m ah
+ma	m ah
+lupa	l uw p ah
+lukin	l uw k iy n
+luka	l uw k ah
+lipu	l iy p uw
+linja	l iy n y ah
+len	l eh n
+lawa	l ah w ah
+kon	k ow n
+ko	k ow
+kiwen	k iy w eh n
+kili	k iy l iy
+kasi	k ah s iy
+kala	k ah l ah
+jan	y ah n
+insa	iy n s ah
+ilo	iy l ow
+ijo	iy y ow
+esun	eh s uw n
+ale	ah l eh
+akesi	ah k eh s iy
 
 % INT
-toki	t ow k iy
-pona	p ow n ah
-pakala	p ah k ah l ah
 mu	m uw
-jaki	y ah k iy
-ike	iy k eh
-o	ow
-ala	ah l ah
 a	ah
-
-% NOUN
-akesi	ah k eh s iy
-ala	ah l ah
-ale	ah l eh
-ali	ah l iy
-anpa	ah n p ah
-ante	ah n t eh
-awen	ah w eh n
-ijo	iy y ow
-ike	iy k eh
-ilo	iy l ow
-insa	iy n s ah
-jaki	y ah k iy
-jan	y ah n
-jelo	y eh l ow
-jo	y ow
-kala	k ah l ah
-kalama	k ah l ah m ah
-kama	k ah m ah
-kasi	k ah s iy
-ken	k eh n
-kepeken	k eh p eh k eh n
-kili	k iy l iy
-kin	k iy n
-kiwen	k iy w eh n
-kule	k uw l eh
-kulupu	k uw l uw p uw
-kute	k uw t eh
-lape	l ah p eh
-laso	l ah s ow
-lawa	l ah w ah
-len	l eh n
-lete	l eh t eh
-lili	l iy l iy
-linja	l iy n y ah
-lipu	l iy p uw
-loje	l ow y eh
-lon	l ow n
-luka	l uw k ah
-lukin	l uw k iy n
-lupa	l uw p ah
-ma	m ah
-mama	m ah m ah
-mani	m ah n iy
-meli	m eh l iy
-mi	m iy
-mije	m iy y eh
-moku	m ow k uw
-moli	m ow l iy
-monsi	m ow n s iy
-mun	m uw n
-musi	m uw s iy
-mute	m uw t eh
-nanpa	n ah n p ah
-nasa	n ah s ah
-nasin	n ah s iy n
-nena	n eh n ah
-ni	n iy
-nimi	n iy m iy
-noka	n ow k ah
-nouns	n ow uw n s
-oko	ow k ow
-olin	ow l iy n
-ona	ow n ah
-open	ow p eh n
-pakala	p ah k ah l ah
-pali	p ah l iy
-palisa	p ah l iy s ah
-pana	p ah n ah
-pilin	p iy l iy n
-pimeja	p iy m eh y ah
-pini	p iy n iy
-pipi	p iy p iy
-poka	p ow k ah
-poki	p ow k iy
-pona	p ow n ah
-sama	s ah m ah
-seli	s eh l iy
-selo	s eh l ow
-seme	s eh m eh
-sewi	s eh w iy
-sijelo	s iy y eh l ow
-sike	s iy k eh
-sima	s iy m ah
-sin	s iy n
-sina	s iy n ah
-sinpin	s iy n p iy n
-sitelen	s iy t eh l eh n
-sona	s ow n ah
-soweli	s ow w eh l iy
-suli	s uw l iy
-suno	s uw n ow
-supa	s uw p ah
-suwi	s uw w iy
-tan	t ah n
-taso	t ah s ow
-tawa	t ah w ah
-telo	t eh l ow
-tenpo	t eh n p ow
-toki	t ow k iy
-tomo	t ow m ow
-tu	t uw
-unpa	uw n p ah
-uta	uw t ah
-utala	uw t ah l ah
-walo	w ah l ow
-wan	w ah n
-waso	w ah s ow
-wawa	w ah w ah
-weka	w eh k ah
-wike	w iy k eh
-wile	w iy l eh

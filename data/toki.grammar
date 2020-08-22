@@ -1,31 +1,32 @@
-# This is the Julius grammar for toki pona.  It does not distingiosh
-# between verbs, nouns, and adjectives, as they are largely interchangeable.
+# This is the Julius grammar for toki pona.  Terms of three letters
+# are defined in the toki.voca file.
 
 # Top-level formats.
 S: NS_B INT NS_E
-S: NS_B VOC NS_E
+S: NS_B VOCA NS_E
 S: NS_B SENT NS_E
 S: NS_B YESNO NS_E
 
 # Basic noun phrases
-NP: NOUN NOUN
-NP: NOUN
-# NP: NOUN PP
+NOUNP: NOUNP NON
+NOUNP: NOUNP ADJ
+NOUNP: NON
+NOUNP: NON PREPP
 
 # Prepositional phrases indicate motion 'tawa' or location 'lon' or
 # purpose 'tan'.
-# PP: PREP NP
+PREPP: PRP NOUNP
 
 # A 'vocative' includes commands.
-# VOC: NP VOCTX
-# VOC: NP VOCTX SENT
-# VOC: NP VOCTX PRED
-VOC: VOCTX PRED
-# VOC: COND VOCTX PRED
+VOCA: NOUNP VOC
+VOCA: NOUNP VOC SENT
+VOCA: NOUNP VOC PRED
+VOCA: VOCTX PRED
+# VOCA: COND VOCTX PRED
 
 # Simple Yes or No answers repeat the verb in the question.
-YESNO: NP
-YESNO: NP NEG
+YESNO: NOUNP
+YESNO: NOUNP NEG
 
 SENT: SPRED
 # SENT: COND SPRED
@@ -34,26 +35,26 @@ SENT: SPRED
 # Use 'la' to qualify another sentence.  CTX='la'
 # COND: SPRED CTX
 # COND: CONTEXT CTX
-# COND: NP CTX
+# COND: NOUNP CTX
 
 # Subject plus Predicate in various forms
-SPRED: WE PRED
-SPRED: NP SUBJ PRED
+SPRED: P12 PRED
+SPRED: NOUNP SBJ PRED
 # SPRED: CSUB SUBJ PRED
 
-# CSUB: NOUN AND CSUB
+# CSUB: NON AND CSUB
 
-# COMPNOUN : NMOD
-# COMPNOUN : NP OF
-# COMPNOUN : NOUN OR NOUN 
+# COMPNON : NMOD
+# COMPNON : NOUNP POF
+# COMPNON : NON OR NON 
 
-# NPI: NP OF NP
-# NPI: NOUN OF NAME
+# NPI: NOUNP POF NOUNP
+# NPI: NON POF NAME
 
 # Predicate is varous forms of verb phrase which differ from noun phrases
 # in that they can have a direct object.
 PRED: VP
-# PRED: VP SUBJ PRED
+# PRED: VP SBJ PRED
 
 # Verb Phrases can be transitive or intransitive, and have optional
 # prepositional phrases afterward.
@@ -63,7 +64,7 @@ VP: TRANSVP
 
 # Intransitive Verb Phrases do not have Direct Objects
 IVP: VERB
-# IVP: MODAL PREP NOUN 
+# IVP: MODAL PREPP NON 
 # IVP: MODIFIER
 
 # Transitive Verb Phrases have Direct Objects
@@ -72,17 +73,17 @@ TRANSVP: VERB DOP
 
 # The Direct Object Phrase receives the action of the verb.  They
 # are always introduced by the direct object marker 'e'.
-DOP: DO NP
-# DOP: DO NOUN  DO
+DOP: DO NOUNP
+# DOP: DO NON  DO
 
 # A verb looks just like a noun, possibly modified.
-VERB: NP
-VERB: MODAL NP
+VERB: VRB
+VERB: MODAL VRB
 # VERB: YNV
 # VERB: MODAL YNV
 # VERB: YNV MOD
 
-# YNV: NOUN NEG NOUN
+# YNV: NON NEG NON
 
 # A Modal phrase modifies the following verb.  These are the "pre-verbs"
 # like coming, able to, etc.  They can be modified with 'ala' to mean
@@ -91,13 +92,11 @@ MODAL: POSMODAL
 MODAL: POSMODAL NEG
 MODAL: YNMODAL
 
-POSMODAL: PREV
-YNMODAL: PREV NEG PREV
+POSMODAL: PRV
+YNMODAL: PRV NEG PRV
 
-# N: WE
-# N: NOUNS
+# N: P12
+# N: NON
 
 # A proper name is NCLASS "jan" or "ma" or "tomo" followed by a name.
-NAME: NCLASS NAMES
-# NAME: NCLASS TOMO NAMES
-# NAME: TOKI NAMES
+NAME: NCLASS NAM

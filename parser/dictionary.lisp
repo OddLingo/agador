@@ -9,10 +9,8 @@
 ;;; names of words are three letters long.  Longer names are for
 ;;; groups of words such a "prepositional phrase".  All function
 ;;; names are in the AGF package.
-(defvar *dict* (make-hash-table :size 140 :test 'equal))
-(agu:init-hash
- *dict*
- '(("a" INT)("akesi" NON)("ala" ADJ NUM)("alasa" VRB)
+(defun wordlist ()
+ '(("a" INT)("akesi" NON)("ala" ADJ NEG NUM)("alasa" VRB)
    ("ale" ADJ NON NUM)("anpa" ADJ)("ante" ADJ)("anu" POR)
    ("awen" ADJ PRV)("e" PDO)("en" AND)("esun" NON)
    ("ijo" NON)("ike" ADJ)("ilo" NON)("insa" NON)("jaki" ADJ)
@@ -40,4 +38,5 @@
    ("toki" VRB)("tomo" NON)("tu" NUM)("unpa" VRB)("uta" NON)
    ("utala" VRB)("walo" ADJ)("wan" ADJ NUM)("waso" NON)("wawa" ADJ)
    ("weka" ADJ)("wile" PRV)
+   ;; Plus some proper names.
    ("Akato" NAM)))

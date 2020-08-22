@@ -3,6 +3,9 @@
 ;;;; This file provides dictionary services to the parser.
 (in-package :AGP)
 
+(defvar *dict* (make-hash-table :size 140 :test 'equal))
+(agu:init-hash *dict* (AGF:wordlist))
+
 ;;; This table maps individual letters in toki pona to their pronounciation
 ;;; using the Julius English Acoustic Model.  Any letter not in the table
 ;;; maps to itself.
@@ -26,11 +29,11 @@
 (defun print-words ()
   (maphash
    #'(lambda (k v) (format T "~a -> ~a~%" k v))
-   AGF::*dict*))
+   *dict*))
        
 ;;; Look up a word in the dictionary.
 (defun lookup (spell)
-  (gethash spell AGF::*dict*))
+  (gethash spell *dict*))
 
 ;;;; The dictionary needs to be in a special format for the Julius
 ;;;; speech recognizer, along with phonetic information.  Here
@@ -54,7 +57,7 @@
 		  (push spell old)
 		  (list spell))))
 	   ))
-     AGF::*dict*)
+     *dict*)
 
     (labels
 	((print-word (word)
@@ -73,6 +76,5 @@
       ;; generating phonetics along the way.
       (dolist (fn (alexandria:hash-table-keys funs))
 	  (fn-to-voca fn)))
-      )
     (close out)
-)
+))
