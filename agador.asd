@@ -34,6 +34,7 @@
       :components (
         (:file "pclass")
 	(:file "rules")
+	(:file "dictionary")
 	(:file "words")
 	(:file "number")
 	(:file "display")

@@ -2,51 +2,56 @@
 # between verbs, nouns, and adjectives, as they are largely interchangeable.
 
 # Top-level formats.
-# S: NS_B INT NS_E
+S: NS_B INT NS_E
 S: NS_B VOC NS_E
 S: NS_B SENT NS_E
 S: NS_B YESNO NS_E
 
 # Basic noun phrases
-NOUNP: NOUN
-NOUNP: NOUNP NOUN
-# NOUNP: NOUNP PP
+NP: NOUN NOUN
+NP: NOUN
+# NP: NOUN PP
 
-PP: PREP NOUNP
+# Prepositional phrases indicate motion 'tawa' or location 'lon' or
+# purpose 'tan'.
+# PP: PREP NP
 
 # A 'vocative' includes commands.
-# VOC: NOUNP VOCTX
-# VOC: NOUNP VOCTX SENT
-# VOC: NOUNP VOCTX PRED
+# VOC: NP VOCTX
+# VOC: NP VOCTX SENT
+# VOC: NP VOCTX PRED
 VOC: VOCTX PRED
 # VOC: COND VOCTX PRED
 
 # Simple Yes or No answers repeat the verb in the question.
-YESNO: NOUNP
-YESNO: NOUNP NEG
+YESNO: NP
+YESNO: NP NEG
 
 SENT: SPRED
 # SENT: COND SPRED
 # But...  SENT: TASO SPRED
 
-# Use 'la' to qualify another sentence
+# Use 'la' to qualify another sentence.  CTX='la'
 # COND: SPRED CTX
 # COND: CONTEXT CTX
-# COND: NOUN CTX
+# COND: NP CTX
 
+# Subject plus Predicate in various forms
 SPRED: WE PRED
-SPRED: NOUNP SUBJ PRED
+SPRED: NP SUBJ PRED
 # SPRED: CSUB SUBJ PRED
 
-# CSUB: NOUN CONJ CSUB
+# CSUB: NOUN AND CSUB
 
 # COMPNOUN : NMOD
-# COMPNOUN : NOUNP OF
-# COMPNOUN : NOUN  OR NOUN 
+# COMPNOUN : NP OF
+# COMPNOUN : NOUN OR NOUN 
 
-# NOUNPI: NOUN OF NOUN MODIFIER
-# NOUNPI: NOUN OF NAME
+# NPI: NP OF NP
+# NPI: NOUN OF NAME
 
+# Predicate is varous forms of verb phrase which differ from noun phrases
+# in that they can have a direct object.
 PRED: VP
 # PRED: VP SUBJ PRED
 
@@ -54,30 +59,34 @@ PRED: VP
 # prepositional phrases afterward.
 VP: IVP
 VP: TRANSVP
-VP: VP PREPPH
+# VP: VP PP
 
 # Intransitive Verb Phrases do not have Direct Objects
-IVP: NOUNP
-IVP: MODAL PREP NOUN 
+IVP: VERB
+# IVP: MODAL PREP NOUN 
 # IVP: MODIFIER
 
 # Transitive Verb Phrases have Direct Objects
 TRANSVP: VERB DOP
-TRANSVP: MODAL VERB DOP
+# TRANSVP: MODAL VERB DOP
 
-DOP: DO NOUN 
-DOP: DO NOUN  DO
+# The Direct Object Phrase receives the action of the verb.  They
+# are always introduced by the direct object marker 'e'.
+DOP: DO NP
+# DOP: DO NOUN  DO
 
-VERB: NOUNP
-VERB: MODAL NOUNP
-VERB: YNV
-VERB: MODAL YNV
-VERB: YNV MOD
+# A verb looks just like a noun, possibly modified.
+VERB: NP
+VERB: MODAL NP
+# VERB: YNV
+# VERB: MODAL YNV
+# VERB: YNV MOD
 
-YNV: NOUN NEG NOUN
-PREPPH: PREP NOUN 
-PREPPH: PREP NOUN PREPPH
+# YNV: NOUN NEG NOUN
 
+# A Modal phrase modifies the following verb.  These are the "pre-verbs"
+# like coming, able to, etc.  They can be modified with 'ala' to mean
+# "not able to ...".
 MODAL: POSMODAL
 MODAL: POSMODAL NEG
 MODAL: YNMODAL
@@ -85,9 +94,10 @@ MODAL: YNMODAL
 POSMODAL: PREV
 YNMODAL: PREV NEG PREV
 
-N: WE
-N: NOUNS
+# N: WE
+# N: NOUNS
 
+# A proper name is NCLASS "jan" or "ma" or "tomo" followed by a name.
 NAME: NCLASS NAMES
-NAME: NCLASS TOMO NAMES
-NAME: TOKI NAMES
+# NAME: NCLASS TOMO NAMES
+# NAME: TOKI NAMES

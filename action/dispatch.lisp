@@ -63,7 +63,7 @@
 ;;;; query word was used.
 (defun query (top)
   (declare (type agp::pterm top))
-  (let ((handle (merkle-of-subtree top 'AGF::NOUNP)))
+  (let ((handle (merkle-of-subtree top 'AGP::NOUNP)))
     (cond
       ;; What is the time?
       ((equal handle *the-time*) (saytime))
@@ -71,7 +71,7 @@
       ((equal handle *the-weather*) (wx-repeat))
       ;; Anything else.
       (T (ags:say (format NIL "I do not know about '~a'~%"
-	   (agp:string-from-tree (agp:word-at top 'AGF::NOUNP))))))))
+	   (agp:string-from-tree (agp:word-at top 'AGP::NOUNP))))))))
 
 (defun semantics (top)
   (declare (type agp::pterm top))
