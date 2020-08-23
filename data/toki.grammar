@@ -5,48 +5,50 @@
 S: NS_B INT NS_E
 S: NS_B VOCA NS_E
 S: NS_B SENT NS_E
-S: NS_B YESNO NS_E
+S: NS_B ANSW NS_E
 
 # Basic noun phrases
-NOUNP: NOUNP NON
-NOUNP: NOUNP ADJ
 NOUNP: NON
-NOUNP: NON PREPP
+NOUNP: NON NON
+NOUNP: NON AND NON
+NOUNP: NON ADJ
+NOUNP: NAME
+NOUNP: NON POR NON
+# NOUNP: NON PREPP
 
-# Prepositional phrases indicate motion 'tawa' or location 'lon' or
+# Prepositional phrases indicate motion 'tawa', location 'lon', or
 # purpose 'tan'.
 PREPP: PRP NOUNP
 
 # A 'vocative' includes commands.
-VOCA: NOUNP VOC
 VOCA: NOUNP VOC SENT
 VOCA: NOUNP VOC PRED
-VOCA: VOCTX PRED
-# VOCA: COND VOCTX PRED
+VOCA: VOC PRED
+# VOCA: COND VOC PRED
 
 # Simple Yes or No answers repeat the verb in the question.
-YESNO: NOUNP
-YESNO: NOUNP NEG
+ANSW: VRB
+ANSW: VRB NEG
 
 SENT: SPRED
-# SENT: COND SPRED
+SENT: COND SPRED
 # But...  SENT: TASO SPRED
 
-# Use 'la' to qualify another sentence.  CTX='la'
-# COND: SPRED CTX
+# Use 'la' to qualify another sentence.  A la B -> If A, then B
+COND: SPRED CTX
 # COND: CONTEXT CTX
-# COND: NOUNP CTX
+COND: NOUNP CTX
 
 # Subject plus Predicate in various forms
 SPRED: P12 PRED
 SPRED: NOUNP SBJ PRED
-# SPRED: CSUB SUBJ PRED
+# SPRED: CSUB SBJ PRED
 
 # CSUB: NON AND CSUB
 
 # COMPNON : NMOD
 # COMPNON : NOUNP POF
-# COMPNON : NON OR NON 
+# COMPNON : NON POR NON 
 
 # NPI: NOUNP POF NOUNP
 # NPI: NON POF NAME
@@ -60,43 +62,41 @@ PRED: VP
 # prepositional phrases afterward.
 VP: IVP
 VP: TRANSVP
-# VP: VP PP
+# VP: VP PREPP
 
 # Intransitive Verb Phrases do not have Direct Objects
 IVP: VERB
-# IVP: MODAL PREPP NON 
+IVP: MODAL PREPP VRB
 # IVP: MODIFIER
 
 # Transitive Verb Phrases have Direct Objects
-TRANSVP: VERB DOP
-# TRANSVP: MODAL VERB DOP
+TRANSVP: VERB DOBJ
+# TRANSVP: MODAL VERB DOBJ
 
-# The Direct Object Phrase receives the action of the verb.  They
+# The Direct Object Phrases receives the action of the verb.  They
 # are always introduced by the direct object marker 'e'.
-DOP: DO NOUNP
-# DOP: DO NON  DO
+DOBJ: PDO NOUNP
+# DOBJ: PDO NOUNP DOBJ
 
-# A verb looks just like a noun, possibly modified.
+# A verb phrase, possibly modified.
 VERB: VRB
 VERB: MODAL VRB
-# VERB: YNV
-# VERB: MODAL YNV
+VERB: YESNO
+VERB: MODAL YESNO
 # VERB: YNV MOD
 
-# YNV: NON NEG NON
+# The presence of the Yes/No-verb construction indicates a question.
+# "ono li moku ala moku e moku pona?"
+YESNO: VRB NEG VRB
 
 # A Modal phrase modifies the following verb.  These are the "pre-verbs"
 # like coming, able to, etc.  They can be modified with 'ala' to mean
 # "not able to ...".
-MODAL: POSMODAL
-MODAL: POSMODAL NEG
+MODAL: PRV
+MODAL: PRV NEG
 MODAL: YNMODAL
 
-POSMODAL: PRV
 YNMODAL: PRV NEG PRV
 
-# N: P12
-# N: NON
-
-# A proper name is NCLASS "jan" or "ma" or "tomo" followed by a name.
-NAME: NCLASS NAM
+# A proper name is "jan" or "ma" or "tomo" followed by a name.
+NAME: PNA NAM

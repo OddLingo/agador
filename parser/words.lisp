@@ -3,13 +3,53 @@
 ;;;; This file provides dictionary services to the parser.
 (in-package :AGP)
 
+;;; A dictionary of all the words in toki pona, keyed on spelling,
+;;; taken from "pu", the cannonical reference for the toki pona language.
+;;; There is one entry per spelling, but each can have multiple
+;;; grammatical functions.  By convention, the grammatical function
+;;; names of words are three letters long.  Longer names are for
+;;; groups of words such a "prepositional phrase".  All function
+;;; names are in the AGF package.
 (defvar *dict* (make-hash-table :size 140 :test 'equal))
-(agu:init-hash *dict* (AGF:wordlist))
+(in-package :AGF)
+(agu:init-hash AGP::*dict*
+ '(("a" INT)("akesi" NON)("ala" ADJ NEG NUM)("alasa" VRB)
+   ("ale" ADJ NON NUM)("anpa" ADJ)("ante" ADJ)("anu" POR)
+   ("awen" ADJ PRV VRB)("e" PDO)("en" AND)("esun" NON)
+   ("ijo" NON)("ike" ADJ)("ilo" NON)("insa" NON)("jaki" ADJ)
+   ("jan" NON PNA)("jelo" ADJ)("jo" VRB)("kala" NON)
+   ("kalama" VRB)("kama" ADJ PRV)("kasi" NON)
+   ("ken" PRV ADJ)("kepeken" PRP)("kili" NON)
+   ("kiwen" NON)("ko" NON)("kon" NON)("kule" ADJ)("la" CTX)
+   ("lape" ADJ)("laso" ADJ)("lawa" NON VRB)("len" NON)
+   ("lete" ADJ)("li" SBJ)("lili" ADJ)("linja" NON)
+   ("lipu" NON)("loje" ADJ)("lon" PRP)("luka" NON NUM)
+   ("lukin" NON VRB PRV)("lupa" NON)("ma" NON PNA)("mama" NON)
+   ("mani" NON)("meli" NON)("mi" P12 ADJ)("mike" NON)("moku" VRB NON)
+   ("moli" ADJ)("monsi" NON)("mu" INT)("mun" NON)("musi" ADJ)
+   ("mute" ADJ NON)("nanpa" NON NUM)("nasa" ADJ)("nasin" NON)
+   ("nena" NON)("ni" ADJ)("nimi" NON)("noka" NON)("o" VOC)
+   ("olin" VRB NON)("ona" NON ADJ)("open" VRB)("pakala" ADJ)("pali" VRB)
+   ("palisa" NON)("pan" NON)("pana" VRB)("pi" POF)
+   ("pilin" NON ADJ)("pimeja" ADJ)("pini" ADJ)("pipi" NON)
+   ("poka" NON)("pona" ADJ)("pu" ADJ NON)("sama" ADJ PRP)
+   ("seli" ADJ)("selo" NON)("seme" NON)("sewi" ADJ NON)
+   ("sijelo" NON)("sike" NON ADJ)("sin" ADJ)("sina" P12 ADJ)
+   ("sinpin" NON)("sitelen" NON)("sona" VRB PRV)("soweli" NON)
+   ("suli" ADJ)("suno" NON)("supa" NON)("suwi" ADJ)("tan" PRP)
+   ("taso" BUT ADJ)("tawa" PRP ADJ)("telo" NON)("tenpo" NON)
+   ("toki" VRB)("tomo" NON PNA)("tu" NUM)("unpa" VRB)("uta" NON)
+   ("utala" VRB)("walo" ADJ)("wan" ADJ NUM)("waso" NON)("wawa" ADJ)
+   ("weka" ADJ)("wile" PRV)
+   ;; Plus some proper names.
+   ("Akato" NAM)("Mewika" NAM)))
+
+(in-package :AGP)
 
 ;;; This table maps individual letters in toki pona to their pronounciation
 ;;; using the Julius English Acoustic Model.  Any letter not in the table
-;;; maps to itself.
-(defparameter +char-sound+ (make-hash-table :test 'equal :size 20))
+;;; maps to itself.  Change to match acoustic model.
+(defparameter +char-sound+ (make-hash-table :test 'equal :size 10))
 (agu:init-hash
  +char-sound+
  '(("a" . "ah") ("e" . "eh") ("i" . "iy")
@@ -25,7 +65,7 @@
     (agu:string-from-list
      (map 'list #'(lambda (c) (letter-sound c)) s))))
 
-;;; Print the entire internal dictionary.
+;;; Print the entire internal dictionary.  For debugging.
 (defun print-words ()
   (maphash
    #'(lambda (k v) (format T "~a -> ~a~%" k v))

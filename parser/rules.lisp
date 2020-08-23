@@ -107,8 +107,8 @@
 (defun init-rules ()
   "Load rules from a file"
   ;; Initialize rules and routes
-  (setq *rules* (make-hash-table :size 20))
-  (setq *route* (make-hash-table :size 10))
+  (setq *rules* (make-hash-table :size 30))
+  (setq *route* (make-hash-table :size 30))
 
   ;; Load the basic three-term rules.
   (with-open-file

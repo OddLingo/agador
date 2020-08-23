@@ -53,7 +53,8 @@
       ((equal verbname "REMEMBER") (remember (agc:right top)))
       (T (log:warn "No action for ~a~%" verbname)))))
 
-;;; Detect questions by the presense of the universal query word.
+;;; Detect questions by the presense of the universal query word 'seme'
+;;; or the VRB-NOT-VRB pattern.
 (defun question-p (top)
   "Detect word 'seme' anywhere in the sentence."
   (declare (type agp::pterm top))

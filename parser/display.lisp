@@ -14,6 +14,7 @@
 
 ;;; Print a single parser tree from top down.
 (defun indent (sp)
+  "Emit a number of spaces"
   (declare (type integer sp))
   (loop for n from sp downto 0 do (format T " ") ))
 
@@ -31,12 +32,13 @@
 
 ;;;; Paint graphic representation of a parse tree.
 (defun dashes (n)
+  "Emit a number of dashes"
   (declare (type integer n))
   (loop for x from 0 below n do (format T "-")))
 
 (defun vline (x y1 y2)
-  (declare (type integer x y1 y2))
   "Draw a vertical line"
+  (declare (type integer x y1 y2))
   (loop for y from y1 to y2 do
        (agu:setxy x y)
        (format T "|")))

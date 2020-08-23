@@ -22,7 +22,6 @@
 (defpackage :AGADOR.GFUN
   (:nicknames :agf)
   (:use common-lisp)
-  (:export wordlist)
   )
 
 ;; The utility package has string and symbol manipulation functions,
