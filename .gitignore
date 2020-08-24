@@ -4,6 +4,6 @@
 *.log
 *.dict
 *.term
-*.dfa
+*.dfa*
 *.img
 Recognition

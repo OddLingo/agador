@@ -1,8 +1,13 @@
 ;;;; -*- Mode: Lisp; Syntax: ANSI-Common-Lisp; -*-
 
-(in-package :AGP)
+;;;; This file provides the rules for the Adjacency Parser to deal with
+;;;; the toki pona language.  All rules are triplets.  The first two
+;;;; terms, when found next to each other, "might" be acting as the
+;;;; third term.  An optional fourth term is a function to run should
+;;;; the third term end up spanning the entire input.
 
-;;;; A 'routing table' of grammatical functions, derived from the
+(in-package :AGP)
+;;;; A 'routing table' of grammatical functions is derived from the
 ;;;; rules. It is a two-dimensional hash-table, first keyed by
 ;;;; the function of a 'current' node and then keyed by the function
 ;;;; of a 'goal' node.  The value at the intersection can be:
@@ -10,11 +15,8 @@
 ;;;; 2) T => This is the goal node
 ;;;; 3) AGP:LEFT => Take the left downward path
 ;;;; 4) AGP:RIGHT => Take the right downward path.
-(defvar *route* (make-hash-table :size 10))
-
-;;; A hash table of rules, keyed on the right hand term.  The parser
-;;; uses this to detect interesting adjacent terms.
-(defvar *rules*)
+(defvar *route* (make-hash-table :size 50))
+(defvar *rules* (make-hash-table :size 50))
 
 (defun route-from (fn)
   (let ((ftable (gethash fn *route*)))
@@ -45,16 +47,78 @@
 		     do
 		       (add-route start lower-goal upper-path)))))))
 
-(defun print-routes ()
-  "Print out the entire route table"
-  (loop for s being the hash-key
-     using (hash-value st) of *route*
-     do
-       (agu:term "~a to~%" s)
-       (loop for g being the hash-key
-	  using (hash-value p) of st
-	  do
-	    (agu:term "    ~a go ~a~%" g p))))
+;;; Each entry in the rule table is a list of rules with the same
+;;; right term.  We create the list the first time, and add to it
+;;; thereafter.  When trying out potential rules, we always know
+;;; what the right side is, so this speeds up the search.
+;;; We load the table from a big list at compile time.
+(in-package :AGF)
+(dolist (rule
+'(
+;; Basic phrases
+  (NON ADJ NON)		;; A modified noun phrase, left-heavy preferred
+  (VRB ADJ VRB)   ;; Verbs too
+  (PRP NON PREPP)	;; Prepositional phrase
+  (NON PREPP NON)	;; Prepositions can modify nouns too
+  (VRB PREPP VRB)
+  (NON SUBJ SSUB)		;; A marked Sentence subject
+  (NON NOT NON)		;; A negated noun  "Not green"
+(NON AND CPFX)		;; Left of a conjoined phrase "Apples and ..."
+(CPFX NON NON)		;; Right of a conjoined phrase.
+(DOMARK NON DOBJ)	;; A direct object
+(NON DOBJ NON)		;; Only verbs can have direct objects
+
+;; Forms of sentence.  If the word 'seme' appears, it is probably
+;; a question but that gets detected at the semantic level.
+;; Yes/no questions look different.
+(P12 NON SENT AGA:SEMANTICS)	;; I or you do something
+(SSUB NON SENT AGA:SEMANTICS)	;; Something not us does something
+
+;; mi ijo. ; sina ijo. ; ona li ijo. ; mi mute li ijo.
+;;     a! ; ...a ; noun a
+;;     noun o! ; o verb... ; noun o verb
+;;     noun li pre-verb verb...
+;;     sentence la sentence ; fragment la sentence
+;;     complex idea { sentence containing "ni": sentence
+
+;; QUESTIONS
+;;     [seme] li [seme] e [seme] prep [seme]?
+;;     ...anu seme? ; noun li verb ala verb? ; yes = verb ; no = ala
+
+;; AND
+;;     noun en noun ; noun li verb li verb ; noun li verb e noun e noun
+
+;; ADJECTIVES
+;;     noun + adj ; (noun + adj) adj ; ((noun + adj) adj) adj
+;;     noun pi noun + adj
+;;     word + Proper name {adj}
+
+;; NUMBERS
+;;     0 = ala ; 1 = wan ; 2 = tu ; 3+ = mute ; ∞ = ale
+;;     alternatives; 5 = luka ; 20 = mute ; 100 = ale
+;;     ordinals { noun nanpa number
+))
+  (destructuring-bind (lfn rfn rslt &optional act)
+      rule
+    (format T "Rule ~a as ~a:~a->~a~%" rule lfn rfn rslt)
+    (let ((newrule
+	   (make-instance 'agp::rule
+			  :left lfn :right rfn
+			     :result rslt :action act))
+	     (oldrules (gethash rfn AGP::*rules*)))
+	 ;; Add new rule to the list of all with same right term
+	 (setf (gethash rfn AGP::*rules*)
+	       (if oldrules
+		   (push newrule oldrules)
+		   (list newrule)))
+
+	 ;; Remember paths downward through the rules.
+	 (agp::add-route rslt lfn 'AGC:LEFT)
+	 (agp::add-route rslt rfn 'AGC:RIGHT))))
+
+(in-package :AGP)
+;;; Find the first step of multi-step routes
+(merge-routes)
 
 ;;; Use the routing table to find specific parts of a sentence.
 ;;; Given an upper node and a desired grammatical Function,
@@ -72,66 +136,25 @@
 	   ;; This is the desired node.
 	   ((T) (return-from searching probe))))))
 
-;;; Each entry is a list of rules with the same right term.  We
-;;; create the list the first time, and add to it thereafter.  When
-;;; trying out potential rules, we always know what the right side
-;;; is, so this speeds up the search.
-(defun add-rule (lfn rfn rslt act)
-  (let* (
-	 (lfn1 (intern lfn :AGF))
-	 (rfn1 (intern rfn :AGF))
-	 (rslt1 (intern rslt :AGF))
-	 (act1 (if act (intern act :AGA) NIL))
-	 (newrule
-	  (make-instance 'rule
-			:left lfn1 :right rfn1
-			:result rslt1 :action act1))
-	 (oldrules (gethash rfn1 *rules*)))
-
-    ;; Add new rule to the list of all with same right term
-    (setf (gethash rfn1 *rules*)
-	  (if oldrules (push newrule oldrules)
-	      (list newrule)))
-
-    ;; Remember paths downward through the rules.
-    (add-route rslt1 lfn1 'AGC:LEFT)
-    (add-route rslt1 rfn1 'AGC:RIGHT)))
-
 ;; Get a list of the rules with a specified right side term.
 (defun rules-for (fn) (gethash fn *rules*))
-
-(defparameter +rule+ "^(\\w+) (\\w+) (\\w+)\\s?(\\w+)?" )
-(defparameter +cmnt+ "^\\s*#" )
-
-;;; Load the rules at startup.
-(defun init-rules ()
-  "Load rules from a file"
-  ;; Initialize rules and routes
-  (setq *rules* (make-hash-table :size 30))
-  (setq *route* (make-hash-table :size 30))
-
-  ;; Load the basic three-term rules.
-  (with-open-file
-      (stream
-       (format NIL "~a/toki.rules" AGC:+data-directory+))
-    (loop for line = (read-line stream NIL)
-       until (eq line NIL) do
-	 (if (ppcre:scan +cmnt+ line)
-	     NIL
-	     (ppcre:register-groups-bind
-		 (lfn rfn rslt act)
-		 (+rule+ (string-upcase line))
-	       (add-rule lfn rfn rslt act)))))
-
-  ;; Find the first step of multi-step routes
-  (merge-routes))
 
 (defun print-rules ()
   "Print all rules according to right-hand term."
   (loop for rfn being the hash-key
      using (hash-value llist) of *rules*
      do
-       (agu:term "For ~a: " rfn)
-       (dolist (r llist) (print-object r T))
+       (format T "For ~a: " rfn)
+       (dolist (r llist) (print-object r T) (terpri))
        (terpri)))
        
+(defun print-routes ()
+  "Print out the entire route table"
+  (loop for s being the hash-key
+     using (hash-value st) of *route*
+     do
+       (agu:term "~a to~%" s)
+       (loop for g being the hash-key
+	  using (hash-value p) of st
+	  do
+	    (agu:term "    ~a go ~a~%" g p))))

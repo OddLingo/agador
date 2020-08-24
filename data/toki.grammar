@@ -36,7 +36,6 @@ SENT: COND SPRED
 
 # Use 'la' to qualify another sentence.  A la B -> If A, then B
 COND: SPRED CTX
-# COND: CONTEXT CTX
 COND: NOUNP CTX
 
 # Subject plus Predicate in various forms
@@ -53,9 +52,9 @@ SPRED: NOUNP SBJ PRED
 # NPI: NOUNP POF NOUNP
 # NPI: NON POF NAME
 
-# Predicate is varous forms of verb phrase which differ from noun phrases
-# in that they can have a direct object.
+# A Predicate can be an adjective, noun, or verb phrase.
 PRED: VP
+PRED: PREPP
 # PRED: VP SBJ PRED
 
 # Verb Phrases can be transitive or intransitive, and have optional

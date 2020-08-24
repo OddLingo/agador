@@ -12,7 +12,7 @@
 ;;; names are in the AGF package.
 (defvar *dict* (make-hash-table :size 140 :test 'equal))
 (in-package :AGF)
-(agu:init-hash AGP::*dict*
+(dolist (def
  '(("a" INT)("akesi" NON)("ala" ADJ NEG NUM)("alasa" VRB)
    ("ale" ADJ NON NUM)("anpa" ADJ)("ante" ADJ)("anu" POR)
    ("awen" ADJ PRV VRB)("e" PDO)("en" AND)("esun" NON)
@@ -41,8 +41,9 @@
    ("toki" VRB)("tomo" NON PNA)("tu" NUM)("unpa" VRB)("uta" NON)
    ("utala" VRB)("walo" ADJ)("wan" ADJ NUM)("waso" NON)("wawa" ADJ)
    ("weka" ADJ)("wile" PRV)
-   ;; Plus some proper names.
-   ("Akato" NAM)("Mewika" NAM)))
+   ;; Plus some proper names, which act like adjectives.
+   ("Akato" ADJ)("Mewika" ADJ)))
+  (setf (gethash (car def) AGP::*dict*) (cdr def)))
 
 (in-package :AGP)
 

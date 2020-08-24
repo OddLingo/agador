@@ -171,7 +171,6 @@
 
 (defun start-parser ()
   "Initialize parser structures."
-  (init-rules)
   (setq *parser-inbox*
 	(make-instance 'agu:mbx-server
 		       :name "Parser"
