@@ -5,27 +5,52 @@
 (defparameter +data-directory+
   (asdf:system-relative-pathname :agador #p"data"))
 
-
 (opts:define-opts
     (:name :confidence
            :description "Minimum confidence level"
+           :short #\m
+           :long "minimum"
+           :arg-parser #'parse-integer)
+    (:name :count
+           :description "Number of sentences to generate"
+           :short #\n
+           :long "count"
+	   :default 10
+           :arg-parser #'parse-integer)
+    (:name :prompts
+           :description "Name of prompt file to write"
+           :short #\p
+           :long "prompts"
+           :arg-parser #'identity)
+    (:name :corpus
+           :description "Name of text corpus file to write"
            :short #\c
-           :long "conf"
-           :arg-parser #'parse-integer))
+           :long "corpus"
+           :arg-parser #'identity))
 
-;;(defun get-options ()
-;  (multiple-value-bind (options free-args)
-;    (opts:get-opts)
-;
-;    (let (
-;	  (conf (getf options :confidence))
-;	  )
-;      (if conf (setq AGS:*MINCONF* conf))
-;      )
-;    ))
+;;; Process command line options
+(defun get-options ()
+  (multiple-value-bind (options free-args)
+      (opts:get-opts)
+    (declare (ignore free-args))
+    (let (
+	  (conf (getf options :confidence))
+	  (corpus (getf options :corpus))
+	  (prompts (getf options :prompts))
+	  (count (getf options :count))
+	  )
+      (when corpus
+	(agp::make-text count corpus T)
+	(sb-ext:quit))
+      (when prompts
+	(agp::make-text count prompts NIL)
+	(sb-ext:quit))
+      (if conf (setq AGS:*MINCONF* conf))
+      )
+    ))
   
 (defun run ()
-;  (get-options)
+  (get-options)
 
   ;; Set up the standard logging package.
   (log:config
@@ -43,7 +68,7 @@
   (agu:sked-later 5 #'aga:wx-tropical)
   (aga:start-security)
   
-  ;; Start Julius speech recognizer
+  ;; Start speech recognizer
   (ags:tstart)
   (ags:listen-start "toki")
 
@@ -60,5 +85,3 @@
   (agm:db-close)
   (log:info "Finish")
   )
-
-

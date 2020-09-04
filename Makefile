@@ -3,6 +3,7 @@ LISP=sbcl
 
 default:
 	@$(LISP) --eval "(asdf:make :agador)" --eval "(sb-ext:save-lisp-and-die \"agador.img\" :toplevel 'AGC:RUN)"
+	@echo "Generated agador.img"
 
 clean:
 	@echo "Removing FASL files"
@@ -13,10 +14,4 @@ clean:
 
 run:
 	@$(LISP) --core agador.img --noinform
-
-dfa:
-	@rm -f data/english.voca
-	@cd data
-	$(LISP) --eval "(asdf:make :agador)" --eval "(ags:make-voca \"data/english\")" --eval "(quit)"
-	mkdfa english
 
