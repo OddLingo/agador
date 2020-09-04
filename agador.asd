@@ -25,7 +25,7 @@
 	     :depends-on ("package")
 	     :serial T
 	     :components (
-		     (:file "julius")
+		     (:file "vosk")
 		     (:file "talk")))
 
     (:module "parser"
@@ -38,6 +38,7 @@
 	(:file "number")
 	(:file "display")
 	(:file "parse")
+	(:file "corpus")
 	)
       )
 

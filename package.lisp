@@ -4,8 +4,8 @@
   (:nicknames :ags)
   (:use common-lisp)
   (:import-from :cl-utilities :split-sequence)
-  (:export jstart jstop jsend say tstart *MINCONF*)
-  (:export load-dictionary make-voca mapchars)
+  (:export listen-start listen-stop listen-control say tstart *MINCONF*)
+  (:export generate)
   )
 
 (defpackage :AGADOR.MAIN

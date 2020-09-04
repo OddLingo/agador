@@ -45,7 +45,7 @@
   
   ;; Start Julius speech recognizer
   (ags:tstart)
-  (ags:jstart "toki")
+  (ags:listen-start "toki")
 
   (ags:say "toki.")
 
@@ -56,7 +56,7 @@
       (log:error e)))
 
   ; Clean up to exit.
-  (ags:jstop)
+  (ags:listen-stop)
   (agm:db-close)
   (log:info "Finish")
   )

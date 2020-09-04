@@ -47,32 +47,34 @@
 		     do
 		       (add-route start lower-goal upper-path)))))))
 
-;;; Each entry in the rule table is a list of rules with the same
-;;; right term.  We create the list the first time, and add to it
-;;; thereafter.  When trying out potential rules, we always know
+;;; Each entry in the rule hash-table is a list of rules with the same
+;;; right term.  When trying out potential rules, we always know
 ;;; what the right side is, so this speeds up the search.
-;;; We load the table from a big list at compile time.
+;;; We load the table from a big list at compile time.  The leaf terms
+;;; are defined in words.lisp.
 (in-package :AGF)
-(dolist (rule
-'(
+(defparameter +all-rules+
+ '(
 ;; Basic phrases
-  (NON ADJ NON)		;; A modified noun phrase, left-heavy preferred
+  (NON ADJ NON)	  ;; A modified noun phrase, left-heavy preferred
   (VRB ADJ VRB)   ;; Verbs too
-  (PRP NON PREPP)	;; Prepositional phrase
-  (NON PREPP NON)	;; Prepositions can modify nouns too
+  (PRP NON PREPP) ;; Prepositional phrase
+  (NON PREPP NON) ;; Prepositions can modify nouns too
   (VRB PREPP VRB)
-  (NON SUBJ SSUB)		;; A marked Sentence subject
-  (NON NOT NON)		;; A negated noun  "Not green"
-(NON AND CPFX)		;; Left of a conjoined phrase "Apples and ..."
-(CPFX NON NON)		;; Right of a conjoined phrase.
-(DOMARK NON DOBJ)	;; A direct object
-(NON DOBJ NON)		;; Only verbs can have direct objects
+  (NON SBJ SSUB)  ;; A marked Sentence subject with 'li'
+  (NON NEG NON)	  ;; A negated noun  "Not green"
+  (VRB NEG VRB)
+  (NON CNJ CPFX)  ;; Left of a conjoined phrase "Apples and ..."
+  (CPFX NON NON)  ;; Right of a conjoined phrase.
+  (PDO NON DOBJ)  ;; A direct object
+  (VRB DOBJ VRB)  ;; Only verbs can have direct objects
 
 ;; Forms of sentence.  If the word 'seme' appears, it is probably
 ;; a question but that gets detected at the semantic level.
 ;; Yes/no questions look different.
-(P12 NON SENT AGA:SEMANTICS)	;; I or you do something
-(SSUB NON SENT AGA:SEMANTICS)	;; Something not us does something
+  (P12 VRB SENT AGA:SEMANTICS)	;; I or you do something
+  (SBJ VRB PRED)
+  (NON PRED SENT AGA:SEMANTICS)	;; Something not us does something
 
 ;; mi ijo. ; sina ijo. ; ona li ijo. ; mi mute li ijo.
 ;;     a! ; ...a ; noun a
@@ -85,7 +87,7 @@
 ;;     [seme] li [seme] e [seme] prep [seme]?
 ;;     ...anu seme? ; noun li verb ala verb? ; yes = verb ; no = ala
 
-;; AND
+;; AND, OR
 ;;     noun en noun ; noun li verb li verb ; noun li verb e noun e noun
 
 ;; ADJECTIVES
@@ -98,25 +100,25 @@
 ;;     alternatives; 5 = luka ; 20 = mute ; 100 = ale
 ;;     ordinals { noun nanpa number
 ))
+(in-package :AGP)
+
+(dolist (rule AGF::+all-rules+)
   (destructuring-bind (lfn rfn rslt &optional act)
       rule
-    (format T "Rule ~a as ~a:~a->~a~%" rule lfn rfn rslt)
     (let ((newrule
 	   (make-instance 'agp::rule
 			  :left lfn :right rfn
-			     :result rslt :action act))
-	     (oldrules (gethash rfn AGP::*rules*)))
-	 ;; Add new rule to the list of all with same right term
-	 (setf (gethash rfn AGP::*rules*)
-	       (if oldrules
-		   (push newrule oldrules)
-		   (list newrule)))
+			  :result rslt :action act))
+	  (oldrules (gethash rfn AGP::*rules*)))
+      ;; Add new rule to the list of all with same right term
+      (setf (gethash rfn AGP::*rules*)
+	    (if oldrules
+		(push newrule oldrules)
+		(list newrule)))
+      ;; Remember paths downward through the rules.
+      (agp::add-route rslt lfn 'AGC:LEFT)
+      (agp::add-route rslt rfn 'AGC:RIGHT))))
 
-	 ;; Remember paths downward through the rules.
-	 (agp::add-route rslt lfn 'AGC:LEFT)
-	 (agp::add-route rslt rfn 'AGC:RIGHT))))
-
-(in-package :AGP)
 ;;; Find the first step of multi-step routes
 (merge-routes)
 

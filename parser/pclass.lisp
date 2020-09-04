@@ -68,6 +68,7 @@
     )
   )
 
+  
 ;; A vector of lists of all terms with a rpos equal to the vector index.
 (defvar *right*)
 (defvar *top*)

@@ -14,13 +14,13 @@
 (in-package :AGF)
 (dolist (def
  '(("a" INT)("akesi" NON)("ala" ADJ NEG NUM)("alasa" VRB)
-   ("ale" ADJ NON NUM)("anpa" ADJ)("ante" ADJ)("anu" POR)
-   ("awen" ADJ PRV VRB)("e" PDO)("en" AND)("esun" NON)
+   ("ale" ADJ NON NUM)("anpa" ADJ)("ante" ADJ)("anu" CNJ)
+   ("awen" ADJ PRV VRB)("e" PDO)("en" CNJ)("esun" NON)
    ("ijo" NON)("ike" ADJ)("ilo" NON)("insa" NON)("jaki" ADJ)
-   ("jan" NON PNA)("jelo" ADJ)("jo" VRB)("kala" NON)
-   ("kalama" VRB)("kama" ADJ PRV)("kasi" NON)
-   ("ken" PRV ADJ)("kepeken" PRP)("kili" NON)
-   ("kiwen" NON)("ko" NON)("kon" NON)("kule" ADJ)("la" CTX)
+   ("jan" NON)("jelo" ADJ)("jo" VRB)("kala" NON)
+   ("kalama" VRB)("kama" ADJ PRV)("kasi" NON)("ken" PRV ADJ)
+   ("kepeken" PRP)("kili" NON)("kiwen" NON)("ko" NON)
+   ("kon" NON)("kule" ADJ)("la" CTX)
    ("lape" ADJ)("laso" ADJ)("lawa" NON VRB)("len" NON)
    ("lete" ADJ)("li" SBJ)("lili" ADJ)("linja" NON)
    ("lipu" NON)("loje" ADJ)("lon" PRP)("luka" NON NUM)
@@ -76,18 +76,14 @@
 (defun lookup (spell)
   (gethash spell *dict*))
 
-;;;; The dictionary needs to be in a special format for the Julius
-;;;; speech recognizer, along with phonetic information.  Here
-;;;; is where we generate that file.
-(defun generate ()
-  (let* ((funs (make-hash-table :size 30))
-	 (out (open
-	       (format NIL "~a/toki.voca" AGC:+data-directory+)
-	       :direction :output
-	       :if-exists :supersede)))
+(defun all-words (callback)
+  (dolist (w (alexandria:hash-table-keys *dict*))
+    (funcall callback w (phonetics w))))
 
-    ;; First invert the dictionary so all words with the same function
-    ;; are grouped together.
+;;; Create an inverted hash of the dictionary, so all words with
+;;; the same function are grouped together.
+(defun words-by-fn ()
+  (let* ((funs (make-hash-table :size 30)))
     (maphash
      #'(lambda (spell word-funs)
 	 (dolist (fn word-funs)
@@ -98,24 +94,6 @@
 		  (push spell old)
 		  (list spell))))
 	   ))
-     *dict*)
+     AGP::*dict*)
+    funs))
 
-    (labels
-	((print-word (word)
-	   (format out "~a~C~a~%" word '#\Tab (phonetics word)))
-	 (fn-to-voca (fn)
-	   (format out "~%% ~a~%" fn)
-	   (dolist (word (gethash fn funs))
-	     (print-word word))))
-
-      ;; The 'silence markers' are always there.
-      (format out "# This is a generated file.  Do not edit.~%")
-      (format out "% NS_B~%s	sil~%")
-      (format out "% NS_E~%es	sil~%")
-
-      ;; Now write all the words to the voca file, grouped by function,
-      ;; generating phonetics along the way.
-      (dolist (fn (alexandria:hash-table-keys funs))
-	  (fn-to-voca fn)))
-    (close out)
-))

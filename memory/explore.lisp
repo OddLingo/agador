@@ -17,8 +17,8 @@
 (defun set-voice (yes)
   (setf (voice *uimode*) yes)
   (if yes
-	(ags:jsend "RESUME")
-	(ags:jsend "PAUSE")))
+	(ags:listen-control "RESUME")
+	(ags:listen-control "PAUSE")))
 
 ;;; Create a list of the terminal words in a tree.  We descend the
 ;;; tree right-side-first but are pushing it onto the list of leaves.

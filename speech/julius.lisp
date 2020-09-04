@@ -178,18 +178,18 @@
   )
 
 ;; Send a command to Julius.
-(defun jsend (cmd)
+(defun listen-control (cmd)
   (agu:send *jport* (format NIL "~a~%" cmd)))
 
-(defun jstop ()
+(defun listen-stop ()
     (uiop:run-program "killall -q julius" :ignore-error-status T)
     (sleep 1)
   )
 
 ;;;; Start up Julius, supplying its configuration file.
-(defun jstart (confname)
+(defun listen-start (confname)
   (let ((path (asdf:system-relative-pathname :agador #p"data/")))
-    (jstop)
+    (listen-stop)
     (uiop:launch-program
      (format NIL "julius -C ~a~a.jconf"
 	     path
@@ -200,3 +200,35 @@
     (jconnect)
   ))
 
+;;;; The dictionary needs to be in a special format for the
+;;;; speech recognizer packages, along with phonetic information.
+;;;; Here is where we generate that file.
+(defun jgenerate ()
+  (let ((funs (words-by-fn))
+	(voca
+	 (open
+	  (format NIL "~a/toki.voca" AGC:+data-directory+)
+	  :direction :output
+	  :if-exists :supersede)))
+    (labels
+	((print-word (file word)
+	   "Write vocabulary for other programs"
+	   (format file "~a~C~a~%" word '#\Tab (phonetics word)))
+	 (fn-to-voca (fn)
+	   (format voca "~%% ~a~%" fn)
+	   (dolist (word (gethash fn funs))
+	     (print-word voca word))))
+
+      ;; The 'silence markers' are always there.
+      (format voca "# This is a generated file.  Do not edit.~%")
+      (format voca "% NS_B~%s	[]  sil~%")
+      (format voca "% NS_E~%es	[]  sil~%")
+
+      ;; Now write all the words to the voca file, grouped by function,
+      ;; generating phonetics along the way.
+      (dolist (fn (alexandria:hash-table-keys funs))
+	(fn-to-voca fn))
+      )
+    
+    (close voca)
+))

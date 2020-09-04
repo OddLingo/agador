@@ -38,11 +38,13 @@
     "September" "October" "november" "December"))
 
 (defparameter +month-numbers+ (make-hash-table :test 'equal :size 12))
-(agu:init-hash
- +month-numbers+
- '(("JANUARY" . 1) ("FEBRUARY" . 2) ("MARCH" . 3) ("APRIL" . 4)
-   ("MAY" . 5) ("JUNE" . 6) ("JULY" . 7) ("AUGUST" . 8)
-   ("SEPTEMBER" . 9) ("OCTOBER" . 10) ("NOVEMBER" . 11) ("DECEMBER" . 12)))
+(dolist (namenum
+ '(("JANUARY" 1) ("FEBRUARY" 2) ("MARCH" 3) ("APRIL" 4)
+   ("MAY" 5) ("JUNE" 6) ("JULY" 7) ("AUGUST" 8)
+   ("SEPTEMBER" 9) ("OCTOBER" 10) ("NOVEMBER" 11) ("DECEMBER" 12)))
+  (destructuring-bind (name number)
+      namenum
+    (setf (gethash name +month-numbers+) number)))
 
 (defun age (uni)
   "Compute the age of a message in seconds"

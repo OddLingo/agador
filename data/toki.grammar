@@ -10,10 +10,8 @@ S: NS_B ANSW NS_E
 # Basic noun phrases
 NOUNP: NON
 NOUNP: NON NON
-NOUNP: NON AND NON
+NOUNP: NON CNJ NON
 NOUNP: NON ADJ
-NOUNP: NAME
-NOUNP: NON POR NON
 # NOUNP: NON PREPP
 
 # Prepositional phrases indicate motion 'tawa', location 'lon', or
@@ -47,10 +45,8 @@ SPRED: NOUNP SBJ PRED
 
 # COMPNON : NMOD
 # COMPNON : NOUNP POF
-# COMPNON : NON POR NON 
 
 # NPI: NOUNP POF NOUNP
-# NPI: NON POF NAME
 
 # A Predicate can be an adjective, noun, or verb phrase.
 PRED: VP
@@ -96,6 +92,3 @@ MODAL: PRV NEG
 MODAL: YNMODAL
 
 YNMODAL: PRV NEG PRV
-
-# A proper name is "jan" or "ma" or "tomo" followed by a name.
-NAME: PNA NAM

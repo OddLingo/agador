@@ -6,7 +6,7 @@
 
 ;; This function sends text to a speech synthesizer.
 (defun speaker (msg)
-  (jsend "PAUSE")
+  (listen-control "PAUSE")
   (sleep 0.5)
 
   (let ((txt (getf msg :TEXT))
@@ -18,7 +18,7 @@
      (format NIL "mimic -voice ~a \" ~a\"" voice txt)
      :output '(:string :stripped T))
     )
-  (jsend "RESUME")
+  (listen-control "RESUME")
   (sleep 3)
   )
 
