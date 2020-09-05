@@ -22,6 +22,11 @@
            :short #\p
            :long "prompts"
            :arg-parser #'identity)
+    (:name :lexicon
+           :description "Name of lexicon file to write"
+           :short #\l
+           :long "lexicon"
+           :arg-parser #'identity)
     (:name :corpus
            :description "Name of text corpus file to write"
            :short #\c
@@ -34,22 +39,28 @@
       (opts:get-opts)
     (declare (ignore free-args))
     (let (
-	  (conf (getf options :confidence))
+;;	  (conf (getf options :confidence))
 	  (corpus (getf options :corpus))
 	  (prompts (getf options :prompts))
+	  (lexicon (getf options :lexicon))
 	  (count (getf options :count))
 	  )
+      (when lexicon
+	(ags::make-lexicon lexicon)
+	(sb-ext:quit))
       (when corpus
 	(agp::make-text count corpus T)
 	(sb-ext:quit))
       (when prompts
 	(agp::make-text count prompts NIL)
 	(sb-ext:quit))
-      (if conf (setq AGS:*MINCONF* conf))
+;;      (if conf (setq AGS:*MINCONF* conf))
       )
     ))
-  
+
+;;; Top level function called at startup.
 (defun run ()
+  ;; Process command line.
   (get-options)
 
   ;; Set up the standard logging package.
@@ -70,7 +81,7 @@
   
   ;; Start speech recognizer
   (ags:tstart)
-  (ags:listen-start "toki")
+  (ags:listen-start)
 
   (ags:say "toki.")
 

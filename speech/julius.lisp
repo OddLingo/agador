@@ -187,13 +187,13 @@
   )
 
 ;;;; Start up Julius, supplying its configuration file.
-(defun listen-start (confname)
+(defun listen-start ()
   (let ((path (asdf:system-relative-pathname :agador #p"data/")))
     (listen-stop)
     (uiop:launch-program
      (format NIL "julius -C ~a~a.jconf"
 	     path
-	     confname)
+	     "toki.jconf")
      :output *standard-output*)
     ;; Give it time to start up before we connect to it.
     (sleep 2)

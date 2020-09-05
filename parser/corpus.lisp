@@ -53,18 +53,24 @@
 		(format corpus w))
 
 	      (deeper (d)
-		(< (random 100) (ceiling (/ +percent-recursive+ d))))
-	      
+		(< (random 100)
+		   (ceiling (/ +percent-recursive+ d))))
+
+	      ;; Recursively walk down the grammar, making random
+	      ;; decisions.
 	      (walk (start &optional (depth 1))
 		(let ((in-rules (gethash start genrules))
 		      (in-words (gethash start funwords)))
 		  (cond
+		    ;; No matching rules, so use words.
 		    ((null in-rules)
-			(emit (pick-from-list in-words)))
+		     (emit (pick-from-list in-words)))
+		    ;; No matching words, so use rules.
 		    ((null in-words)
 		     (let ((use-rule (pick-from-list in-rules)))
 		       (walk (rule-left use-rule) (1+ depth))
 		       (walk (rule-right use-rule) (1+ depth))))
+		    ;; Choose between rules or words.
 		    (T (if
 			(deeper depth)
 			(let ((use-rule (pick-from-list in-rules)))

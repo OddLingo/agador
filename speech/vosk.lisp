@@ -25,42 +25,45 @@
   (format T "~a~%" cmd))
 
 (defun listen-stop ()
-    (uiop:run-program "killall -q julius" :ignore-error-status T)
+;;    (uiop:run-program "killall -q julius" :ignore-error-status T)
     (sleep 1)
   )
 
 ;;;; Start up Vosk, supplying its configuration file.
-(defun listen-start (confname)
+(defun listen-start ()
   (let ((path (asdf:system-relative-pathname :agador #p"data/")))
     (uiop:launch-program
-     (format NIL "vosk -C ~a~a.jconf"
+     (format NIL "vosk-api ~a~a"
 	     path
-	     confname)
+	     "toki-model")
      :output *standard-output*)
     ;; Give it time to start up before we connect to it.
     (sleep 2)
     (vconnect)
   ))
 
-;;;; The dictionary needs to be in a special format for the
+;;;; The "lexicon" needs to be in a special format for the
 ;;;; speech recognizer packages, along with phonetic information.
 ;;;; Here is where we generate that file.
-(defun kgenerate ()
+(defun make-lexicon (filename)
   (let ((k-dict
 	 (open
-	  (format NIL "~a/lexicon.txt" AGC:+data-directory+)
+	  filename
 	  :direction :output
 	  :if-exists :supersede)))
 
     ;; The 'silence markers' are always there.
-    (format k-dict "SENT-START [] sil~%")
-    (format k-dict "SENT-END [] sil~%")
+    (format k-dict "SENT-START sil~%")
+    (format k-dict "SENT-END sil~%")
+    (format k-dict "<OOV> UNK~%")
 
     ;; And write all the words to the Kaldi dictionary.
     ;; This will need to be sorted.
     (agp::all-words
      #'(lambda (spell say)
-	 (format k-dict "~a ~a~%" spell say)))
+	 (format k-dict "~a ~a~%"
+		 (string-upcase spell)
+		 (string-upcase say))))
     
     (close k-dict)
 ))
