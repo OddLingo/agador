@@ -38,8 +38,8 @@ echo -e "$DASH Prepare_lang and many checks"
 utils/prepare_lang.sh $DLL "<OOV>" data/local $DL
 
 cat > conf/mfcc.conf <<EOF
--–use-energy=false
-–-sample-frequency=16000
+--use-energy=false
+--sample-frequency=16000
 EOF
 
 echo -e "$DASH 5.7 Extracting MFCC features"
