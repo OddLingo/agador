@@ -50,7 +50,7 @@
 	      (emit (w)
 		(when (> word-count 0) (format corpus " "))
 		(incf word-count)
-		(format corpus w))
+		(format corpus (string-upcase w)))
 
 	      (deeper (d)
 		(< (random 100)

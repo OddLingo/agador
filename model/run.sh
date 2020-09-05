@@ -1,7 +1,7 @@
 #!/bin/bash
 # Script for training a language model for toki pona.
 # All audio files should have been recorded.
-./path.sh
+source path.sh
 source cmd.sh
 DL="data/local"
 DLL="$DL/lang"
@@ -49,9 +49,27 @@ steps/make_mfcc.sh --cmd "$train_cmd" --nj 1 $x exp/make_mfcc/$x $mfccdir
 steps/compute_cmvn_stats.sh $x exp/make_mfcc/$x $mfccdir
 
 echo -e "$DASH 5.8 Monophone training"
-#utils/subset_data_dir.sh --first data/train 10000 data/train_10k
+utils/subset_data_dir.sh --first data/train 10 data/train_10k
 
 echo -e "$DASH 5.9 Triphone training and alignment"
-steps/train_deltas.sh --boost-silence 1.25 --cmd "$train_cmd" \
-2000 10000 data/train data/lang exp/mono_ali exp/tri1 || exit 1;
+#steps/train_deltas.sh --boost-silence 1.25 --cmd "$train_cmd" \
+#2000 10000 data/train data/lang exp/mono_ali exp/tri1 || exit 1;
+
+echo -e "$DASH Counting ngrams to make lm.arpa"
+# Get a big corpus of text to analyze.
+$AGADOR --prompts $DL/corpus.txt --count 5000
+# Using the SRILM utilities
+SDIR=$KALDI_ROOT/tools/srilm/bin/i686-m64
+mkdir -p $DL/tmp
+$SDIR/ngram-count -order $lm_order -write-vocab \
+		  $DL/tmp/vocab-full.txt \
+		  -wbdiscount -text $DL/corpus.txt \
+		  -lm $DL/tmp/lm.arpa
+
+echo -e "$DASH Making G.fst ====="
+lang=data/lang
+mkdir -p $lang
+src/lmbin/arpa2fst --disambig-symbol=#0 \
+		   --read-symbol-table=data/local/words.txt \
+		   $DL/tmp/lm.arpa $lang/G.fst
 
