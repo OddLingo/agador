@@ -56,6 +56,9 @@
   (action :accessor action :initarg :action :initform NIL)
   ))
 
+(defmethod has-test ((r rule) tname)
+  (not (null (member tname (action r)))))
+
 (defmethod print-object ((obj rule) stream)
   (let ((l (rule-left obj))
 	(r (rule-right obj))
@@ -68,7 +71,6 @@
     )
   )
 
-  
 ;; A vector of lists of all terms with a rpos equal to the vector index.
 (defvar *right*)
 (defvar *top*)

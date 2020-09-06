@@ -112,17 +112,18 @@
 	   (lambda (x) (> (term-lpos x) 0))
 	   rt))))
 
-;;; Remember what was said.
+;;; Remember what was said or act on commands or questions.
 (defun learn (best)
   (declare (type pterm best))
   (log:info "Recognized: ~a" (string-from-tree best))
   (let ((dothis (action best)))
-    (if dothis
-	(handler-case
-	    (funcall dothis best)
+    (cond
+      ((member 'AGF::FINAL dothis)
+       	(handler-case
+	    (AGA:SEMANTICS  best)
 	  (error (e)
-	    (log:error "~a" e)))
-	(agu:term "Nothing to do~%"))))
+	    (log:error "~a" e))))
+      (T (agu:term "Nothing to do~%")))))
 
 ;;; If there is exactly one satisfactory solution, we can learn from it
 ;;; or act on it.

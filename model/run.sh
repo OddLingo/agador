@@ -55,9 +55,10 @@ echo -e "$DASH 5.9 Triphone training and alignment"
 #steps/train_deltas.sh --boost-silence 1.25 --cmd "$train_cmd" \
 #2000 10000 data/train data/lang exp/mono_ali exp/tri1 || exit 1;
 
-echo -e "$DASH Counting ngrams to make lm.arpa"
+echo -e "$DASH Counting corpus ngrams to make lm.arpa"
 # Get a big corpus of text to analyze.
 $AGADOR --prompts $DL/corpus.txt --count 5000
+
 # Using the SRILM utilities
 SDIR=$KALDI_ROOT/tools/srilm/bin/i686-m64
 mkdir -p $DL/tmp

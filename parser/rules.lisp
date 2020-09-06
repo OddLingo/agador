@@ -55,7 +55,6 @@
 (in-package :AGF)
 (defparameter +all-rules+
  '(
-;; Basic phrases
   (NON ADJ NON)	  ;; A modified noun phrase, left-heavy preferred
   (VRB ADJ VRB)   ;; Verbs too
   (PRP NON PREPP) ;; Prepositional phrase
@@ -63,7 +62,8 @@
   (VRB PREPP VRB)
   (NON SBJ SSUB)  ;; A marked Sentence subject with 'li'
   (NON NEG NON)	  ;; A negated noun  "Not green"
-  (VRB NEG VRB)
+   (VRB NEG VRB)
+   (POF NON ADJ (RIGHT))  ;; Regrouped modifier, right must be a pair.
   (NON CNJ CPFX)  ;; Left of a conjoined phrase "Apples and ..."
   (CPFX NON NON)  ;; Right of a conjoined phrase.
   (PDO NON DOBJ)  ;; A direct object
@@ -72,9 +72,9 @@
 ;; Forms of sentence.  If the word 'seme' appears, it is probably
 ;; a question but that gets detected at the semantic level.
 ;; Yes/no questions look different.
-  (P12 VRB SENT AGA:SEMANTICS)	;; I or you do something
-  (SBJ VRB PRED)
-  (NON PRED SENT AGA:SEMANTICS)	;; Something not us does something
+   (P12 VRB SENT (FINAL))	;; I or you do something
+   (SBJ VRB PRED) ;; 'li' terminates subject
+   (NON PRED SENT (FINAL))	;; Something not us does something
 
 ;; mi ijo. ; sina ijo. ; ona li ijo. ; mi mute li ijo.
 ;;     a! ; ...a ; noun a

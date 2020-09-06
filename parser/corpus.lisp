@@ -8,42 +8,45 @@
 (defparameter +percent-recursive+ 80)
 
 (defun make-text (maxcount outfile &optional (period NIL))
+  (declare (ignore period))
+  (declare (optimize (debug 3) (speed 0)))
   (format T "Writing ~D sentences to ~a~%" maxcount outfile)
   (let ((genrules (make-hash-table :size 50))
 	(funwords (words-by-fn))
 	(topgoals NIL)
+	(word-count 0)
 	(corpus (open
 	  outfile
 	  :direction :output
 	  :if-exists :supersede)))
 
-    ;; Build a hash of rules keyed by result term.
-    (dolist (rule AGF::+all-rules+)
-      (destructuring-bind (lfn rfn rslt &optional act)
-	  rule
-	(let
-	    ((newrule
-	       (make-instance 'agp::rule
-			  :left lfn :right rfn
-			  :result rslt :action act))
-	     (oldrules (gethash rslt genrules)))
+    ;; Build a hash of rules keyed by result term.  Each entry
+    ;; is a list of all rules with the same result.
+    (dolist (old-key (alexandria:hash-table-keys AGP::*rules*))
+      (let ((rules (gethash old-key AGP::*rules*)))
+	(dolist (r rules)
+	  (let* ((rslt (rule-result r))
+		(oldrules (gethash rslt genrules)))
+	    ;; Remember the top goals
+	    (when
+	      (has-test r 'AGF::FINAL)
+	      (push r topgoals))
 
-	  ;; Remember the top goals
-	  (when act (push rslt topgoals))
-
-	  ;; Add new rule to the list of all with same result term
-	  (setf (gethash rslt genrules)
+	    ;; Add new rule to the list of all with same result term
+	    (setf (gethash rslt genrules)
 		(if oldrules
-		    (push newrule oldrules)
-		    (list newrule)))
-	  )))
-
+		    (push r oldrules)
+		    (list r)))
+	    ))))
+    
     ;; Generate all the sentences.
     (loop for n from 1 to maxcount
        do
-	 (let ((word-count 0))
-	   (labels
+	 (setf word-count 0)
+	 (labels
+;;	     (declaim (ftype (function (rule integer) t) walk))
 	     ((pick-from-list (alternatives)
+		"Select a random element from a list"
 		(nth (random (length alternatives))
 		     alternatives ))
 
@@ -52,39 +55,49 @@
 		(incf word-count)
 		(format corpus (string-upcase w)))
 
-	      (deeper (d)
+	      (pick-word (words)
+		(if (null words)
+		    (format T "Picking from empty word list~%")
+		    (emit (pick-from-list words))))
+	      
+	      (pick-rule (depth rules)
+		(if (null rules)
+		    (format T "Picking from empty rules list~%")
+		    (walk (pick-from-list rules) (1+ depth))))
+
+	      (deeper (depth r)
+		"Decide when to go deeper in the grammar"
+		(declare (ignore r))
 		(< (random 100)
-		   (ceiling (/ +percent-recursive+ d))))
+		   (ceiling (/ +percent-recursive+ depth))))
 
-	      ;; Recursively walk down the grammar, making random
-	      ;; decisions.
+	      (probe (r side fn depth)
+		(if (has-test r side)
+		    (pick-rule depth (gethash fn genrules))
+		    (let ((rules (gethash fn genrules))
+			  (words (gethash fn funwords)))
+		      
+		      (cond
+			;; No matching rules, so use words.
+			((null rules) (pick-word words))
+			((null words) (pick-rule depth rules))
+			(T (if
+			    (deeper depth r)
+			    (pick-rule depth rules)
+			    (pick-word words)))))))
+
 	      (walk (start &optional (depth 1))
-		(let ((in-rules (gethash start genrules))
-		      (in-words (gethash start funwords)))
-		  (cond
-		    ;; No matching rules, so use words.
-		    ((null in-rules)
-		     (emit (pick-from-list in-words)))
-		    ;; No matching words, so use rules.
-		    ((null in-words)
-		     (let ((use-rule (pick-from-list in-rules)))
-		       (walk (rule-left use-rule) (1+ depth))
-		       (walk (rule-right use-rule) (1+ depth))))
-		    ;; Choose between rules or words.
-		    (T (if
-			(deeper depth)
-			(let ((use-rule (pick-from-list in-rules)))
-			  (walk (rule-left use-rule) (1+ depth))
-			  (walk (rule-right use-rule) (1+ depth)))
-			(emit (pick-from-list in-words))))))))
+		"Recursively walk down the grammar, making random decisions."
+		(let* ((lfn (rule-left start))
+		       (rfn (rule-right start)))
+		  (probe start 'AGF::LEFT lfn depth)
+		  (probe start 'AGF::RIGHT rfn depth)))
+	      ) ;; End of local functions
 
-	     ;; Now randomly walk the rules backwards, starting
-	     ;; with one of the top goals.
-	     (walk (pick-from-list topgoals)))
+	   ;; Now randomly walk the rules backwards, starting
+	   ;; with one of the top goals.
+	   (walk (pick-from-list topgoals)))
 
-	   ;; Put a period at the end if requested.
-	   (if period
-	       (format corpus ".~%")
-	       (format corpus "~%"))
-	 ))
+	 (format corpus "~%")
+	 ) ;; End loop making sentences.
   (close corpus)))
