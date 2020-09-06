@@ -49,7 +49,7 @@ steps/make_mfcc.sh --cmd "$train_cmd" --nj 1 $x exp/make_mfcc/$x $mfccdir
 steps/compute_cmvn_stats.sh $x exp/make_mfcc/$x $mfccdir
 
 echo -e "$DASH 5.8 Monophone training"
-utils/subset_data_dir.sh --first data/train 10 data/train_10k
+utils/subset_data_dir.sh --first data/train 40 data/train_10k
 
 echo -e "$DASH 5.9 Triphone training and alignment"
 #steps/train_deltas.sh --boost-silence 1.25 --cmd "$train_cmd" \

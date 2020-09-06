@@ -60,6 +60,9 @@
 
 ;;; Top level function called at startup.
 (defun run ()
+  ;; Initial housekeeping
+  (setf *random-state* (make-random-state t))
+
   ;; Process command line.
   (get-options)
 

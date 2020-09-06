@@ -2,7 +2,7 @@ CACHE="/home/pd/.cache/common-lisp/sbcl-2.0.1.debian-linux-x64/home/pd/Develop/a
 LISP=sbcl
 
 default:
-	@$(LISP) --eval "(asdf:make :agador)" --eval "(sb-ext:save-lisp-and-die \"agador.img\" :toplevel 'AGC:RUN)"
+	@$(LISP) --noinform --eval "(asdf:make :agador)" --eval "(sb-ext:save-lisp-and-die \"agador.img\" :toplevel 'AGC:RUN)"
 	@echo "Generated agador.img"
 
 clean:
