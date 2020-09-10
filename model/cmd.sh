@@ -1,2 +1,2 @@
-train_cmd="run.pl"
-decode_cmd="run.pl  --mem 2G"
+export train_cmd="run.pl"
+export decode_cmd="run.pl --mem 2G"

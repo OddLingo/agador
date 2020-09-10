@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# Parameter 1 is number of sentences to record in this session.
 if [ -n "$1" ]
 then
     COUNT=$1
@@ -7,7 +8,16 @@ else
     COUNT=10
 fi
 
-# Parameter is number of sentences to record in this session.
+# Parameter 2 can restart all audio training.
+if [ "$2" == "restart" ]
+then
+    echo "Starting over"
+    rm -fr train/*
+    rm -fr audio/*.wav
+fi
+
+mkdir -p data/train audio data/test
+
 # We generate random texts from the parser grammar.
 AGADOR="sbcl --noinform --core $HOME/Develop/agador/agador.img"
 $AGADOR --count $COUNT --prompts /tmp/prompts.txt
@@ -28,12 +38,6 @@ N=1
 IDBASE=`date +"%y%m%d%H%M"`
 echo "$IDBASE m" >> $GFILE
 
-if [ "$2" == "restart" ]
-then
-    echo "Starting over"
-    rm -fr $PFILE $SFILE $WFILE $UFILE data/train/wav/*.wav
-fi
-
 echo -e "\n\n\nStarting recording session in 3 seconds..."
 sleep 3
 
@@ -47,14 +51,18 @@ do
     let "LEN=${#line}"
     let "DURATION=1+(LEN/6)"
     WNAME="audio/$ID.wav"
-    echo "Read in $DURATION:    $line"
+    echo "$ID in $DURATION:  $line"
     sleep 0.5
     $RECORD -d $DURATION $WNAME
 
     # Make note of this recording
+    # Save the transcript
     echo "$ID $line" >> $PFILE
+    # Save the timing
     echo "$ID $ID 0 $DURATION" >> $SFILE
+    # Save name of the audio file
     echo "$ID $WNAME" >> $WFILE
+    # Save the speaker reference
     echo "$ID $IDBASE" >> $UFILE
     let "N++"
 done < /tmp/prompts.txt

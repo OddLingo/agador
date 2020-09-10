@@ -10,10 +10,11 @@ making it a prime candidate for computer input.  It's small dictionary
 in recognition not found in most languages, natural or
 [constructed](https://en.wikipedia.org/wiki/Constructed_language).
 
-2. The [Julius](https://github.com/julius-speech/julius) speech recognition
-system converts audio into a sequence of words in text.
+2. The [Kaldi](http://kaldi-asr.org/) speech recognition
+system, fronted by the [VOSK}(https://alphacephei.com/vosk/) API toolkit,
+converts audio into a sequence of words in text.
 
-* An Adjacency Parser then converts the sequence of words into a syntax
+* A Parser then converts the sequence of words into a syntax
 tree, following the very simple grammar of the toki pona language.
 The parser has the unique property of being able to handle local ambiguity,
 something that most parsers developed for computer programming languages
@@ -27,16 +28,15 @@ used to provide pointers within the tree.
 
 * All parts of *Agador*, including speech recognition, are Open Source.
 
-* Everything runs locally with <u>no</u> cloud components.  Internet resources might be invoked to answer specific queries, such as about the weather.
+* Everything runs locally with <u>no</u> cloud components.
+Internet resources might be invoked to answer specific queries,
+such as about the weather.
 
 Agador is not an artificial intelligence program; it employs straight
 forward signal processing and pattern matching techniques.  But nothing
 prevents AI technology being employed to service specific requests.
 
 ## Prerequisites
-
-* The Julius speech recognition system is available for most Linux
-distributions.
 
 * Agador is written in the
 [Common Lisp](https://en.wikipedia.org/wiki/Common_Lisp) language
@@ -45,11 +45,12 @@ and the SBCL compiler for that is required.
 ## The Adjacency Parser
 
 This parsing algorithm does not have a "state machine" like many parsers
-used for programming languages.  Instead all applicable "rules" are applied
-holographically, wherever they happen to fit, to the entire input.
+used for programming languages.  Instead all applicable grammar rules
+are applied holographically, wherever they happen to fit, to the entire input.
 
 It is possible that more than one overall parse tree will be found,
 in which case either the input is truely ambiguous ("Time flies
 like an arrow.") or there is an error in the grammar.  Toki Pona is a highly
 ambiguous language with a lot depending on context, so this could
-easily happen.
+easily happen.  But the task of Agador is to only operate on clear
+commands and to just "remember" the rest.
