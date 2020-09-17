@@ -55,19 +55,20 @@
 (in-package :AGF)
 (defparameter +all-rules+
  '(
-  (NON ADJ NON)	  ;; A modified noun phrase, left-heavy preferred
-  (VRB ADJ VRB)   ;; Verbs too
-  (PRP NON PREPP) ;; Prepositional phrase
-  (NON PREPP NON) ;; Prepositions can modify nouns too
-  (VRB PREPP VRB)
-  (NON SBJ SSUB)  ;; A marked Sentence subject with 'li'
-  (NON NEG NON)	  ;; A negated noun  "Not green"
+   (NON ADJ NON)	  ;; A modified noun phrase, left-heavy preferred
+   (NON NON NON)
+   (VRB ADJ VRB)   ;; Verbs too
+   (PRP NON PREPP) ;; Prepositional phrase
+   (NON PREPP NON) ;; Prepositions can modify nouns too
+   (VRB PREPP VRB)
+   (NON SBJ SSUB (NOT12))  ;; A marked Sentence subject with 'li'
+   (NON NEG NON)	  ;; A negated noun  "Not green"
    (VRB NEG VRB)
    (POF NON ADJ (RIGHT))  ;; Regrouped modifier, right must be a pair.
-  (NON CNJ CPFX)  ;; Left of a conjoined phrase "Apples and ..."
-  (CPFX NON NON)  ;; Right of a conjoined phrase.
-  (PDO NON DOBJ)  ;; A direct object
-  (VRB DOBJ VRB)  ;; Only verbs can have direct objects
+   (NON CNJ CPFX)  ;; Left of a conjoined phrase "Apples and ..."
+   (CPFX NON NON)  ;; Right of a conjoined phrase.
+   (PDO NON DOBJ)  ;; A direct object
+   (VRB DOBJ VRB)  ;; Only verbs can have direct objects
 
 ;; Forms of sentence.  If the word 'seme' appears, it is probably
 ;; a question but that gets detected at the semantic level.
@@ -123,6 +124,27 @@
 ;;; Find the first step of multi-step routes
 (merge-routes)
 
+;;;; A variety of tests can prevent a rule from applying.
+;;;; The binary adjacency rules are rather simple.  But they
+;;;; can have these more precise tests to make sure that
+;;;; appplying the rules makes sense.  By returning NIL,
+;;;; the test vetos the join.
+(defun approve-join (act lt rt)
+  "Disallow a join based on special tests"
+  (labels
+      ((be-pair (under)
+	 (not (eq (typeof under) 'AGC::pair)))
+       (notme (under)
+	 (not (eq 'AGF::P12 (term-fn under)))))
+    (case act
+      (AGF::NOT12 (notme lt))
+      (AGF::LEFT (be-pair lt))
+      (AGF::RIGHT (be-pair rt))
+      ((T) T))))
+
+;;;; Here are functions that can search the routing table to
+;;;; optimize the location of sub-clauses.
+
 ;;; Use the routing table to find specific parts of a sentence.
 ;;; Given an upper node and a desired grammatical Function,
 ;;; find a USAGE.
@@ -139,9 +161,10 @@
 	   ;; This is the desired node.
 	   ((T) (return-from searching probe))))))
 
-;; Get a list of the rules with a specified right side term.
+;;; Get a list of the rules with a specified right side term.
 (defun rules-for (fn) (gethash fn *rules*))
 
+;;;; The rest are useful for debugging.
 (defun print-rules ()
   "Print all rules according to right-hand term."
   (loop for rfn being the hash-key

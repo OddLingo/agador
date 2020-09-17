@@ -13,15 +13,26 @@
   (let ((npos (minus1 (term-lpos rterm))))
     (if (< npos 0) NIL (elt *right* npos))))
 
-;;; Apply a list of rules to a list of left side candidates.  This is
-;;; not as bad as it looks because the list of rules has already been
-;;; limited to those with the correct right side term, and the candidates
-;;; are only those terms immediately adjacent to the left in the utterance.
+(defun approved (rule lt rt)
+  (dolist (act (action rule))
+    (unless (approve-join act lt rt)
+      (return-from approved NIL)))
+  T
+  )
+
+;;; Apply a list of rules to a list of left side candidates.
+;;; This is not as bad as it looks because the list of rules
+;;; has already been limited to those with the correct right
+;;; side term, and the candidates are only those terms
+;;; immediately adjacent to the left in the utterance.
+;;; In addition, the 'action' functions have the ability
+;;; to disallow certain applications.
 (defun apply-rules (rt rules neighbors)
   (dolist (lt neighbors)
     (dolist (r rules)
       (when (eq (rule-left r) (agc:term-fn lt))
-	(join lt rt (rule-result r) (action r))))))
+	(when (approved (r action) lr rt)
+	  (join lt rt (rule-result r) (action r)))))))
 
 (defun consider (rt)
   "Consider what rules might apply to a new term, assuming that this

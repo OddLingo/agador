@@ -100,17 +100,21 @@
 ;;; Draw the diagram of grammatical functions for a sentence.
 (defun paint-parse (start &optional (depth 2) (top 1) )
   (declare (type pterm start)
+	   (optimize (debug 3) (speed 1))
 	   (type integer depth top))
   (agu:use-term)
   (agu:set-scroll NIL)
-  (agu:clear)
-  (agu:setxy 1 (paint-tree start depth top))
-  (agu:set-scroll T)
-  (finish-output)
-  (agu:release-term))
 
-;;; Create a list of the terminal words in a tree.  There is a similar
-;;; function in the Memory package, but it deals with remembered statements.
+  (let ((newtop (paint-tree start depth top)))
+    (agu:setxy 1 newtop)
+    (agu:set-scroll T)
+    (finish-output)
+    (agu:release-term)
+    newtop))
+
+;;; Create a list of the terminal words in a tree.
+;;; There is a similar function in the Memory package,
+;;; but it deals with remembered statements.
 (defun list-from-tree (start)
   "List of the words in a parsed tree"
   (declare (type pterm start))

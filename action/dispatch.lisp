@@ -79,7 +79,6 @@
 (defun semantics (top)
   "Try to figure out the *meaning* of an utterance"
   (declare (type agp::pterm top))
-  (format T "Semantics on ~a~%" top)
   (cond
     ;; Questions
     ((agc:contains-p top "seme") (query top))

@@ -114,3 +114,4 @@
 
 	 ) ;; End loop making sentences.
     (close corpus)))
+

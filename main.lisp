@@ -60,7 +60,7 @@
 
 (defun run ()
   "Top level function called at startup."
-  (declaim (optimize (debug 3) (speed 0)))
+  (declare (optimize (debug 3) (speed 0)))
   ;; Initial housekeeping
   (setf *random-state* (make-random-state t))
 
@@ -90,11 +90,12 @@
   (ags:say "mi kute")  ;; "I am listening."
 
   ;; Start the visual user interface with a condition handler
-  (handler-case
-      (agm:explore)
-    (error (e)
-      (log:error e)))
-
+  ;; (handler-case
+  ;;     (agm:explore)
+  ;;   (error (e)
+  ;;     (log:error e)))
+  (agm:explore)
+  
   ; Clean up to exit.
 ;;  (ags:listen-stop)
   (agm:db-close)
