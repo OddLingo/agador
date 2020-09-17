@@ -11,11 +11,11 @@
 
   (let ((txt (getf msg :TEXT))
 	(voice (getf msg :VOICE)))
-    (if (null voice) (setf voice "rms"))
+    (if (null voice) (setf voice "other/jbo"))
 
     ;; Tell Julius to stop listening while we talk.
     (uiop:run-program
-     (format NIL "mimic -voice ~a \" ~a\"" voice txt)
+     (format NIL "espeak -v ~a \"~a\"" voice txt)
      :output '(:string :stripped T))
     )
   (listen-control "RESUME")
@@ -33,7 +33,7 @@
 				 :actor 'speaker))
   )
 
-(defun say (msg &key (voice "rms"))
+(defun say (msg &key (voice "other/jbo+m2"))
   (agu:send *talking* (list :op :SAY :TEXT msg :voice voice))
   )
 

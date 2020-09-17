@@ -102,6 +102,7 @@
 ))
 (in-package :AGP)
 
+;;; Create all the rule and route hash tables at compile time.
 (dolist (rule AGF::+all-rules+)
   (destructuring-bind (lfn rfn rslt &optional act)
       rule

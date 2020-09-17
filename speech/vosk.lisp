@@ -3,47 +3,46 @@
 ;;;; This is the interface to the Vosk/Kaldi speech recgnition system.
 (in-package :ags)
 
-(defvar *MINCONF* 40 )
+(defvar *listener* NIL)
+(defvar *enabled* T)
 
 ;;; Process input from the Kaldi recognizer.
-(defun listen-receive (msg np)
-  (declare (ignore np))
-  (log:warn "Vosk message ~a" msg))
-
-;;; Create the network connection to the Vosk API.  Any incoming
-;;; messages will go to the 'vreceive' function.
-(defvar *jport*)
-(defun vconnect ()
-  (setq *jport* (agu:connect
-		 "127.0.0.1" 10500
-		 :handler 'vreceive
-		 :name "Julius"))
-  )
+(defun speech-listener (stream)
+  (loop for line = (read-line stream nil)
+     until (eq line NIL)
+     do
+       (when *enabled*
+	 (format T "Heard: ~a~%" line))
+       ))
 
 ;; Send a command to Vosk.
-(defun listen-control (cmd)
-  (format T "~a~%" cmd))
+(defun listen-control (onoff)
+  (setf *enabled* onoff))
 
 (defun listen-stop ()
-;;    (uiop:run-program "killall -q julius" :ignore-error-status T)
-    (sleep 1)
+  (when *listener*
+    (uiop:terminate-process *listener*))
   )
 
-;;;; Start up Vosk, supplying its configuration file.
+;;;; Start up the Vosk recognizer.  It will write recognized text
+;;;; to its output stream which 'listen-receive' will interpret.
 (defun listen-start ()
-  (let ((path (asdf:system-relative-pathname :agador #p"data/")))
+  (setf *listener*
     (uiop:launch-program
-     (format NIL "vosk-api ~a~a"
-	     path
-	     "toki-model")
-     :output *standard-output*)
-    ;; Give it time to start up before we connect to it.
-    (sleep 2)
-    (vconnect)
-  ))
+     (format NIL "vosk-listener ~a~a"
+	     AGC::+data-directory+
+	     "SpeechModel")
+     :output :stream))
+
+  ;; Start thread that reads the subprocess output
+  (sb-thread:make-thread
+	 'speech-listener
+	 :name "VOSK"
+	 :arguments (list
+		     (uiop:process-info-output *listener*))))
 
 ;;;; The "lexicon" needs to be in a special format for the
-;;;; speech recognizer packages, along with phonetic information.
+;;;; speech recognizer and include phonetic information.
 ;;;; Here is where we generate that file.
 (defun make-lexicon (filename)
   (let ((k-dict

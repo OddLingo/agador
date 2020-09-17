@@ -1,4 +1,6 @@
 #!/bin/bash
+## Script to record a session of toki pona audio for training
+## the Kaldi recognizer.
 
 # Parameter 1 is number of sentences to record in this session.
 if [ -n "$1" ]
@@ -25,8 +27,6 @@ $AGADOR --count $COUNT --prompts /tmp/prompts.txt
 RECORD="arecord -q -r 16000 -f S16_le -D pulse"
 # List of all texts in each training audio
 PFILE="data/train/text"
-# Where useful segements are in each audio
-SFILE="data/train/segments"
 # List of all files with their IDs
 WFILE="data/train/wav.scp"
 # Which session each file is from
@@ -56,10 +56,8 @@ do
     $RECORD -d $DURATION $WNAME
 
     # Make note of this recording
-    # Save the transcript
+    # Save the line of transcript
     echo "$ID $line" >> $PFILE
-    # Save the timing
-    echo "$ID $ID 0 $DURATION" >> $SFILE
     # Save name of the audio file
     echo "$ID $WNAME" >> $WFILE
     # Save the speaker reference

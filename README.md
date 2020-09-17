@@ -11,7 +11,7 @@ in recognition not found in most languages, natural or
 [constructed](https://en.wikipedia.org/wiki/Constructed_language).
 
 2. The [Kaldi](http://kaldi-asr.org/) speech recognition
-system, fronted by the [VOSK}(https://alphacephei.com/vosk/) API toolkit,
+system, fronted by the [VOSK](https://alphacephei.com/vosk/) API toolkit,
 converts audio into a sequence of words in text.
 
 * A Parser then converts the sequence of words into a syntax

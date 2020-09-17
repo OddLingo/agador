@@ -22,8 +22,7 @@
 ;;; There is also an a-list of the actual names of the databases
 ;;; within the environment.
 (defparameter +database-names+
-    '((:DICT . "words")     ;; Dictionary of words
-      (:TREE . "tree")      ;; Remembered parse treees
+    '((:TREE . "tree")      ;; Remembered parse treees
       (:CNTX . "context")   ;; Upward context references
       (:TIME . "time")      ;; Decoded times
       (:INFO . "info")))    ;; Scratchpad
@@ -45,7 +44,7 @@
 
 ;;;; A transaction must be started in order to open databases.  Only
 ;;;; one thread at a time can open a transaction so we have a mutex too.
-(defun db-start ( &optional (dbis '(:DICT :TREE :CNTX :INFO)) )
+(defun db-start ( &optional (dbis '(:TREE :CNTX :INFO)) )
   "Start a database transaction"
   (sb-thread:grab-mutex *dbmtx*)
   (setq *dbtxn* (lmdb:make-transaction *dbenv*))
@@ -91,20 +90,6 @@
   (let ((hdl (assoc dbi *open-databases*)))
     (unless hdl (error "Bad DB identifier ~a" dbi))
     (lmdb:put (cdr hdl) key data)))
-
-;;;; The "words" database contains one entry per spelling.
-;;;; If we know a word we return a list of all its possible
-;;;; grammatical functions.  The list arrives as strings but
-;;;; we 'intern all of them.
-(defun get-word (spell)
-  (let ((data (db-get :DICT spell)))
-    (if data
-	(dolist (x (agu:words-from-string data))
-	  (intern x :AGF))
-	NIL)))
-
-(defun put-word (spell funs)
-  (db-put :DICT spell (format NIL "~{~a~^ ~}" funs)))
 
 (defun dump (dbi)
   "Dump any database"

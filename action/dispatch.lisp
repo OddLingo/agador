@@ -9,6 +9,7 @@
 (defparameter *the-time* "26933762FB") ;; tenpo
 (defparameter *the-weather* "39B8EB0A2A") ;; kon sewi
 (defparameter *listening* "")  ;; kute ala
+(defparameter *learn* "") ;; sona kama
 
 ;; It is some sort of statement about the world.  Just remember it.
 (defun remember (top)
@@ -48,9 +49,10 @@
   (let* ((verb (agp:word-at top 'AGF::ACTION))
 	(verbname (if verb (agc:spelled verb) NIL)))
     (cond
-      ((equal verbname "STOP") (stop top))
-      ((equal verbname "START") (start top))
-      ((equal verbname "REMEMBER") (remember (agc:right top)))
+      ((equal verbname "MOLI") (stop top))
+      ((equal verbname "OPEN") (start top))
+      ;; Next should be 'sona kama'
+      ((equal verbname "SONA") (remember (agc:right top)))
       (T (log:warn "No action for ~a~%" verbname)))))
 
 ;;; Detect questions by the presense of the universal query word 'seme'
@@ -71,12 +73,17 @@
       ;; What is the weather forecast?
       ((equal handle *the-weather*) (wx-repeat))
       ;; Anything else.
-      (T (ags:say (format NIL "I do not know about '~a'~%"
+      (T (ags:say (format NIL "mi sona ala ~a%"
 	   (agp:string-from-tree (agp:word-at top 'AGP::NOUNP))))))))
 
 (defun semantics (top)
+  "Try to figure out the *meaning* of an utterance"
   (declare (type agp::pterm top))
-  (when (agc:contains-p top "seme")
-    (query top)
-    (return-from semantics))
+  (format T "Semantics on ~a~%" top)
+  (cond
+    ;; Questions
+    ((agc:contains-p top "seme") (query top))
+    ;; Commands
+    ;; Just remember anything else.
+    (T (remember top)))
   )

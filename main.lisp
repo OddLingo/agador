@@ -33,8 +33,8 @@
            :long "corpus"
            :arg-parser #'identity))
 
-;;; Process command line options
 (defun get-options ()
+  "Process command line options"
   (multiple-value-bind (options free-args)
       (opts:get-opts)
     (declare (ignore free-args))
@@ -58,8 +58,9 @@
       )
     ))
 
-;;; Top level function called at startup.
 (defun run ()
+  "Top level function called at startup."
+  (declaim (optimize (debug 3) (speed 0)))
   ;; Initial housekeeping
   (setf *random-state* (make-random-state t))
 
@@ -75,27 +76,27 @@
   ;; Open the memory database
   (agm:db-open)
 
-  ;; Load grammar analysis rules and start the parser thread.
+  ;; Start the parser thread.
   (agp:start-parser)
 
   ;; Start background tasks
-  (agu:sked-later 5 #'aga:wx-tropical)
-  (aga:start-security)
+;;  (agu:sked-later 5 #'aga:wx-tropical)
+;;  (aga:start-security)
   
-  ;; Start speech recognizer
+  ;; Start speech interfaces
   (ags:tstart)
-  (ags:listen-start)
+;;  (ags:listen-start)
 
-  (ags:say "toki.")
+  (ags:say "mi kute")  ;; "I am listening."
 
-  ;; Start the visual user interface
+  ;; Start the visual user interface with a condition handler
   (handler-case
       (agm:explore)
     (error (e)
       (log:error e)))
 
   ; Clean up to exit.
-  (ags:listen-stop)
+;;  (ags:listen-stop)
   (agm:db-close)
   (log:info "Finish")
   )

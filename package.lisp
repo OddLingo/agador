@@ -51,7 +51,7 @@
   (:nicknames :agm)
   (:use common-lisp)
   (:export db-open db-close db-start db-commit hash-of)
-  (:export put-word get-word init-words get-info put-info)
+  (:export get-info put-info)
   (:export put-tree get-tree remember recall-p set-voice db-put db-get)
   (:export mterm musage mpair sig goto explore bytes-to-s merkle)
   )

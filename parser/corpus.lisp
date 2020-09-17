@@ -2,7 +2,7 @@
 
 ;;;; Here we can generate any number of sentences with proper toki
 ;;;; syntax, though they might be semanticaly meaningless.  These
-;;;; can be used for training a language model.
+;;;; are used for training both acoustic and language models.
 (in-package :AGP)
 
 (defparameter +percent-recursive+ 80)
@@ -21,15 +21,18 @@
 	  :if-exists :supersede)))
 
     ;; Build a hash of rules keyed by result term.  Each entry
-    ;; is a list of all rules with the same result.
-    (dolist (old-key (alexandria:hash-table-keys AGP::*rules*))
-      (let ((rules (gethash old-key AGP::*rules*)))
+    ;; is a list of all rules with the same result.  We do not
+    ;; do this at compile time because make-text is only used
+    ;; during recognition training.
+    (dolist (old-key (alexandria:hash-table-keys *rules*))
+      ;;? This only considers rules by right term.
+      (let ((rules (gethash old-key *rules*)))
 	(dolist (r rules)
 	  (let* ((rslt (rule-result r))
 		(oldrules (gethash rslt genrules)))
+
 	    ;; Remember the top goals
-	    (when
-	      (has-test r 'AGF::FINAL)
+	    (when (has-test r 'AGF::FINAL)
 	      (push r topgoals))
 
 	    ;; Add new rule to the list of all with same result term
@@ -51,16 +54,19 @@
 		     alternatives ))
 
 	      (emit (w)
+		"Insert space before all but first word"
 		(when (> word-count 0) (format corpus " "))
 		(incf word-count)
 		(format corpus (string-upcase w)))
 
 	      (pick-word (words)
+		"Choose a random word form a list"
 		(if (null words)
 		    (format T "Picking from empty word list~%")
 		    (emit (pick-from-list words))))
 	      
 	      (pick-rule (depth rules)
+		"Choose a random rule from a list"
 		(if (null rules)
 		    (format T "Picking from empty rules list~%")
 		    (walk (pick-from-list rules) (1+ depth))))
@@ -73,8 +79,13 @@
 
 	      (probe (r side fn depth)
 		(if (has-test r side)
+		    ;; Sometimes always take a rule.
 		    (pick-rule depth (gethash fn genrules))
-		    (let ((rules (gethash fn genrules))
+
+		    ;; Sometimes choose between a word and a rule.
+		    (let (
+			  ;; Get all the choices at this point.
+			  (rules (gethash fn genrules))
 			  (words (gethash fn funwords)))
 		      
 		      (cond
@@ -94,10 +105,12 @@
 		  (probe start 'AGF::RIGHT rfn depth)))
 	      ) ;; End of local functions
 
-	   ;; Now randomly walk the rules backwards, starting
-	   ;; with one of the top goals.
+	   ;; Now randomly walk the rules down from one of
+	   ;; the top goals.
 	   (walk (pick-from-list topgoals)))
 
+         ;; End of line at end of each sentence.
 	 (format corpus "~%")
+
 	 ) ;; End loop making sentences.
-  (close corpus)))
+    (close corpus)))

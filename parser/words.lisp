@@ -38,7 +38,7 @@
    ("sinpin" NON)("sitelen" NON)("sona" VRB PRV)("soweli" NON)
    ("suli" ADJ)("suno" NON)("supa" NON)("suwi" ADJ)("tan" PRP)
    ("taso" BUT ADJ)("tawa" PRP ADJ)("telo" NON)("tenpo" NON)
-   ("toki" VRB)("tomo" NON PNA)("tu" NUM)("unpa" VRB)("uta" NON)
+   ("toki" VRB NON)("tomo" NON PNA)("tu" NUM)("unpa" VRB)("uta" NON)
    ("utala" VRB)("walo" ADJ)("wan" ADJ NUM)("waso" NON)("wawa" ADJ)
    ("weka" ADJ)("wile" PRV)
    ;; Plus some proper names, which act like adjectives.

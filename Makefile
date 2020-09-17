@@ -1,8 +1,8 @@
 CACHE="/home/pd/.cache/common-lisp/sbcl-2.0.1.debian-linux-x64/home/pd/Develop/agador"
-LISP=sbcl
+LISP=sbcl --noinform
 
 default:
-	@$(LISP) --noinform --eval "(asdf:make :agador)" --eval "(sb-ext:save-lisp-and-die \"agador.img\" :toplevel 'AGC:RUN)"
+	@$(LISP) --eval "(asdf:make :agador)" --eval "(sb-ext:save-lisp-and-die \"agador.img\" :toplevel 'AGC:RUN)"
 	@echo "Generated agador.img"
 
 clean:
@@ -13,5 +13,14 @@ clean:
 	@find . -name '*.*~' -delete
 
 run:
-	@$(LISP) --core agador.img --noinform
+	@$(LISP) --core agador.img
+
+prepare:
+	@echo "Loading packages"
+	@$(LISP) --eval "(ql:quickload :CL-UTILITIES)" --eval "(quit)"
+	@$(LISP) --eval "(ql:quickload :LMDB)" --eval "(quit)"
+	@$(LISP) --eval "(ql:quickload :CL-PPCRE)" --eval "(quit)"
+	@$(LISP) --eval "(ql:quickload :LOG4CL)" --eval "(quit)"
+	@$(LISP) --eval "(ql:quickload :CL-DATE-TIME-PARSER)" --eval "(quit)"
+	@$(LISP) --eval "(ql:quickload :ALEXANDRIA)" --eval "(quit)"
 

@@ -17,8 +17,6 @@
 ;;; not as bad as it looks because the list of rules has already been
 ;;; limited to those with the correct right side term, and the candidates
 ;;; are only those terms immediately adjacent to the left in the utterance.
-;;; This recurses through join so we declare that forward.
-(declaim (ftype (function (agc:term agc:term SYMBOL SYMBOL) t) join))
 (defun apply-rules (rt rules neighbors)
   (dolist (lt neighbors)
     (dolist (r rules)
@@ -41,7 +39,9 @@
 			   :fn fn
 			   :left lt :right rt
 			   :action act)))
+    ;; Add the pair to the list for this position.
     (push np (elt *right* (term-rpos np)))
+    ;; Look for rules that apply to the new pair.
     (consider np))
   NIL)
 
@@ -98,8 +98,8 @@
 
 ;;; This needs to be called before each parser invocation.
 (defun init-parse ()
-  "Initialize the parser"
-  (setq *right*  (make-array 10 :fill-pointer 0 :adjustable t ))
+  "Initialize the parser for a new sentence"
+  (setq *right*  (make-array 15 :fill-pointer 0 :adjustable t ))
   (setq *top* NIL))
 
 ;;; Set *top* to all pairs that span the entire input string.
@@ -119,10 +119,10 @@
   (let ((dothis (action best)))
     (cond
       ((member 'AGF::FINAL dothis)
-       	(handler-case
-	    (AGA:SEMANTICS  best)
-	  (error (e)
-	    (log:error "~a" e))))
+       (handler-case
+	   (AGA:SEMANTICS best)
+	 (error (e)
+	   (log:error "~a" e))))
       (T (agu:term "Nothing to do~%")))))
 
 ;;; If there is exactly one satisfactory solution, we can learn from it

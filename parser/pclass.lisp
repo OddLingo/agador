@@ -6,7 +6,6 @@
 (defclass pterm () (
   (lpos :accessor term-lpos :initarg :lpos :type integer)
   (rpos :accessor term-rpos :initarg :rpos :type integer)
-  (unc :accessor term-unc :initarg :unc :type integer :initform 0)
   ))
 
 ;;; The usage of a word puts a spelling and one possible
@@ -26,16 +25,12 @@
     (format stream " #~d" v)))
 	  
 ;;; An adjacent pair of terms have a collective function as well as
-;;; a span of positions.  Uncertainties are summed.
+;;; a span of positions.
 (defclass ppair (agc:pair agp:pterm)
   (			      
   (action :accessor action :initarg :action :initform NIL)))
 
 (defmethod initialize-instance :after ((obj ppair) &key)
-  (setf (term-unc obj)
-	(+ (term-unc (agc:left obj))
-	   (term-unc (agc:right obj))))
-
   ; Span from the lpos of the left to the rpos of the right.
   (setf (term-lpos obj) (term-lpos (agc:left obj)))
   (setf (term-rpos obj) (term-rpos (agc:right obj))))

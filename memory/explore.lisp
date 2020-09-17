@@ -17,14 +17,15 @@
 (defun set-voice (yes)
   (setf (voice *uimode*) yes)
   (if yes
-	(ags:listen-control "RESUME")
-	(ags:listen-control "PAUSE")))
+	(ags:listen-control T)
+	(ags:listen-control NIL)))
 
 ;;; Create a list of the terminal words in a tree.  We descend the
 ;;; tree right-side-first but are pushing it onto the list of leaves.
 ;;; This results in the final list being in the correct order
 ;;; left-to-right.
 (defun list-from-tree (start)
+  "Flatten parse tree to a list"
   (declare (type string start))
   (let ((leaves NIL))
     (labels
@@ -125,7 +126,7 @@
 	   ((equal verb "dw") ;; Dump words
 	    (agp:print-words))
 	   ((equal verb "v") (set-voice T))
-
+	   ;; Anything else is a statement to analyze.
 	   (T
 	    (let ((r (agp:parse-words (agu:words-from-string line))))
 	      (if r (goto r) (prompt))))
