@@ -100,4 +100,5 @@
 ;;  (ags:listen-stop)
   (agm:db-close)
   (log:info "Finish")
+  (agu:set-scroll NIL)
   )

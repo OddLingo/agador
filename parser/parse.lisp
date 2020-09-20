@@ -1,7 +1,7 @@
 ;;;; -*- Mode: Lisp; Syntax: ANSI-Common-Lisp; -*-
 ;;;; This is the Adjacency Parser.  It applies simple 3-term rules to
 ;;;; a sequence of words in order to discover the syntactic structure
-;;;; of the sentence, much like "diagramming" in an English calss.
+;;;; of the sentence, much like "diagramming" in an English class.
 ;;;; Unlike most parsers for programming languages, it can deal with
 ;;;; local ambiguities.
 
@@ -13,10 +13,13 @@
   (let ((npos (minus1 (term-lpos rterm))))
     (if (< npos 0) NIL (elt *right* npos))))
 
-(defun approved (rule lt rt)
-  (dolist (act (action rule))
-    (unless (approve-join act lt rt)
-      (return-from approved NIL)))
+;;; Approve a rule that has additional tests.
+(defun approved (actions lt rt)
+  (dolist (act actions)
+    (unless (eq act 'AGF::FINAL)
+      (unless (approve-join act lt rt)
+	(log:info "Join blocked by ~a" act)
+	(return-from approved NIL))))
   T
   )
 
@@ -30,22 +33,24 @@
 (defun apply-rules (rt rules neighbors)
   (dolist (lt neighbors)
     (dolist (r rules)
+;;      (log:info "Trying ~a" r)
       (when (eq (rule-left r) (agc:term-fn lt))
-	(when (approved (r action) lr rt)
-	  (join lt rt (rule-result r) (action r)))))))
+;;	(when (approved (action r) lt rt)
+	  (join lt rt (rule-result r) (action r))))))
 
 (defun consider (rt)
-  "Consider what rules might apply to a new term, assuming that this
-  term would be on the right side of the rule."
+  "Consider what rules might apply to a new term"
   (let ((rules (rules-for (agc:term-fn rt)))
 	(neighbors (left-adjacent rt)))
     (apply-rules rt rules neighbors))
   NIL)
 
-;;; Join two adjacent terms into a pair that spans both terms.
-;;; This recursively then considers additional rules for the new pair.
+;;; Join two adjacent terms into a pair that spans both
+;;; terms. This recursively then considers additional
+;;; rules for the new pair.
 (defun join (lt rt fn act)
   "Join two adjacent terms"
+  (log:info "Joining (~a ~a ~a)" lt rt fn)
   (let ((np (make-instance 'ppair
 			   :fn fn
 			   :left lt :right rt
@@ -139,7 +144,7 @@
 ;;; If there is exactly one satisfactory solution, we can learn from it
 ;;; or act on it.
 (defun judge ()
-  (agu:clear)
+  (declare (optimize (debug 3)(speed 1)))
   (let ((nsoln (length *top*)))
     (cond ((= 0 nsoln)
 	   (log:warn "No satisfactory solution found~%")
@@ -161,6 +166,7 @@
 
 ;;; Parse a list of words
 (defun parse-words (wds)
+  (log:info "Input ~a" wds)
   (init-parse)
   ;; Feed each word to the parser.
   (dolist (w wds) (see-word w))

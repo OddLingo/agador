@@ -6,10 +6,12 @@
 ;; Print the entire parse context so far, including all partials
 (defun print-all ()
   "Print entire parser data"
-  (loop for pos from 0 below (length *right*) do
-       (format t "~%~2,'0d | " pos)
-       (let ((col (elt *right* pos)))
-	 (dolist (r col) (print-object r T))))
+  (sb-thread:with-mutex (AGU::*tmtx*)
+    (agu:clear)
+    (loop for pos from 0 below (length *right*) do
+	 (format t "~%~2,'0d | " pos)
+	 (let ((col (elt *right* pos)))
+	   (dolist (r col) (print-object r T)))))
   NIL)
 
 ;;; Print a single parser tree from top down.
@@ -102,15 +104,14 @@
   (declare (type pterm start)
 	   (optimize (debug 3) (speed 1))
 	   (type integer depth top))
-  (agu:use-term)
-  (agu:set-scroll NIL)
+  (sb-thread:with-mutex (AGU::*tmtx*)
+    (agu:set-scroll NIL)
 
-  (let ((newtop (paint-tree start depth top)))
-    (agu:setxy 1 newtop)
-    (agu:set-scroll T)
-    (finish-output)
-    (agu:release-term)
-    newtop))
+    (let ((newtop (paint-tree start depth top)))
+      (agu:setxy 1 newtop)
+      (agu:set-scroll T)
+      (finish-output)
+      (1+ newtop))))
 
 ;;; Create a list of the terminal words in a tree.
 ;;; There is a similar function in the Memory package,

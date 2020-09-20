@@ -11,12 +11,12 @@
 ;;; indicating the object class.  Numbers are a special case where
 ;;; the key starts with the letter "N" and the rest is a decimal number.
 (defun get-tree (key)
-  "Create mterm object from the database."
+  "Create tree object from the database."
   (declare (type string key))
 
   ;; If it is a numeric reference, we return the integer value.
-  (when (equal (char key 0) '#\N)
-    (return-from get-tree (parse-integer key :start 1)))
+  ;; (when (equal (char key 0) '#\N)
+  ;;   (return-from get-tree (parse-integer key :start 1)))
 
   ;; Otherwise it is a key into the TREE database.
   (let ((data (db-get :TREE key)))
@@ -40,8 +40,11 @@
 	    ;; Anything else is an error.
 	    (otherwise
 	     (error "Bad record in TREE DB at ~a: ~a~%" key data)
-	     NIL))))
-	NIL))
+	     NIL)))
+	(progn
+	  (log:warn "No tree record for ~a" key)
+	  NIL))
+      ))
 
 ;;; The 'context' database stores a list of the signatures of all the
 ;;; immediate parent nodes to the term whose signature is the key.

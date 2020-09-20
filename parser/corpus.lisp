@@ -60,7 +60,7 @@
 		(format corpus (string-upcase w)))
 
 	      (pick-word (words)
-		"Choose a random word form a list"
+		"Choose a random word from a list"
 		(if (null words)
 		    (format T "Picking from empty word list~%")
 		    (emit (pick-from-list words))))
@@ -81,13 +81,14 @@
 		(if (has-test r side)
 		    ;; Sometimes always take a rule.
 		    (pick-rule depth (gethash fn genrules))
-
 		    ;; Sometimes choose between a word and a rule.
 		    (let (
 			  ;; Get all the choices at this point.
 			  (rules (gethash fn genrules))
 			  (words (gethash fn funwords)))
-		      
+		      ;; If fn==NON and NOTME then exclude any words
+		      ;; that also happen to be P12.
+		      ;; (remove "foo" words :test 'equal)
 		      (cond
 			;; No matching rules, so use words.
 			((null rules) (pick-word words))
@@ -98,7 +99,7 @@
 			    (pick-word words)))))))
 
 	      (walk (start &optional (depth 1))
-		"Recursively walk down the grammar, making random decisions."
+		"Recursively descend grammar, making random choices."
 		(let* ((lfn (rule-left start))
 		       (rfn (rule-right start)))
 		  (probe start 'AGF::LEFT lfn depth)

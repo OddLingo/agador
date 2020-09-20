@@ -16,7 +16,7 @@
   (let ((s (agc:spelled obj))
 	(f (agc:term-fn obj))
 	(p (term-rpos obj)))
-    (format stream " ~2,'0d ~a ~a" p s f)))
+    (format stream " ~2,'0d/~a/~a" p s f)))
 
 (defclass pnumb (agc:numb agp:pterm) ())
 
@@ -24,8 +24,9 @@
   (let ((v (agc::nvalue obj)))
     (format stream " #~d" v)))
 	  
-;;; An adjacent pair of terms have a collective function as well as
-;;; a span of positions.
+;;; An adjacent pair of terms have a collective function
+;;; as well as a span of positions.  They also remember
+;;; any special functions that apply.
 (defclass ppair (agc:pair agp:pterm)
   (			      
   (action :accessor action :initarg :action :initform NIL)))
@@ -40,7 +41,9 @@
 	(lp (term-lpos obj))
 	(rp (term-rpos obj))
 	(a (action obj)))
-    (format stream " ~2,'0d-~2,'0d ~a ~a" lp rp f a)))
+    (if a
+	(format stream " ~2,'0d-~2,'0d/~a:~a" lp rp f a)
+	(format stream " ~2,'0d-~2,'0d/~a" lp rp f))))
 
 ;; A rule describes an adjacent pair of grammatical functions that
 ;; should be considered together to collectively have a third function.
@@ -60,8 +63,8 @@
 	(rs (rule-result obj))
 	(act (action obj)))
     (if act
-	(format stream " ~a:~a=~a->~a" l r rs act)
-	(format stream " ~a:~a=~a" l r rs)
+	(format stream " (~a ~a ~a -> ~a)" l r rs act)
+	(format stream " (~a ~a ~a)" l r rs)
 	)
     )
   )

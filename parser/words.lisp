@@ -25,7 +25,7 @@
    ("lete" ADJ)("li" SBJ)("lili" ADJ)("linja" NON)
    ("lipu" NON)("loje" ADJ)("lon" PRP)("luka" NON NUM)
    ("lukin" NON VRB PRV)("lupa" NON)("ma" NON PNA)("mama" NON)
-   ("mani" NON)("meli" NON)("mi" P12 ADJ NON)("mike" NON)("moku" VRB NON)
+   ("mani" NON)("meli" NON)("mi" P12 ADJ)("mike" NON)("moku" VRB NON)
    ("moli" ADJ)("monsi" NON)("mu" INT)("mun" NON)("musi" ADJ)("mije" NON)
    ("mute" ADJ NON)("nanpa" NON NUM)("nasa" ADJ)("nasin" NON)
    ("nena" NON)("ni" ADJ)("nimi" NON)("noka" NON)("o" VOC)

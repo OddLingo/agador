@@ -7,6 +7,66 @@
 ;;;; the third term end up spanning the entire input.
 
 (in-package :AGP)
+;;; Each entry in the rule hash-table is a list of rules with the same
+;;; right term.  When trying out potential rules, we always know
+;;; what the right side is, so this speeds up the search.
+;;; We load the table from a big list at compile time.  The leaf terms
+;;; are defined in words.lisp.
+(in-package :AGF)
+(defparameter +all-rules+
+ '(
+   (NON ADJ NON)   ;; A modified noun phrase, left-heavy preferred
+   (NON NON NON)
+   (VRB ADJ VRB)   ;; Verbs too
+   (PRP NON PREPP) ;; Prepositional phrase
+   (PRP P12 PREPP) ;; Prepositional phrase
+   (NON PREPP NON) ;; Prepositions can modify nouns too
+   (VRB PREPP VRB)
+   (NON NEG NON)	  ;; A negated noun  "Not green"
+   (VRB NEG VRB)
+   (POF NON ADJ (RIGHT))  ;; Regrouped modifier, right must be a pair.
+   (NON CNJ CPFX)  ;; Left of a conjoined phrase "Apples and ..."
+   (P12 CNJ CPFX)  ;; Left of a conjoined phrase "Apples and ..."
+   (CPFX P12 NON)  ;; Right of a conjoined phrase.
+   (CPFX NON NON)
+   (PDO NON DOBJ)  ;; A direct object
+   (PDO P12 DOBJ)  ;; A direct object
+   (DOBJ DOBJ DOBJ)
+   (VRB DOBJ VRBP)  ;; Only verbs can have direct objects
+   (VRB PREPP VRBP)
+   (VRB NON VRBP)
+
+;; Forms of sentence.  If the word 'seme' appears, it is probably
+;; a question but that gets detected at the semantic level.
+;; Yes/no questions look different.
+   (P12 VRB SENT (FINAL))	;; I or you do something
+   (P12 VRBP SENT (FINAL))	;; I or you do something
+   (NON SBJ MKSB)   ;; 'li' marks normal subject
+   (MKSB VRB SENT (FINAL)) ;; 'li' terminates subject
+   (MKSB VRBP SENT (FINAL)) ;; 'li' terminates subject
+
+;; mi ijo. ; sina ijo. ; ona li ijo. ; mi mute li ijo.
+;;     a! ; ...a ; noun a
+;;     noun o! ; o verb... ; noun o verb
+;;     noun li pre-verb verb...
+;;     sentence la sentence ; fragment la sentence
+;;     complex idea { sentence containing "ni": sentence
+;; QUESTIONS
+;;     [seme] li [seme] e [seme] prep [seme]?
+;;     ...anu seme? ; noun li verb ala verb? ; yes = verb ; no = ala
+;; AND, OR
+;;     noun en noun ; noun li verb li verb ; noun li verb e noun e noun
+;; ADJECTIVES
+;;     noun + adj ; (noun + adj) adj ; ((noun + adj) adj) adj
+;;     noun pi noun + adj
+;;     word + Proper name {adj}
+;; NUMBERS
+;;     0 = ala ; 1 = wan ; 2 = tu ; 3+ = mute ; ∞ = ale
+;;     alternatives; 5 = luka ; 20 = mute ; 100 = ale
+;;     ordinals { noun nanpa number
+))
+(in-package :AGP)
+
 ;;;; A 'routing table' of grammatical functions is derived from the
 ;;;; rules. It is a two-dimensional hash-table, first keyed by
 ;;;; the function of a 'current' node and then keyed by the function
@@ -47,63 +107,10 @@
 		     do
 		       (add-route start lower-goal upper-path)))))))
 
-;;; Each entry in the rule hash-table is a list of rules with the same
-;;; right term.  When trying out potential rules, we always know
-;;; what the right side is, so this speeds up the search.
-;;; We load the table from a big list at compile time.  The leaf terms
-;;; are defined in words.lisp.
-(in-package :AGF)
-(defparameter +all-rules+
- '(
-   (NON ADJ NON)	  ;; A modified noun phrase, left-heavy preferred
-   (NON NON NON)
-   (VRB ADJ VRB)   ;; Verbs too
-   (PRP NON PREPP) ;; Prepositional phrase
-   (NON PREPP NON) ;; Prepositions can modify nouns too
-   (VRB PREPP VRB)
-   (NON SBJ SSUB (NOT12))  ;; A marked Sentence subject with 'li'
-   (NON NEG NON)	  ;; A negated noun  "Not green"
-   (VRB NEG VRB)
-   (POF NON ADJ (RIGHT))  ;; Regrouped modifier, right must be a pair.
-   (NON CNJ CPFX)  ;; Left of a conjoined phrase "Apples and ..."
-   (CPFX NON NON)  ;; Right of a conjoined phrase.
-   (PDO NON DOBJ)  ;; A direct object
-   (VRB DOBJ VRB)  ;; Only verbs can have direct objects
-
-;; Forms of sentence.  If the word 'seme' appears, it is probably
-;; a question but that gets detected at the semantic level.
-;; Yes/no questions look different.
-   (P12 VRB SENT (FINAL))	;; I or you do something
-   (SBJ VRB PRED) ;; 'li' terminates subject
-   (NON PRED SENT (FINAL))	;; Something not us does something
-
-;; mi ijo. ; sina ijo. ; ona li ijo. ; mi mute li ijo.
-;;     a! ; ...a ; noun a
-;;     noun o! ; o verb... ; noun o verb
-;;     noun li pre-verb verb...
-;;     sentence la sentence ; fragment la sentence
-;;     complex idea { sentence containing "ni": sentence
-
-;; QUESTIONS
-;;     [seme] li [seme] e [seme] prep [seme]?
-;;     ...anu seme? ; noun li verb ala verb? ; yes = verb ; no = ala
-
-;; AND, OR
-;;     noun en noun ; noun li verb li verb ; noun li verb e noun e noun
-
-;; ADJECTIVES
-;;     noun + adj ; (noun + adj) adj ; ((noun + adj) adj) adj
-;;     noun pi noun + adj
-;;     word + Proper name {adj}
-
-;; NUMBERS
-;;     0 = ala ; 1 = wan ; 2 = tu ; 3+ = mute ; ∞ = ale
-;;     alternatives; 5 = luka ; 20 = mute ; 100 = ale
-;;     ordinals { noun nanpa number
-))
-(in-package :AGP)
-
 ;;; Create all the rule and route hash tables at compile time.
+(format T "The grammar has ~D rules~%"
+	  (length AGF::+all-rules+))
+
 (dolist (rule AGF::+all-rules+)
   (destructuring-bind (lfn rfn rslt &optional act)
       rule
@@ -133,11 +140,8 @@
   "Disallow a join based on special tests"
   (labels
       ((be-pair (under)
-	 (not (eq (typeof under) 'AGC::pair)))
-       (notme (under)
-	 (not (eq 'AGF::P12 (term-fn under)))))
+	 (not (eq (type-of under) 'AGC::pair))))
     (case act
-      (AGF::NOT12 (notme lt))
       (AGF::LEFT (be-pair lt))
       (AGF::RIGHT (be-pair rt))
       ((T) T))))

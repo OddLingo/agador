@@ -77,7 +77,12 @@
 ;;; to the console.
 (defun term (fmt &rest args)
   "Write text to the console scrolling region"
-  (sb-thread:with-mutex (*tmtx*)
+  (labels ((typeit (fmt args)
     (setxy 1 +rbot+)
     (apply 'format *standard-output* fmt args)
     (force-output *standard-output*)))
+    (if (sb-thread:holding-mutex-p *tmtx*)
+	(typeit fmt args)
+	(sb-thread:with-mutex (*tmtx*)
+	  (typeit fmt args)))))
+

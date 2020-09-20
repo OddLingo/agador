@@ -11,16 +11,16 @@
 (defparameter *listening* "")  ;; kute ala
 (defparameter *learn* "") ;; sona kama
 
-;; It is some sort of statement about the world.  Just remember it.
+;;; It is some sort of statement about the world.  Just remember it.
 (defun remember (top)
-  (agm:db-start)
-  (let ((uni-time (time-check top))
+;;  (agm:db-start)
+  (let ( ;; (uni-time (time-check top))
 	(key (agm:remember top)))
     ;; If the statement contains a time reference, keep track of that.
-    (when uni-time
-      (AGM:DB-PUT :TIME key (format NIL "~d" uni-time)))
+;;    (when uni-time
+;;      (AGM:DB-PUT :TIME key (format NIL "~d" uni-time)))
     (agu:term "   I remember that at ~a~%" key)
-    (agm:db-commit)
+;;    (agm:db-commit)
     key))
 
 ;;; 'merkle-of-subtree' tries to discover the database key for the memory
@@ -83,6 +83,6 @@
     ;; Questions
     ((agc:contains-p top "seme") (query top))
     ;; Commands
-    ;; Just remember anything else.
-    (T (remember top)))
+    ;; Just remember anything else and give it to the explorer.
+    (T (agm:goto (remember top))))
   )

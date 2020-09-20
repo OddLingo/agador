@@ -25,7 +25,7 @@
 ;;; This results in the final list being in the correct order
 ;;; left-to-right.
 (defun list-from-tree (start)
-  "Flatten parse tree to a list"
+  "Flatten memorized tree to a list"
   (declare (type string start))
   (let ((leaves NIL))
     (labels
@@ -56,32 +56,32 @@
 ;; Repaint the screen with the current text at the top, followed
 ;; by the contexts it appears in.
 (defun repaint ()
-  (agu:use-term)
-  (agu:clear)
-  ;; Context lines in white
-  (agu:set-color 7 0)
-  (loop for c in *contexts* for cnum from 0
-    do (format T "~d: ~a~%" cnum (string-from-tree c)))
+  (sb-thread:with-mutex (agu::*tmtx*)
+    (agu:clear)
+    ;; Context lines in white
+    (agu:set-color 7 0)
+    (loop for c in *contexts* for cnum from 0
+       do (format T "~d: ~a~%" cnum (string-from-tree c)))
 
-  ;; Highlight focus line in yellow
-  (agu:set-color 0 3)
-  (format T "~%~C[K" (code-char 27))
-  (if (null *cursor*)
-      (progn
-	(format T "Type something to set context~%~%"))
-      (progn
-	(format T "~a  ~a~%~%"
-	  (agc:term-fn *cursor*)
-	  (string-from-tree (sig *cursor*)))))
+    ;; Highlight focus line in yellow
+    (agu:set-color 0 3)
+    (format T "~%~C[K" (code-char 27))
+    (if *cursor*
+	(progn
+	  (format T "~a  ~a~%~%"
+		  (agc:term-fn *cursor*)
+		  (string-from-tree (sig *cursor*))))
+	(progn
+	  (log:info "Cursor NIL")
+	  (agu:term "Type something to set context~%~%")))
 
-  ;; Prompt in white on black.
-  (agu:set-color 7 0)
-  (agu:release-term)
+    ;; Prompt in white on black.
+    (agu:set-color 7 0))
 )
 
 ;; Change the explore context to the node with a given signature.
 (defun goto (s)
-  (format T "Exploring from ~a~%" s)
+  (log:info "Exploring from ~a" s)
   (if s (progn
 	  (setq *cursor* (get-tree s))
 	  (setq *contexts* (get-context s))
@@ -118,6 +118,11 @@
 	    (if (eq (type-of *cursor*) 'mpair)
 		(goto (agc:right *cursor*))
 		(format T "Can't do that here~%")))
+
+	   ((equal verb "quit") ;; Stop
+	    (progn
+	      (agm:db-commit)
+	      (return-from explore)))
 
 	   ((equal verb "dt") ;; Dump tree
 	    (dump :TREE))
