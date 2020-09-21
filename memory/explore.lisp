@@ -57,15 +57,16 @@
 ;; by the contexts it appears in.
 (defun repaint ()
   (sb-thread:with-mutex (agu::*tmtx*)
-    (agu:clear)
+    (agu:clear AGU::+rtop+)
     ;; Context lines in white
     (agu:set-color 7 0)
+    (agu:setxy 1 AGU::+rtop+)
     (loop for c in *contexts* for cnum from 0
        do (format T "~d: ~a~%" cnum (string-from-tree c)))
 
     ;; Highlight focus line in yellow
     (agu:set-color 0 3)
-    (format T "~%~C[K" (code-char 27))
+    (agu:clear-eol)
     (if *cursor*
 	(progn
 	  (format T "~a  ~a~%~%"

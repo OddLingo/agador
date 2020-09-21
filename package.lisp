@@ -31,7 +31,7 @@
   (:use common-lisp)
   (:import-from :cl-utilities :split-sequence)
   (:export words-from-file words-from-string gfun-from-string)
-  (:export string-from-list clear setxy set-scroll set-color)
+  (:export string-from-list clear setxy set-scroll set-color clear-eol)
   (:export send connect mbx-server)
   (:export use-term release-term term clearw1 set-status)
   (:export sked-add sked-later init-hash)

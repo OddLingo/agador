@@ -17,8 +17,6 @@
   (let ( ;; (uni-time (time-check top))
 	(key (agm:remember top)))
     ;; If the statement contains a time reference, keep track of that.
-;;    (when uni-time
-;;      (AGM:DB-PUT :TIME key (format NIL "~d" uni-time)))
     (agu:term "   I remember that at ~a~%" key)
 ;;    (agm:db-commit)
     key))

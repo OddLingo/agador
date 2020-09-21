@@ -13,15 +13,15 @@
   (let ((npos (minus1 (term-lpos rterm))))
     (if (< npos 0) NIL (elt *right* npos))))
 
-;;; Approve a rule that has additional tests.
+;;; Approve a rule that has additional tests.  Any test
+;;; returning NIL will block the join.
 (defun approved (actions lt rt)
+  "Check all special conditions"
   (dolist (act actions)
-    (unless (eq act 'AGF::FINAL)
       (unless (approve-join act lt rt)
 	(log:info "Join blocked by ~a" act)
-	(return-from approved NIL))))
-  T
-  )
+	(return-from approved NIL)))
+  T)
 
 ;;; Apply a list of rules to a list of left side candidates.
 ;;; This is not as bad as it looks because the list of rules
@@ -33,10 +33,10 @@
 (defun apply-rules (rt rules neighbors)
   (dolist (lt neighbors)
     (dolist (r rules)
-;;      (log:info "Trying ~a" r)
+      (log:info "Trying ~a" r)
       (when (eq (rule-left r) (agc:term-fn lt))
-;;	(when (approved (action r) lt rt)
-	  (join lt rt (rule-result r) (action r))))))
+	(when (approved (action r) lt rt)
+	  (join lt rt (rule-result r) (action r)))))))
 
 (defun consider (rt)
   "Consider what rules might apply to a new term"
@@ -67,31 +67,13 @@
   (let* ((pos (length *right*))
 	 (spell (car wordpair))
 	 (fn (cdr wordpair)))
-    (if (eq fn 'AGC::DIGIT)
-	(progn
-	  ;; Special case handling of numbers.
-	  (unless *current-number*
-	    ;; First of a run of digits.
-	    (setq *current-number*
-		  (make-instance 'pnumb :lpos pos :rpos pos))
-	    (vector-push-extend () *right*)
-	    (push *current-number* (elt *right* pos)))
-	  ;; Process this digit.
-	  (number-add spell))
-	(progn
-	  ;; If we were just handling a number, look for its
-	  ;; rules first.
-	  (when *current-number*
-	    (consider *current-number*)
-	    (number-reset))
-	  ;; Now deal with the new non-digit word.
-	  (vector-push-extend () *right*)
-	  (let ((rt (make-instance 'pusage
-			    :spelled spell :fn fn
-			    :lpos pos :rpos pos
-			    )))
-	    (push rt (elt *right* pos))
-	    (consider rt))))))
+    (vector-push-extend () *right*)
+    (let ((rt (make-instance 'pusage
+			     :spelled spell :fn fn
+			     :lpos pos :rpos pos
+			     )))
+      (push rt (elt *right* pos))
+      (consider rt))))
 
 (defun see-word (spell)
   "Add a word to the sentence and look for matches"
@@ -118,14 +100,18 @@
   (setq *right*  (make-array 15 :fill-pointer 0 :adjustable t ))
   (setq *top* NIL))
 
-;;; Set *top* to all pairs that span the entire input string.
-;;; Hopefully there is just one, and it will have all local
-;;; ambiguities dealt with.
+;;; Set *top* to all pairs that span the entire input string and
+;;; is marked 'FINAL'.  Hopefully there is just one,
+;;; and it will have all local ambiguities dealt with.
 (defun choose-top ()
   (let ((rt (elt *right* (minus1 (length *right*)))))
     (setq *top*
 	  (remove-if
-	   (lambda (x) (> (term-lpos x) 0))
+	   (lambda (x)
+	     (log:info "Choose filter ~a" x)
+	     (or
+	      (> (term-lpos x) 0)
+	      (not (has-test x 'AGF::FINAL))))
 	   rt))))
 
 ;;; Remember what was said or act on commands or questions.
@@ -141,27 +127,29 @@
 	   (log:error "~a" e))))
       (T (agu:term "Nothing to do~%")))))
 
-;;; If there is exactly one satisfactory solution, we can learn from it
-;;; or act on it.
+;;; If there is exactly one satisfactory solution, we can
+;;; learn from it or act on it.
 (defun judge ()
   (declare (optimize (debug 3)(speed 1)))
   (let ((nsoln (length *top*)))
     (cond ((= 0 nsoln)
-	   (log:warn "No satisfactory solution found~%")
+	   (log:warn "No satisfactory solution found")
 	   (print-all)
 	   NIL)
 
 	  ((= 1 nsoln)
 	   ;; Exactly one - we go with it.
+	   (agu:clear)
 	   (let ((best (car *top*)))
 	     (paint-parse best)
 	     (learn best)))
 
 	  (T
+	   (agu:clear)
 	   (agu:term  "There are ~d solutions~%" nsoln)
 	   (let ((topy 2))
-	     (dolist (sol *top*)
-	       (setf topy (paint-parse sol 2 topy))))
+	     (dolist (solution *top*)
+	       (setf topy (paint-parse solution topy))))
 	   NIL))))
 
 ;;; Parse a list of words

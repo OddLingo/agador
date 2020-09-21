@@ -3,7 +3,7 @@
 ;; Functions that display the contents of parser working trees.
 (in-package :AGP)
 
-;; Print the entire parse context so far, including all partials
+;;; Print the entire parse context so far, including all partials.
 (defun print-all ()
   "Print entire parser data"
   (sb-thread:with-mutex (AGU::*tmtx*)
@@ -58,56 +58,67 @@
 
 (defun hpos (pos) (* pos 8))
 
-(defgeneric paint-tree (pterm &optional depth top))
+;;; 'depth' is how far down we are in the tree.  'top'
+;;; is the y-position of the word line.
+(defgeneric paint-tree (pterm &optional top depth ))
 
-(defmethod paint-tree ((n pnumb) &optional (depth 0) (top 1))
-  (declare (type integer depth top))
-  (let ((xpos (hpos (term-lpos n))))
-    ;; Word text on top line
-    (agu:setxy xpos top) (format T "~d" (agc:nvalue n))
-    ;; Function name just below
-    (agu:setxy xpos (1+ top)) (format T "~a" (agc:term-fn n))
-    (+ depth top 1)))
+;; (defmethod paint-tree ((n pnumb) &optional (depth 0) (top 1))
+;;   (declare (type integer depth top))
+;;   (let ((xpos (hpos (term-lpos n))))
+;;     ;; Word text on top line
+;;     (agu:setxy xpos top) (format T "~d" (agc:nvalue n))
+;;     ;; Function name just below
+;;     (agu:setxy xpos (1+ top)) (format T "~a" (agc:term-fn n))
+;;     (+ depth top 1)))
 
-(defmethod paint-tree ((u pusage) &optional (depth 0) (top 1))
+(defmethod paint-tree ((u pusage) &optional (top 1) (depth 0))
   (declare (type integer depth top))
+  (declare (ignore depth))
   (let ((xpos (hpos (term-lpos u))))
     ;; Word text on top line
     (agu:setxy xpos top) (format T "~a" (agc:spelled u))
     ;; Function name just below
     (agu:setxy xpos (1+ top)) (format T "~a" (agc:term-fn u))
-    (+ depth top 1)))
+    (+ 2 top)))
 
-(defmethod paint-tree ((p ppair) &optional (depth 2) (top 1))
+;;; Draw PAIR nodes bottom-up.
+(defmethod paint-tree ((p ppair) &optional (top 1) (depth 2))
   (declare (type integer depth top))
   (let* (
-	 (lx (hpos (term-lpos p)))
-	 (rx (+ 4 (hpos (term-rpos p))))
-	 (ly (paint-tree (agc:left p) depth top))
-	 (ry (paint-tree (agc:right p) depth top))
+	 (left-x (hpos (term-lpos p)))
+	 (right-x (+ 4 (hpos (term-rpos p))))
+	 (nextrow (1+ depth))
+	 ;; Draw lower nodes first.  Each reports how far
+	 ;; down they went.
+	 (left-y (paint-tree (agc:left p) top nextrow))
+	 (right-y (paint-tree (agc:right p) top nextrow))
+	 ;; Vertical lines start at base
 	 (base (+ top 2))
-	 (py (max ly ry)))
+	 ;; Where we will draw our line across
+	 (pair-y (1+ (max left-y right-y))))
  
     ;; Draw the lines
-    (agu:set-color 3 0)
-    (hline py lx rx) (vline lx base py) (vline rx base py)
+    (agu:set-color 3 0)   ;; Yellow on black
+    (hline pair-y left-x right-x)
+    (vline left-x base pair-y)
+    (vline right-x base pair-y)
     ;; Draw the function name
-    (agu:setxy (- (average lx rx) (1+ base)) py)
-    (agu:set-color 0 3)
+    (agu:setxy (- (average left-x right-x) 2) pair-y)
+    (agu:set-color 0 3)   ;; Black on yellow
     (format T " ~a " (agc:term-fn p))
-    (agu:set-color 7 0)
-    ;; Report the position below what we just did.
-    (1+ py)))
+    (agu:set-color 7 0)   ;; Back to white on black
+    ;; Report the Y position below what we just did.
+    (1+ pair-y)))
 
 ;;; Draw the diagram of grammatical functions for a sentence.
-(defun paint-parse (start &optional (depth 2) (top 1) )
+(defun paint-parse (start &optional (top 1) )
   (declare (type pterm start)
 	   (optimize (debug 3) (speed 1))
-	   (type integer depth top))
+	   (type integer top))
   (sb-thread:with-mutex (AGU::*tmtx*)
     (agu:set-scroll NIL)
 
-    (let ((newtop (paint-tree start depth top)))
+    (let ((newtop (paint-tree start top)))
       (agu:setxy 1 newtop)
       (agu:set-scroll T)
       (finish-output)

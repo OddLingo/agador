@@ -1,13 +1,16 @@
 ;;;; -*- Mode: Lisp; Syntax: ANSI-Common-Lisp; -*-
 
-;;;; This file provides the rules for the Adjacency Parser to deal with
-;;;; the toki pona language.  All rules are triplets.  The first two
-;;;; terms, when found next to each other, "might" be acting as the
-;;;; third term.  An optional fourth term is a function to run should
-;;;; the third term end up spanning the entire input.
+;;;; This file provides the rules for the Adjacency Parser to
+;;;; deal with the toki pona language.  All rules are triplets.
+;;;; The first two terms, when found next to each other,
+;;;; "might" be acting as the third term.  An optional
+;;;; fourth term is a list of functions to run should
+;;;; the third term end up spanning the entire input, or of
+;;;; tests to apply during matching.
 
 (in-package :AGP)
-;;; Each entry in the rule hash-table is a list of rules with the same
+;;; Each entry in the rule hash-table is a list of rules
+;;; with the same
 ;;; right term.  When trying out potential rules, we always know
 ;;; what the right side is, so this speeds up the search.
 ;;; We load the table from a big list at compile time.  The leaf terms
@@ -15,18 +18,19 @@
 (in-package :AGF)
 (defparameter +all-rules+
  '(
-   (NON ADJ NON)   ;; A modified noun phrase, left-heavy preferred
-   (NON NON NON)
+   (NON ADJ NON (LEFT))   ;; A modified noun phrase, left-heavy preferred
+   (NON NON NON (LEFT))
    (VRB ADJ VRB)   ;; Verbs too
    (PRP NON PREPP) ;; Prepositional phrase
    (PRP P12 PREPP) ;; Prepositional phrase
    (NON PREPP NON) ;; Prepositions can modify nouns too
    (VRB PREPP VRB)
+   (ADJ PREPP ADJ) ;; and adjectives
    (NON NEG NON)	  ;; A negated noun  "Not green"
    (VRB NEG VRB)
    (POF NON ADJ (RIGHT))  ;; Regrouped modifier, right must be a pair.
    (NON CNJ CPFX)  ;; Left of a conjoined phrase "Apples and ..."
-   (P12 CNJ CPFX)  ;; Left of a conjoined phrase "Apples and ..."
+   (P12 CNJ CPFX)  ;; Left of a conjoined phrase "Me and ..."
    (CPFX P12 NON)  ;; Right of a conjoined phrase.
    (CPFX NON NON)
    (PDO NON DOBJ)  ;; A direct object
@@ -34,14 +38,20 @@
    (DOBJ DOBJ DOBJ)
    (VRB DOBJ VRBP)  ;; Only verbs can have direct objects
    (VRB PREPP VRBP)
-   (VRB NON VRBP)
+   (VRB NON VRBP)   ;; an unmarked direct object
 
 ;; Forms of sentence.  If the word 'seme' appears, it is probably
 ;; a question but that gets detected at the semantic level.
 ;; Yes/no questions look different.
-   (P12 VRB SENT (FINAL))	;; I or you do something
-   (P12 VRBP SENT (FINAL))	;; I or you do something
+   (P12 NON SENT (FINAL))      ;; I or you do or are something
+   (P12 ADJ SENT (FINAL))
+   (P12 PREPP SENT (FINAL))
+   (P12 VRB SENT (FINAL))
+   (P12 VRBP SENT (FINAL))
    (NON SBJ MKSB)   ;; 'li' marks normal subject
+   (MKSB NON SENT (FINAL))     ;; Soething not us does something
+   (MKSB ADJ SENT (FINAL))
+   (MKSB PREPP SENT (FINAL))
    (MKSB VRB SENT (FINAL)) ;; 'li' terminates subject
    (MKSB VRBP SENT (FINAL)) ;; 'li' terminates subject
 
@@ -109,7 +119,7 @@
 
 ;;; Create all the rule and route hash tables at compile time.
 (format T "The grammar has ~D rules~%"
-	  (length AGF::+all-rules+))
+	(length AGF::+all-rules+))
 
 (dolist (rule AGF::+all-rules+)
   (destructuring-bind (lfn rfn rslt &optional act)
@@ -134,17 +144,32 @@
 ;;;; A variety of tests can prevent a rule from applying.
 ;;;; The binary adjacency rules are rather simple.  But they
 ;;;; can have these more precise tests to make sure that
-;;;; appplying the rules makes sense.  By returning NIL,
-;;;; the test vetos the join.
+;;;; appplying the rule makes sense.  By returning NIL,
+;;;; a test vetos the join.
 (defun approve-join (act lt rt)
-  "Disallow a join based on special tests"
+  "Disallow a join based on a special test"
+  (declare (type pterm lt rt)
+	   (type symbol act))
   (labels
-      ((be-pair (under)
-	 (not (eq (type-of under) 'AGC::pair))))
+      (
+       ;; Test for preferring certain tree shapes.  We veto a
+       ;; join if deep-side is shallower than shallow-side.
+       (heavier (deep-side shallow-side)
+	 (let*
+	     ((deep-type (type-of deep-side))
+	      (shallow-type (type-of shallow-side))
+	      (ok (not (and
+		 (equal deep-type :PUSAGE)
+		 (equal shallow-type :PPAIR)))))
+	   (log:info
+	    "Deep ~a shallow ~a ok ~a"
+	    deep-type shallow-type ok)
+	   ok)))
+
     (case act
-      (AGF::LEFT (be-pair lt))
-      (AGF::RIGHT (be-pair rt))
-      ((T) T))))
+      (AGF::LEFT  (heavier lt rt))  ;; Left term must be pair
+      (AGF::RIGHT (heavier rt lt))  ;; Right term must be pair
+      (otherwise T))))
 
 ;;;; Here are functions that can search the routing table to
 ;;;; optimize the location of sub-clauses.

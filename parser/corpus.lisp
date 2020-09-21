@@ -8,6 +8,7 @@
 (defparameter +percent-recursive+ 80)
 
 (defun make-text (maxcount outfile &optional (period NIL))
+  "Generate a text corpus"
   (declare (ignore period))
   (declare (optimize (debug 3) (speed 0)))
   (format T "Writing ~D sentences to ~a~%" maxcount outfile)
@@ -28,8 +29,9 @@
       ;;? This only considers rules by right term.
       (let ((rules (gethash old-key *rules*)))
 	(dolist (r rules)
-	  (let* ((rslt (rule-result r))
-		(oldrules (gethash rslt genrules)))
+	  (let*
+	      ((rslt (rule-result r))
+	       (oldrules (gethash rslt genrules)))
 
 	    ;; Remember the top goals
 	    (when (has-test r 'AGF::FINAL)
@@ -47,7 +49,6 @@
        do
 	 (setf word-count 0)
 	 (labels
-;;	     (declaim (ftype (function (rule integer) t) walk))
 	     ((pick-from-list (alternatives)
 		"Select a random element from a list"
 		(nth (random (length alternatives))

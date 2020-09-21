@@ -4,7 +4,7 @@
 (in-package :AGP)
 
 ;;; A dictionary of all the words in toki pona, keyed on spelling,
-;;; taken from "pu", the cannonical reference for the toki pona language.
+;;; taken from "pu", the canonical reference for the toki pona language.
 ;;; There is one entry per spelling, but each can have multiple
 ;;; grammatical functions.  By convention, the grammatical function
 ;;; names of words are three letters long.  Longer names are for
@@ -29,7 +29,7 @@
    ("moli" ADJ)("monsi" NON)("mu" INT)("mun" NON)("musi" ADJ)("mije" NON)
    ("mute" ADJ NON)("nanpa" NON NUM)("nasa" ADJ)("nasin" NON)
    ("nena" NON)("ni" ADJ)("nimi" NON)("noka" NON)("o" VOC)
-   ("olin" VRB NON)("ona" NON ADJ)("open" VRB)("pakala" ADJ)("pali" VRB)
+   ("olin" VRB)("ona" NON ADJ)("open" VRB)("pakala" ADJ)("pali" VRB)
    ("palisa" NON)("pan" NON)("pana" VRB)("pi" POF)
    ("pilin" NON ADJ)("pimeja" ADJ)("pini" ADJ)("pipi" NON)
    ("poka" NON)("pona" ADJ)("pu" ADJ NON)("sama" ADJ PRP)
@@ -48,7 +48,7 @@
 (in-package :AGP)
 
 ;;; This table maps individual letters in toki pona to their pronounciation
-;;; using the Julius English Acoustic Model.  Any letter not in the table
+;;; in the Acoustic Model.  Any letter not in the table
 ;;; maps to itself.  Change to match acoustic model.
 (defparameter +char-sound+ (make-hash-table :test 'equal :size 10))
 (agu:init-hash
@@ -56,6 +56,8 @@
  '(("a" . "ah") ("e" . "eh") ("i" . "iy")
    ("u" . "uw") ("o" . "ow") ("j" . "y")))
 
+;;; We need to tell the Recognizer how each word is pronounced.
+;;; This function provides that information.
 (defun phonetics (s)
   "Convert a TP word to its pronounciation"
   (labels
@@ -81,7 +83,8 @@
     (funcall callback w (phonetics w))))
 
 ;;; Create an inverted hash of the dictionary, so all words with
-;;; the same function are grouped together.
+;;; the same function are grouped together.  This is used by the
+;;; corpus-generator.
 (defun words-by-fn ()
   (let* ((funs (make-hash-table :size 30)))
     (maphash

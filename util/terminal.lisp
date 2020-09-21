@@ -29,13 +29,14 @@
 (defun release-term () (sb-thread:release-mutex *tmtx*))
 
 ;;; Console manipulation with escape sequences.
-(defun clear ()
-  (format T "~C[H~C[J" (code-char 27) (code-char 27)))
 (defun clear-eol ()
   (format T "~C[K" (code-char 27)))
 (defun setxy (x y)
   (declare (type integer x y))
   (format T "~C[~d;~dH" (code-char 27) y x))
+(defun clear (&optional (toprow 1))
+  (setxy 1 toprow)
+  (format T "~C[J" (code-char 27)))
 (defun set-color (fg bg)
   (declare (type integer fg bg))
   (format T "~C[~d;~dm"
