@@ -116,7 +116,7 @@
 	    (dump :CNTX))
 	   ((equal verb "dw") ;; Dump words
 	    (agp:print-words))
-	   ((equal verb "v") (AGP::enable-action T))
+	   ((equal verb "v") (AGA::enable-action T))
 	   ;; Anything else is a statement to analyze.
 	   (T
 	    (let ((r (agp:parse-words (agu:words-from-string line))))

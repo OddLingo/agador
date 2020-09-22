@@ -83,112 +83,112 @@
 ;;;;   (PP (PREP MONTH)) with PREP="IN" -> set first of month
 ;;;; These patterns are encoded in the +prep-rules+ list.
 
-(defun analyze-date (pr dt)
-  "Set a date from a MONTH NUMBER pair"
-  (declare (type agp:ppair pr)
-	   (type datetime dt))
-  (let* ((mname (agc:spelled (agc:left pr)))
-	 (mnum (gethash +month-numbers+ mname))
-	 (dnum (agc:nvalue (agc:right pr))))
-    (when (< mnum (month dt))
-      (incf (year dt)))
-    (setf (month dt) mnum)
-    (setf (day dt) dnum)
-    dt))
+;; (defun analyze-date (pr dt)
+;;   "Set a date from a MONTH NUMBER pair"
+;;   (declare (type agp:ppair pr)
+;; 	   (type datetime dt))
+;;   (let* ((mname (agc:spelled (agc:left pr)))
+;; 	 (mnum (gethash +month-numbers+ mname))
+;; 	 (dnum (agc:nvalue (agc:right pr))))
+;;     (when (< mnum (month dt))
+;;       (incf (year dt)))
+;;     (setf (month dt) mnum)
+;;     (setf (day dt) dnum)
+;;     dt))
 
-(defun analyze-month (mon dt)
-  "Set a date given just a month name"
-  (declare (type agp:pusage mon)
-	   (type datetime dt))
-  (let* ((mname (agc:spelled mon))
-	 (mnum (gethash mname +month-numbers+)))
-    ;; Bump to next year if month in the past
-    (when (< mnum (month dt))
-      (incf (year dt)))
-    (setf (month dt) mnum)
-    (setf (day dt) 1)
-    dt))
+;; (defun analyze-month (mon dt)
+;;   "Set a date given just a month name"
+;;   (declare (type agp:pusage mon)
+;; 	   (type datetime dt))
+;;   (let* ((mname (agc:spelled mon))
+;; 	 (mnum (gethash mname +month-numbers+)))
+;;     ;; Bump to next year if month in the past
+;;     (when (< mnum (month dt))
+;;       (incf (year dt)))
+;;     (setf (month dt) mnum)
+;;     (setf (day dt) 1)
+;;     dt))
   
-(defun analyze-year (n dt)
-  "Set the year part of a date from a value NNNN"
-  (declare (type agp:pnumb n)
-	   (type datetime dt))
-  (setf (year dt) (agc:nvalue n))
-  dt)
+;; (defun analyze-year (n dt)
+;;   "Set the year part of a date from a value NNNN"
+;;   (declare (type agp:pnumb n)
+;; 	   (type datetime dt))
+;;   (setf (year dt) (agc:nvalue n))
+;;   dt)
 
-(defun analyze-time (n dt)
-  "Set a time from a numeric value HHMM"
-  (declare (type agp:pnumb n)
-	   (type datetime dt))
-  (let* ((v (agc:nvalue n))
-	 (hr (floor (/ v 100)))
-	 (min (mod v 100)))
-    (setf (hour dt) hr)
-    (setf (minute dt) min)
-    dt))
+;; (defun analyze-time (n dt)
+;;   "Set a time from a numeric value HHMM"
+;;   (declare (type agp:pnumb n)
+;; 	   (type datetime dt))
+;;   (let* ((v (agc:nvalue n))
+;; 	 (hr (floor (/ v 100)))
+;; 	 (min (mod v 100)))
+;;     (setf (hour dt) hr)
+;;     (setf (minute dt) min)
+;;     dt))
 
 ;;; Here is a list of the patterns we look for.  The first term is
 ;;; the spelling of the preposition itself.  The second term is the
 ;;; gramatical function of the right side of the phrase.  The last
 ;;; term is the function to call to set datetime fields.  These phrases
 ;;; appear on the right side of an MSTMT 'modified statement' pair.
-(defparameter +prep-rules+
-'(("AT" 'AGF::NUMBER 'analyze-time)  ;; "at 1115"
-  ("IN" 'AGF::MONTH 'analyze-month)  ;; "in January"
-  ("BY" 'AGF::MONTH 'analyze-month)  ;; "by January"
-  ("IN" 'AGF::NUMBER 'analyze-year)  ;; "in 2021"
-  ("BY" 'AGF::DATE 'analyze-date)
-  ("ON" 'AGF::DATE 'analyze-date)))  ;; "on July tenth"  
+;; (defparameter +prep-rules+
+;; '(("AT" 'AGF::NUMBER 'analyze-time)  ;; "at 1115"
+;;   ("IN" 'AGF::MONTH 'analyze-month)  ;; "in January"
+;;   ("BY" 'AGF::MONTH 'analyze-month)  ;; "by January"
+;;   ("IN" 'AGF::NUMBER 'analyze-year)  ;; "in 2021"
+;;   ("BY" 'AGF::DATE 'analyze-date)
+;;   ("ON" 'AGF::DATE 'analyze-date)))  ;; "on July tenth"  
 
-(defun prep-patterns (pp dt)
-  "Look for patterns in the name of a preposition and its object type"
-  (declare (type agp:ppair pp)
-	   (type datetime dt))
-  (let* ((pname (agc:spelled (agc:left pp)))
-	(arg (agc:right pp))
-	(fn (agc:term-fn arg)))
-    (dolist (pattern +prep-rules+)
-      (destructuring-bind
-	    (rule-name rule-fun process)
-	  pattern
-	(when (and
-	   (equal rule-name pname)
-	   (eq rule-fun fn))
-	  (format T "PP ~a~%" pattern)
-	  (funcall process arg dt)
-	  (return-from prep-patterns T))))
-    NIL))		
+;; (defun prep-patterns (pp dt)
+;;   "Look for patterns in the name of a preposition and its object type"
+;;   (declare (type agp:ppair pp)
+;; 	   (type datetime dt))
+;;   (let* ((pname (agc:spelled (agc:left pp)))
+;; 	(arg (agc:right pp))
+;; 	(fn (agc:term-fn arg)))
+;;     (dolist (pattern +prep-rules+)
+;;       (destructuring-bind
+;; 	    (rule-name rule-fun process)
+;; 	  pattern
+;; 	(when (and
+;; 	   (equal rule-name pname)
+;; 	   (eq rule-fun fn))
+;; 	  (format T "PP ~a~%" pattern)
+;; 	  (funcall process arg dt)
+;; 	  (return-from prep-patterns T))))
+;;     NIL))		
 
-;;; We need to sweep through a statement watching for prepositional
-;;; phrases and analyzing each one for time information.
-(defun scan-preps (start)
-  (declare (type agp:ppair start))
-  (let* ((dt (make-instance 'datetime)))
-    (labels
-	((pp-scan (node dt)
-	   (declare (type agp:pterm node)
-		    (type datetime dt))
-	   (let ((nty (type-of node))
-		 (nfn (agc:term-fn node)))
-	     (cond
-	       ((eq nfn 'AGF::PP) (prep-patterns node dt))
-	       ((eq nty 'AGP:PPAIR)
-		(progn
-		  (pp-scan (agc:left node) dt)
-		  (pp-scan (agc:right node) dt)))))))
-      (pp-scan start dt))
-    ;; The datetime is now fillled in.  Convert to standard seconds format.
-    (to-universal dt)))
+;; ;;; We need to sweep through a statement watching for prepositional
+;; ;;; phrases and analyzing each one for time information.
+;; (defun scan-preps (start)
+;;   (declare (type agp:ppair start))
+;;   (let* ((dt (make-instance 'datetime)))
+;;     (labels
+;; 	((pp-scan (node dt)
+;; 	   (declare (type agp:pterm node)
+;; 		    (type datetime dt))
+;; 	   (let ((nty (type-of node))
+;; 		 (nfn (agc:term-fn node)))
+;; 	     (cond
+;; 	       ((eq nfn 'AGF::PP) (prep-patterns node dt))
+;; 	       ((eq nty 'AGP:PPAIR)
+;; 		(progn
+;; 		  (pp-scan (agc:left node) dt)
+;; 		  (pp-scan (agc:right node) dt)))))))
+;;       (pp-scan start dt))
+;;     ;; The datetime is now fillled in.  Convert to standard seconds format.
+;;     (to-universal dt)))
 
-(defun time-check (start)
-  (declare (type AGP:PPAIR start))
+;; (defun time-check (start)
+;;   (declare (type AGP:PPAIR start))
 
-  ;; This only applies to the right side of MSTMT terms.
-  (unless (eq (agc:term-fn start) 'AGC::MSTMT)
-    (return-from time-check NIL))
+;;   ;; This only applies to the right side of MSTMT terms.
+;;   (unless (eq (agc:term-fn start) 'AGC::MSTMT)
+;;     (return-from time-check NIL))
 
-  (let* ((top-right (AGC:RIGHT start))
-	 (uni-time (scan-preps top-right)))
-    (AGU:TERM "Sentence references ~a~%" (speakable-time uni-time))
-    uni-time))
+;;   (let* ((top-right (AGC:RIGHT start))
+;; 	 (uni-time (scan-preps top-right)))
+;;     (AGU:TERM "Sentence references ~a~%" (speakable-time uni-time))
+;;     uni-time))
 

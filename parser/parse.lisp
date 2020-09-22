@@ -33,7 +33,7 @@
 (defun apply-rules (rt rules neighbors)
   (dolist (lt neighbors)
     (dolist (r rules)
-      (log:info "Trying ~a" r)
+;;      (log:info "Trying ~a" r)
       (when (eq (rule-left r) (agc:term-fn lt))
 	(when (approved (action r) lt rt)
 	  (join lt rt (rule-result r) (action r)))))))
@@ -61,24 +61,11 @@
     (consider np))
   NIL)
 
-;;; Add a new word to the current utterance being analyzed.
-(defun accept-word (wordpair)
-  "Add a word to the sentence and look for matches"
-  (let* ((pos (length *right*))
-	 (spell (car wordpair))
-	 (fn (cdr wordpair)))
-    (vector-push-extend () *right*)
-    (let ((rt (make-instance 'pusage
-			     :spelled spell :fn fn
-			     :lpos pos :rpos pos
-			     )))
-      (push rt (elt *right* pos))
-      (consider rt))))
-
 (defun see-word (spell)
   "Add a word to the sentence and look for matches"
   (let* ((funs (lookup spell))
-	 (pos (length *right*)))
+	 (pos (length *right*))
+	 (priority 100))
 
     ;; Create an empty entry at the right end of the sentence.
     (vector-push-extend () *right*)
@@ -90,9 +77,13 @@
       (let (
 	    (rt (make-instance 'pusage
 	       :spelled spell :fn f
-	       :lpos pos :rpos pos)))
-	 (push rt (elt *right* pos))
-	 (consider rt)))))
+	       :lpos pos :rpos pos
+	       :prob priority)))
+	(push rt (elt *right* pos))
+	;; FUnctions are in decreasing order of liklihood.
+	(decf priority 10)
+	(log:info "Word ~a" rt)
+	(consider rt)))))
 
 ;;; This needs to be called before each parser invocation.
 (defun init-parse ()
@@ -103,14 +94,16 @@
 ;;; Set *top* to all pairs that span the entire input string and
 ;;; is marked 'FINAL'.  Hopefully there is just one,
 ;;; and it will have all local ambiguities dealt with.
-(defun choose-top ()
+(defun select-full ()
+  ;; Start with those that reach the right side.
   (let ((rt (elt *right* (minus1 (length *right*)))))
     (setq *top*
 	  (remove-if
 	   (lambda (x)
-	     (log:info "Choose filter ~a" x)
 	     (or
+	      ;; Exclude those that do NOT reach the left side
 	      (> (term-lpos x) 0)
+	      ;; or are not marked 'FINAL'
 	      (not (has-test x 'AGF::FINAL))))
 	   rt))))
 
@@ -127,30 +120,56 @@
 	   (log:error "~a" e))))
       (T (agu:term "Nothing to do~%")))))
 
+;;; When there is more than one possible parse, pick the one
+;;; with the highest 'probability'.
+(defun pick-best ()
+  (log:info "Choosing best from ~a" *top*)
+  (let* ((best-score 0)
+	 (best-parse NIL))
+    (dolist (candidate *top*)
+      (let ((this-prob (prob candidate)))
+	(cond
+	  ((> this-prob best-score)
+	   (progn
+	     (setf best-score this-prob)
+	     (setf best-parse (list candidate))))
+	  ((= this-prob best-score)
+	   (push candidate best-parse)))
+	))
+    (log:info "Chose ~a" best-parse)
+    best-parse))
+
+(defun use-this (best)
+  (agu:clear)
+  (paint-parse best)
+  (learn best))
+  
 ;;; If there is exactly one satisfactory solution, we can
 ;;; learn from it or act on it.
 (defun judge ()
   (declare (optimize (debug 3)(speed 1)))
   (let ((nsoln (length *top*)))
-    (cond ((= 0 nsoln)
-	   (log:warn "No satisfactory solution found")
-	   (print-all)
-	   NIL)
+    (cond
+      ((= 0 nsoln)
+       (log:warn "No satisfactory solution found")
+       (print-all)
+       NIL)
 
-	  ((= 1 nsoln)
-	   ;; Exactly one - we go with it.
-	   (agu:clear)
-	   (let ((best (car *top*)))
-	     (paint-parse best)
-	     (learn best)))
+      ((= 1 nsoln)
+       ;; Exactly one - we go with it.
+       (use-this (car *top*)))
 
-	  (T
-	   (agu:clear)
-	   (agu:term  "There are ~d solutions~%" nsoln)
-	   (let ((topy 2))
-	     (dolist (solution *top*)
-	       (setf topy (paint-parse solution topy))))
-	   NIL))))
+      (T
+       (agu:term  "There are ~d solutions~%" nsoln)
+       (let ((topy 2)
+	     (highest (pick-best)))
+	 (if (= (length highest) 1)
+	     (use-this (car highest))
+	     (progn
+	       (dolist (solution highest)
+		 (setf topy (paint-parse solution topy)))
+	       NIL))))
+      )))
 
 ;;; Parse a list of words
 (defun parse-words (wds)
@@ -159,7 +178,7 @@
   ;; Feed each word to the parser.
   (dolist (w wds) (see-word w))
   ;; Find the parses that span the entire input.
-  (choose-top)
+  (select-full)
   ;; Detect a single useful result.
   (judge))
 

@@ -61,7 +61,7 @@
   (:nicknames :agp)
   (:use common-lisp)
   (:export parse-words parse-string parse-line parse-file-line init-rules)
-  (:export pterm ppair pusage pnumb start-parser parse route-path)
+  (:export pterm ppair pusage start-parser parse route-path)
   (:export string-from-tree word-at term-lpos term-rpos print-words)
   )
 

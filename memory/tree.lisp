@@ -112,7 +112,6 @@
 (defgeneric recall-p (agp:pterm))
 (defmethod recall-p ((node agp:pusage))
   (get-tree (merkle node)))
-(defmethod recall-p ((num agp:pnumb)) T)
 (defmethod recall-p ((p agp:ppair))
   (unless (recall-p (agc:left p)) (return-from recall-p NIL))
   (unless (recall-p (agc:right p)) (return-from recall-p NIL))

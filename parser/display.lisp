@@ -62,15 +62,6 @@
 ;;; is the y-position of the word line.
 (defgeneric paint-tree (pterm &optional top depth ))
 
-;; (defmethod paint-tree ((n pnumb) &optional (depth 0) (top 1))
-;;   (declare (type integer depth top))
-;;   (let ((xpos (hpos (term-lpos n))))
-;;     ;; Word text on top line
-;;     (agu:setxy xpos top) (format T "~d" (agc:nvalue n))
-;;     ;; Function name just below
-;;     (agu:setxy xpos (1+ top)) (format T "~a" (agc:term-fn n))
-;;     (+ depth top 1)))
-
 (defmethod paint-tree ((u pusage) &optional (top 1) (depth 0))
   (declare (type integer depth top))
   (declare (ignore depth))
@@ -117,7 +108,10 @@
 	   (type integer top))
   (sb-thread:with-mutex (AGU::*tmtx*)
     (agu:set-scroll NIL)
-
+    (agu:setxy 1 top)
+    (unless (= (prob start) 100)
+      (format T "Probability ~D~%" (prob start))
+      (incf top))
     (let ((newtop (paint-tree start top)))
       (agu:setxy 1 newtop)
       (agu:set-scroll T)
@@ -137,9 +131,6 @@
 	     (pusage (push
 		       (agc:spelled m)
 		       leaves))
-	     (pnumb (push
-		      (format NIL "~d" (agc:nvalue m))
-		      leaves))
 	     (ppair (pleaves (agc::right m))
 		    (pleaves (agc::left m))
 		    ))))
