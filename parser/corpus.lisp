@@ -62,15 +62,15 @@
 
 	      (pick-word (words)
 		"Choose a random word from a list"
-		(if (null words)
-		    (format T "Picking from empty word list~%")
-		    (emit (pick-from-list words))))
+		(if words
+		    (emit (pick-from-list words))
+		    (format T "Picking from empty word list~%")))
 	      
 	      (pick-rule (depth rules)
 		"Choose a random rule from a list"
-		(if (null rules)
-		    (format T "Picking from empty rules list~%")
-		    (walk (pick-from-list rules) (1+ depth))))
+		(if rules
+		    (walk (pick-from-list rules) (1+ depth))
+		    (format T "Picking from empty rules list~%")))
 
 	      (deeper (depth r)
 		"Decide when to go deeper in the grammar"
@@ -82,14 +82,12 @@
 		(if (has-test r side)
 		    ;; Sometimes always take a rule.
 		    (pick-rule depth (gethash fn genrules))
+
 		    ;; Sometimes choose between a word and a rule.
 		    (let (
 			  ;; Get all the choices at this point.
 			  (rules (gethash fn genrules))
 			  (words (gethash fn funwords)))
-		      ;; If fn==NON and NOTME then exclude any words
-		      ;; that also happen to be P12.
-		      ;; (remove "foo" words :test 'equal)
 		      (cond
 			;; No matching rules, so use words.
 			((null rules) (pick-word words))

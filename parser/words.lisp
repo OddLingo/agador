@@ -12,10 +12,11 @@
 ;;; names are in the AGF package.
 (defvar *dict* (make-hash-table :size 140 :test 'equal))
 (in-package :AGF)
-(dolist (def
+(dolist (word
  '(("a" INT)("akesi" NON)("ala" ADJ NEG NUM)("alasa" VRB)
-   ("ale" ADJ NON NUM)("anpa" ADJ)("ante" ADJ)("anu" CNJ)
-   ("awen" ADJ PRV VRB)("e" PDO)("en" CNJ)("esun" NON)
+   ("ale" ADJ NON NUM)("ali" ADJ NON NUM)("anpa" ADJ)("ante" ADJ)
+   ("anu" CNJ)("awen" ADJ PRV VRB)
+   ("e" PDO)("en" CNJ)("esun" NON)
    ("ijo" NON)("ike" ADJ)("ilo" NON)("insa" NON)("jaki" ADJ)
    ("jan" NON)("jelo" ADJ)("jo" VRB)("kala" NON)
    ("kalama" VRB)("kama" ADJ PRV)("kasi" NON)("ken" PRV ADJ)
@@ -26,7 +27,8 @@
    ("lipu" NON)("loje" ADJ)("lon" PRP)("luka" NON NUM)
    ("lukin" NON VRB PRV)("lupa" NON)("ma" NON PNA)("mama" NON)
    ("mani" NON)("meli" NON)("mi" P12 ADJ)("mike" NON)("moku" VRB NON)
-   ("moli" ADJ)("monsi" NON)("mu" INT)("mun" NON)("musi" ADJ)("mije" NON)
+   ("moli" ADJ)("monsi" NON)("mu" INT)("mun" NON)("musi" ADJ)
+   ("mije" NON)
    ("mute" ADJ NON)("nanpa" NON NUM)("nasa" ADJ)("nasin" NON)
    ("nena" NON)("ni" ADJ)("nimi" NON)("noka" NON)("o" VOC)
    ("olin" VRB)("ona" NON ADJ)("open" VRB)("pakala" ADJ)("pali" VRB)
@@ -38,12 +40,12 @@
    ("sinpin" NON)("sitelen" NON)("sona" VRB PRV)("soweli" NON)
    ("suli" ADJ)("suno" NON)("supa" NON)("suwi" ADJ)("tan" PRP)
    ("taso" BUT ADJ)("tawa" PRP ADJ)("telo" NON)("tenpo" NON)
-   ("toki" VRB NON)("tomo" NON PNA)("tu" NUM)("unpa" VRB)("uta" NON)
+   ("toki" VRB)("tomo" NON PNA)("tu" NUM)("unpa" VRB)("uta" NON)
    ("utala" VRB)("walo" ADJ)("wan" ADJ NUM)("waso" NON)("wawa" ADJ)
    ("weka" ADJ)("wile" PRV)
    ;; Plus some proper names, which act like adjectives.
    ("Akato" ADJ)("Mewika" ADJ)))
-  (setf (gethash (car def) AGP::*dict*) (cdr def)))
+  (setf (gethash (car word) AGP::*dict*) (cdr word)))
 
 (in-package :AGP)
 

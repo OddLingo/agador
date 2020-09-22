@@ -13,6 +13,7 @@ clean:
 	@find . -name '*.*~' -delete
 
 run:
+	@rm -f agador.log
 	@$(LISP) --core agador.img
 
 prepare:

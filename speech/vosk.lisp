@@ -1,6 +1,7 @@
 ;;;; -*- Mode: Lisp; Syntax: ANSI-Common-Lisp; -*-
 
-;;;; This is the interface to the Vosk/Kaldi speech recgnition system.
+;;;; This is the interface to the Vosk/Kaldi speech recgnition
+;;;; system.
 (in-package :ags)
 
 (defvar *listener* NIL)
@@ -24,8 +25,9 @@
     (uiop:terminate-process *listener*))
   )
 
-;;;; Start up the Vosk recognizer.  It will write recognized text
-;;;; to its output stream which 'listen-receive' will interpret.
+;;;; Start up the Vosk recognizer in a subprocess. It will
+;;;; write recognized text to its output stream which
+;;;; 'speech-listener' will interpret.
 (defun listen-start ()
   (setf *listener*
     (uiop:launch-program

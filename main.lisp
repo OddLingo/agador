@@ -70,7 +70,7 @@
   ;; Set up the standard logging package.
   (log:config
    :SANE :DAILY "agador.log" :BACKUP NIL
-   :NOFILE)
+   :NOFILE :NOTIME :NOPACKAGE)
   (log:info "Start")
   
   ;; Open the memory database
@@ -87,7 +87,7 @@
   (ags:tstart)
 ;;  (ags:listen-start)
 
-  (ags:say "mi kute")  ;; "I am listening."
+  (aga::enable-action T) ;; "I am listening."
 
   ;; Start the visual user interface with a condition handler
   ;; (handler-case

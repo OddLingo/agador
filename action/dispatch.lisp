@@ -9,7 +9,9 @@
 (defparameter *the-time* "26933762FB") ;; tenpo
 (defparameter *the-weather* "39B8EB0A2A") ;; kon sewi
 (defparameter *listening* "")  ;; kute ala
-(defparameter *learn* "") ;; sona kama
+(defparameter *wakeup* "") ;; jan Akato o kute
+(defparameter *sleep* "") ;; jan Akato o kute ala
+(defvar *enabled* T)
 
 ;;; It is some sort of statement about the world.  Just remember it.
 (defun remember (top)
@@ -35,52 +37,74 @@
       ((equal handle *listening*)
        (progn
 	 (log:info "Stopped listening")
-	 (agm:set-voice NIL)))
+	 (enable-action NIL)))
       (T (agu:term "")))))
 
 (defun start (top)
     (log:info "Acting on 'start' ~a~%" top))
 
+(defun enable-action (yes)
+  (setf *enabled* yes)
+  (if yes
+      (ags:say "mi kute")
+      (ags:say "mi kute ala")))
+
 ;;; It is an instruction to do something.
-(defun command (top)
-  (declare (type agp::pterm top))
-  (let* ((verb (agp:word-at top 'AGF::ACTION))
-	(verbname (if verb (agc:spelled verb) NIL)))
+(defun command (top handle)
+  "Execute explicit commands"
+  (declare (type agp::pterm top)
+	   (type string handle))
+  (let*
+      (
+       (verb (agp:word-at top 'AGF::VRB))
+       (verbname (if verb (agc:spelled verb) NIL)))
     (cond
+      ((equal handle *sleep*) (enable-action NIL))
       ((equal verbname "MOLI") (stop top))
       ((equal verbname "OPEN") (start top))
       ;; Next should be 'sona kama'
       ((equal verbname "SONA") (remember (agc:right top)))
       (T (log:warn "No action for ~a~%" verbname)))))
 
-;;; Detect questions by the presense of the universal query word 'seme'
-;;; or the VRB-NOT-VRB pattern.
+;;; Detect questions by the presense of the universal query
+;;; word 'seme' or the VRB-NOT-VRB pattern.
 (defun question-p (top)
   "Detect word 'seme' anywhere in the sentence."
   (declare (type agp::pterm top))
   (agc:contains-p top "seme"))
 
-;;;; Questions come here.  How we answer a question depends on which
-;;;; query word was used.
-(defun query (top)
-  (declare (type agp::pterm top))
-  (let ((handle (merkle-of-subtree top 'AGP::NOUNP)))
-    (cond
-      ;; What is the time?
-      ((equal handle *the-time*) (saytime))
-      ;; What is the weather forecast?
-      ((equal handle *the-weather*) (wx-repeat))
-      ;; Anything else.
-      (T (ags:say (format NIL "mi sona ala ~a%"
-	   (agp:string-from-tree (agp:word-at top 'AGP::NOUNP))))))))
+;;;; Questions come here.  How we answer a question depends
+;;;; on which query word was used.
+(defun query (top handle)
+  (declare (type agp::pterm top)
+	   (type string handle))
+  (cond
+    ;; What is the time?
+    ((equal handle *the-time*) (saytime))
+    ;; What is the weather forecast?
+    ((equal handle *the-weather*) (wx-repeat))
+    ;; Anything else.
+    (T (ags:say (format NIL "mi sona ala ~a%"
+	 (agp:string-from-tree (agp:word-at top 'AGP::NOUNP)))))))
 
 (defun semantics (top)
   "Try to figure out the *meaning* of an utterance"
   (declare (type agp::pterm top))
-  (cond
-    ;; Questions
-    ((agc:contains-p top "seme") (query top))
-    ;; Commands
-    ;; Just remember anything else and give it to the explorer.
-    (T (agm:goto (remember top))))
-  )
+  (let ((handle (agm::merkle top)))
+    (if *enabled*
+	(progn
+	  (log:info "Merkle ~a" handle)
+	  (cond
+	    ;; Questions
+	    ((agc:contains-p top "seme") (query top handle))
+	    ;; Commands
+	    ((equal (agc:term-fn top) 'AGF::CMND)
+	     (command top handle))
+	    ;; Just remember anything else and give it to the explorer.
+	    (T (agm:goto (remember top)))))
+
+        ;; If actions have been disabled, the only thing we listen
+        ;; for is the command to start responding again.  This is
+        ;; the command 'jan Akato o kute'.
+	(when (equal handle *wakeup*) (enable-action T)))
+  ))

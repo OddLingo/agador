@@ -5,21 +5,6 @@
 (defvar *cursor* NIL)
 (defvar *contexts* NIL)
 
-(defclass uimode ()
-  (
-   (voice :initform NIL :accessor voice)
-   )
-  )
-
-(defvar *uimode* (make-instance 'uimode))
-
-;; Setting this to true will turn on speech recognition.
-(defun set-voice (yes)
-  (setf (voice *uimode*) yes)
-  (if yes
-	(ags:listen-control T)
-	(ags:listen-control NIL)))
-
 ;;; Create a list of the terminal words in a tree.  We descend the
 ;;; tree right-side-first but are pushing it onto the list of leaves.
 ;;; This results in the final list being in the correct order
@@ -131,7 +116,7 @@
 	    (dump :CNTX))
 	   ((equal verb "dw") ;; Dump words
 	    (agp:print-words))
-	   ((equal verb "v") (set-voice T))
+	   ((equal verb "v") (AGP::enable-action T))
 	   ;; Anything else is a statement to analyze.
 	   (T
 	    (let ((r (agp:parse-words (agu:words-from-string line))))

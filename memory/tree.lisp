@@ -4,22 +4,13 @@
 
 ;;;; The "tree" database contains one record per term,
 ;;;; keyed by the node's Merkle signature.  Each stores a single
-;;;; character string of space-separated words.
-
-;;; We fetch a string from the database and create the coresponding
-;;; mterm object.  The first word in the string is a single character
-;;; indicating the object class.  Numbers are a special case where
-;;; the key starts with the letter "N" and the rest is a decimal number.
+;;;; character string of space-separated words.  Fetching will
+;;;; create an MPAIR or MUSAGE object fro that string.
 (defun get-tree (key)
-  "Create tree object from the database."
+  "Create memory object from the tree database"
   (declare (type string key))
-
-  ;; If it is a numeric reference, we return the integer value.
-  ;; (when (equal (char key 0) '#\N)
-  ;;   (return-from get-tree (parse-integer key :start 1)))
-
-  ;; Otherwise it is a key into the TREE database.
   (let ((data (db-get :TREE key)))
+;;    (log:info "Tree at ~a is ~a" key data)
     (if data
 	(let* (
 	       ;; Got a string.  Split into words.
@@ -46,8 +37,10 @@
 	  NIL))
       ))
 
-;;; The 'context' database stores a list of the signatures of all the
-;;; immediate parent nodes to the term whose signature is the key.
+;;;; The 'context' database stores a list of the signatures
+;;;; of all the immediate parent nodes to the term whose
+;;;; signature is the key.  This is used for navigating
+;;;; up the tree.
 (defun get-context (key)
   "Get list of contexts for a term"
   (declare (type string key))
@@ -59,7 +52,7 @@
 ;;; Add a new context above a node, avoiding duplicates.
 (defun add-context (child parent)
   (declare (type string child parent))
-  (let ((c (get :CNTX child)))
+  (let ((c (db-get :CNTX child)))
     (if c
 	;; Child already has contexts - check for duplicates.
 	(let ((previous (agu:words-from-string (bytes-to-s c))))
@@ -70,22 +63,20 @@
 	(db-put :CNTX child parent)
 	)))
 
-;;; The 'string-representation' function takes care of creating the proper
-;;; stored representation of the data.  The key is then the
-;;; hash of that.
+;;; The 'string-representation' function takes care of
+;;; creating the proper stored representation of the data.
+;;; The key is then the hash of that.
 (defun put-tree (mt)
   (declare (mterm mt))
   (let* ((data (string-representation mt))
 	 (key (hash-of data)))
+    (log:info "Saving tree ~a as ~a" key data)
     (db-put :TREE key data)))
 
 ;;; Clone a parser tree structure into long-term memory.  Note that
 ;;; pairs are cloned recursively.  The value returned is always the
 ;;; Merkle key of the remembered object.  
 (defgeneric remember (pterm))
-(defmethod remember ((n agp:pnumb))
-  (format NIL "N~d" (agc:nvalue n)))
-
 (defmethod remember ((u agp:pusage))
   (let ((m (make-instance 'musage
 	:fn (agc:term-fn u)

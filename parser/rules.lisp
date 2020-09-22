@@ -6,29 +6,29 @@
 ;;;; "might" be acting as the third term.  An optional
 ;;;; fourth term is a list of functions to run should
 ;;;; the third term end up spanning the entire input, or of
-;;;; tests to apply during matching.
+;;;; tests to apply during matching.  So a rule looks like
+;;;; (left right result (tests)).
 
 (in-package :AGP)
-;;; Each entry in the rule hash-table is a list of rules
-;;; with the same
-;;; right term.  When trying out potential rules, we always know
-;;; what the right side is, so this speeds up the search.
-;;; We load the table from a big list at compile time.  The leaf terms
-;;; are defined in words.lisp.
+;;; Each entry in the *rules* hash-table is a list of rules
+;;; with the same right term.  When trying out potential rules,
+;;; we always know what the right side is, so this speeds up the
+;;; search. We load the table from a big list at compile time.
+;;; The leaf terms are defined in words.lisp.
 (in-package :AGF)
 (defparameter +all-rules+
  '(
    (NON ADJ NON (LEFT))   ;; A modified noun phrase, left-heavy preferred
    (NON NON NON (LEFT))
-   (VRB ADJ VRB)   ;; Verbs too
+;;   (VRB ADJ VRB)   ;; Verbs too
    (PRP NON PREPP) ;; Prepositional phrase
    (PRP P12 PREPP) ;; Prepositional phrase
    (NON PREPP NON) ;; Prepositions can modify nouns too
-   (VRB PREPP VRB)
-   (ADJ PREPP ADJ) ;; and adjectives
+   (ADJ PREPP ADJ) ;; .. and adjectives
    (NON NEG NON)	  ;; A negated noun  "Not green"
    (VRB NEG VRB)
    (POF NON ADJ (RIGHT))  ;; Regrouped modifier, right must be a pair.
+
    (NON CNJ CPFX)  ;; Left of a conjoined phrase "Apples and ..."
    (P12 CNJ CPFX)  ;; Left of a conjoined phrase "Me and ..."
    (CPFX P12 NON)  ;; Right of a conjoined phrase.
@@ -43,18 +43,28 @@
 ;; Forms of sentence.  If the word 'seme' appears, it is probably
 ;; a question but that gets detected at the semantic level.
 ;; Yes/no questions look different.
+   ;; Sentences with first and second person subjects
    (P12 NON SENT (FINAL))      ;; I or you do or are something
    (P12 ADJ SENT (FINAL))
    (P12 PREPP SENT (FINAL))
    (P12 VRB SENT (FINAL))
    (P12 VRBP SENT (FINAL))
+
+   ;; Sentences with marked subjects
    (NON SBJ MKSB)   ;; 'li' marks normal subject
-   (MKSB NON SENT (FINAL))     ;; Soething not us does something
+   (MKSB NON SENT (FINAL))     ;; Something not us does something
    (MKSB ADJ SENT (FINAL))
    (MKSB PREPP SENT (FINAL))
    (MKSB VRB SENT (FINAL)) ;; 'li' terminates subject
    (MKSB VRBP SENT (FINAL)) ;; 'li' terminates subject
 
+   ;; Explicit commands
+   (NON VOC CPFX)
+   (CPFX VRB CMND (FINAL))
+   (CPFX VRBP CMND (FINAL))
+   (VOC VRB CMND (FINAL))
+   (VOC VRBP CMND (FINAL))
+ 
 ;; mi ijo. ; sina ijo. ; ona li ijo. ; mi mute li ijo.
 ;;     a! ; ...a ; noun a
 ;;     noun o! ; o verb... ; noun o verb
