@@ -96,12 +96,21 @@
 	  (log:info "Merkle ~a" handle)
 	  (cond
 	    ;; Questions
-	    ((agc:contains-p top "seme") (query top handle))
+	    ((question-p top) (query top handle))
+
 	    ;; Commands
 	    ((equal (agc:term-fn top) 'AGF::CMND)
 	     (command top handle))
+
 	    ;; Just remember anything else and give it to the explorer.
-	    (T (agm:goto (remember top)))))
+	    (T (progn
+		 (log:info "Trying to remember")
+		 (handler-case
+		     (let ((merk (remember top)))
+		       (log:info "Remembered ~a" merk)
+		       (agm:goto merk))
+		   (error (e)
+		     (log:error e)))))))
 
         ;; If actions have been disabled, the only thing we listen
         ;; for is the command to start responding again.  This is

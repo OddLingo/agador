@@ -5,37 +5,36 @@
 ;;;; The "tree" database contains one record per term,
 ;;;; keyed by the node's Merkle signature.  Each stores a single
 ;;;; character string of space-separated words.  Fetching will
-;;;; create an MPAIR or MUSAGE object fro that string.
+;;;; create an MPAIR or MUSAGE object from that string.
 (defun get-tree (key)
   "Create memory object from the tree database"
-  (declare (type string key))
+  (declare (type string key)
+	   (optimize (debug 3) (speed 1)))
   (let ((data (db-get :TREE key)))
-;;    (log:info "Tree at ~a is ~a" key data)
-    (if data
-	(let* (
-	       ;; Got a string.  Split into words.
-	       (words (agu:words-from-string data))
-	       ;; The record type is in the first word.
-	       (record-type (char (car words) 0))
-	       )
-	  (case record-type
-	    ;; Usage nodes:  (#\u AGF:FN spelling)
-	    (#\u (make-instance 'musage
-				:spelled (caddr words)
-				:fn (intern (cadr words) :AGF)))
-	    ;; Pair nodes: (#\p AGF:FN lefthash righthash) 
-	    (#\p (make-instance 'mpair
-				:fn (intern (cadr words) :AGF)
-				:left (caddr words)
-				:right (cadddr words)))
-	    ;; Anything else is an error.
-	    (otherwise
-	     (error "Bad record in TREE DB at ~a: ~a~%" key data)
-	     NIL)))
-	(progn
-	  (log:warn "No tree record for ~a" key)
-	  NIL))
-      ))
+    (when data
+      (log:info "~a => ~a" key data)
+      (let* (
+	     ;; Got a string.  Split into words.
+	     (words (agu:words-from-string data))
+	     ;; The record type is in the first word.
+	     (record-type (char (car words) 0))
+	     )
+
+	(case record-type
+	  ;; Usage nodes:  (#\u AGF:FN spelling)
+	  (#\u (make-instance 'musage
+			      :spelled (caddr words)
+			      :fn (intern (cadr words) :AGF)))
+	  ;; Pair nodes: (#\p AGF:FN lefthash righthash) 
+	  (#\p (make-instance 'mpair
+			      :fn (intern (cadr words) :AGF)
+			      :left (caddr words)
+			      :right (cadddr words)))
+	  ;; Anything else is an error.
+	  (otherwise
+	   (error "Bad record in TREE DB at ~a: ~a~%" key data)
+	   NIL))))
+    ))
 
 ;;;; The 'context' database stores a list of the signatures
 ;;;; of all the immediate parent nodes to the term whose
@@ -58,8 +57,10 @@
 	(let ((previous (agu:words-from-string (bytes-to-s c))))
 	  (unless (member parent previous)
 		(push parent previous)
-		(db-put :CNTX child (agu:string-from-list previous))))
-	;; First context for this child.
+		(db-put :CNTX child
+			(agu:string-from-list previous))))
+
+	;; Else it is the first context for this child.
 	(db-put :CNTX child parent)
 	)))
 
@@ -70,7 +71,6 @@
   (declare (mterm mt))
   (let* ((data (string-representation mt))
 	 (key (hash-of data)))
-    (log:info "Saving tree ~a as ~a" key data)
     (db-put :TREE key data)))
 
 ;;; Clone a parser tree structure into long-term memory.  Note that
@@ -87,6 +87,7 @@
     ))
 
 (defmethod remember ((p agp:ppair))
+  (declare (optimize (debug 3)(speed 1)))
   (let* ((lc (remember (agc:left p)))
 	 (rc (remember (agc:right p)))
 	 (m (make-instance 'mpair

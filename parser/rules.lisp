@@ -39,6 +39,7 @@
    (VRB DOBJ VRBP)  ;; Only verbs can have direct objects
    (VRB PREPP VRBP)
    (VRB NON VRBP)   ;; an unmarked direct object
+   (PRV VRB VRB)
 
 ;; Forms of sentence.  If the word 'seme' appears, it is probably
 ;; a question but that gets detected at the semantic level.
@@ -171,9 +172,9 @@
 	      (ok (not (and
 		 (equal deep-type :PUSAGE)
 		 (equal shallow-type :PPAIR)))))
-	   (log:info
-	    "Deep ~a shallow ~a ok ~a"
-	    deep-type shallow-type ok)
+;;	   (log:info
+;;	    "Deep ~a shallow ~a ok ~a"
+;;	    deep-type shallow-type ok)
 	   ok)))
 
     (case act

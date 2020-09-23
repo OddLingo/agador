@@ -35,6 +35,7 @@
   (declare (type integer x y))
   (format T "~C[~d;~dH" (code-char 27) y x))
 (defun clear (&optional (toprow 1))
+  (declare (type integer toprow))
   (setxy 1 toprow)
   (format T "~C[J" (code-char 27)))
 (defun set-color (fg bg)
@@ -55,7 +56,7 @@
   "Enable/disable scrolling regions"
   (if yes
       (format T "~C[~d;~dr" (code-char 27) +rtop+ +rbot+)
-      (format T "~Cr" (code-char 27))))
+      (format T "~C[r" (code-char 27))))
 
 (defun clearw1 ()
   "Clear just Window 1"

@@ -72,6 +72,7 @@
    :SANE :DAILY "agador.log" :BACKUP NIL
    :NOFILE :NOTIME :NOPACKAGE)
   (log:info "Start")
+  (agu:clear)
   
   ;; Open the memory database
   (agm:db-open)
@@ -89,16 +90,17 @@
 
   (aga::enable-action T) ;; "I am listening."
 
-  ;; Start the visual user interface with a condition handler
-  ;; (handler-case
-  ;;     (agm:explore)
-  ;;   (error (e)
-  ;;     (log:error e)))
-  (agm:explore)
-  
-  ; Clean up to exit.
+  ;; Start the visual user interface with a condition
+  ;; handler.  It will return when it is time to quit.
+  (handler-case
+      (agm:explore)
+    (error (e)
+      (log:error e)))
+
+  ;;; Clean up to exit.
 ;;  (ags:listen-stop)
   (agm:db-close)
   (log:info "Finish")
   (agu:set-scroll NIL)
+  (agu:clear)
   )

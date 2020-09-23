@@ -5,10 +5,10 @@
 (defvar *cursor* NIL)
 (defvar *contexts* NIL)
 
-;;; Create a list of the terminal words in a tree.  We descend the
-;;; tree right-side-first but are pushing it onto the list of leaves.
-;;; This results in the final list being in the correct order
-;;; left-to-right.
+;;; Create a list of the terminal words in a memory tree.
+;;; We descend the tree right-side-first but are pushing it
+;;; onto the list of leaves.  This results in the final
+;;; list being in the correct order left-to-right.
 (defun list-from-tree (start)
   "Flatten memorized tree to a list"
   (declare (type string start))
@@ -18,17 +18,12 @@
 	   (let* ((m (get-tree mt))
 		 (ty (type-of m)))
 	     (case ty
-	       (musage (push (agc:spelled m) leaves))
-	       (mpair
+	       (MUSAGE (push (agc:spelled m) leaves))
+	       (MPAIR
 		(progn
 		  (find-leaf (agc::right m))
 		  (find-leaf (agc::left m))))
-	       (integer
-		(push
-		  (if (> m 100)
-		      (aga:speakable-time m)
-		      (format NIL "~d" m))
-		  leaves))))))
+	       ))))
       (find-leaf start))
     leaves))
 
@@ -42,14 +37,16 @@
 ;; by the contexts it appears in.
 (defun repaint ()
   (sb-thread:with-mutex (agu::*tmtx*)
+    (log:info "~a with ~a" *cursor* *contexts*)
+    ;; Clear below the diagram and set cursor there.
     (agu:clear AGU::+rtop+)
+    (format T "=======~%")
     ;; Context lines in white
     (agu:set-color 7 0)
-    (agu:setxy 1 AGU::+rtop+)
     (loop for c in *contexts* for cnum from 0
        do (format T "~d: ~a~%" cnum (string-from-tree c)))
 
-    ;; Highlight focus line in yellow
+    ;; Focus line in black on yellow
     (agu:set-color 0 3)
     (agu:clear-eol)
     (if *cursor*
@@ -59,31 +56,33 @@
 		  (string-from-tree (sig *cursor*))))
 	(progn
 	  (log:info "Cursor NIL")
-	  (agu:term "Type something to set context~%~%")))
+	  (format T "no cursor")))
 
     ;; Prompt in white on black.
     (agu:set-color 7 0))
 )
 
-;; Change the explore context to the node with a given signature.
+;;; Change the explore context to the node with a given
+;;; signature.
 (defun goto (s)
   (log:info "Exploring from ~a" s)
-  (if s (progn
-	  (setq *cursor* (get-tree s))
-	  (setq *contexts* (get-context s))
-	  )
+  (if s
+      (progn
+	(setq *cursor* (get-tree s))
+	(setq *contexts* (get-context s)))
       (setq *cursor* NIL))
   (repaint)
   )
 
 ;; Top loop for exploring the long-term memory.
 (defun explore ()
-  (agu:clear)
+  (agu:clear AGU::+rtop+)
   (agu:set-scroll)
   (agu:term "Type something to set context~%")
   (prompt)
+
+  ;; Read commands
   (loop for line = (read-line)
-     until (equal line "x")
      when (> (length line) 0)
      do
        ;; A transaction around each command.
@@ -117,11 +116,14 @@
 	   ((equal verb "dw") ;; Dump words
 	    (agp:print-words))
 	   ((equal verb "v") (AGA::enable-action T))
-	   ;; Anything else is a statement to analyze.
-	   (T
-	    (let ((r (agp:parse-words (agu:words-from-string line))))
-	      (if r (goto r) (prompt))))
 
+	   ;; Anything else is a new statement to analyze.
+	   ((>= (length line) 6)
+	    (let ((r (agp:parse-words
+		      (agu:words-from-string line))))
+	      (when r (goto r))))
+
+	   (T (agu:term "?~%"))
 	   ))
        (prompt)
        (db-commit)

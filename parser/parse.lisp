@@ -50,7 +50,7 @@
 ;;; rules for the new pair.
 (defun join (lt rt fn act)
   "Join two adjacent terms"
-  (log:info "Joining (~a ~a ~a)" lt rt fn)
+  (log:info "~a ~a ~a" lt rt fn)
   (let ((np (make-instance 'ppair
 			   :fn fn
 			   :left lt :right rt
@@ -80,9 +80,9 @@
 	       :lpos pos :rpos pos
 	       :prob priority)))
 	(push rt (elt *right* pos))
-	;; FUnctions are in decreasing order of liklihood.
+	;; Functions are in decreasing order of liklihood.
 	(decf priority 10)
-	(log:info "Word ~a" rt)
+	(log:info "~a" rt)
 	(consider rt)))))
 
 ;;; This needs to be called before each parser invocation.
@@ -91,8 +91,8 @@
   (setq *right*  (make-array 15 :fill-pointer 0 :adjustable t ))
   (setq *top* NIL))
 
-;;; Set *top* to all pairs that span the entire input string and
-;;; is marked 'FINAL'.  Hopefully there is just one,
+;;; Set *top* to all pairs that span the entire input string
+;;; and are marked 'FINAL'.  Hopefully there is just one,
 ;;; and it will have all local ambiguities dealt with.
 (defun select-full ()
   ;; Start with those that reach the right side.
@@ -111,19 +111,15 @@
 (defun learn (best)
   (declare (type pterm best))
   (log:info "Recognized: ~a" (string-from-tree best))
-  (let ((dothis (action best)))
-    (cond
-      ((member 'AGF::FINAL dothis)
-       (handler-case
-	   (AGA:SEMANTICS best)
-	 (error (e)
-	   (log:error "~a" e))))
-      (T (agu:term "Nothing to do~%")))))
+  (handler-case
+      (AGA:SEMANTICS best)
+    (error (e)
+      (log:error "~a" e))))
 
 ;;; When there is more than one possible parse, pick the one
 ;;; with the highest 'probability'.
 (defun pick-best ()
-  (log:info "Choosing best from ~a" *top*)
+  (log:info "Choose from ~a" *top*)
   (let* ((best-score 0)
 	 (best-parse NIL))
     (dolist (candidate *top*)
@@ -175,10 +171,13 @@
 (defun parse-words (wds)
   (log:info "Input ~a" wds)
   (init-parse)
+
   ;; Feed each word to the parser.
   (dolist (w wds) (see-word w))
+
   ;; Find the parses that span the entire input.
   (select-full)
+
   ;; Detect a single useful result.
   (judge))
 
