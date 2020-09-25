@@ -92,11 +92,12 @@
 
   ;; Start the visual user interface with a condition
   ;; handler.  It will return when it is time to quit.
-  (handler-case
-      (agm:explore)
-    (error (e)
-      (log:error e)))
-
+  ;; (handler-case
+  ;;     (agm:explore)
+  ;;   (error (e)
+  ;;     (log:error e)
+  ;;     (backtrace)))
+(agm:explore)
   ;;; Clean up to exit.
 ;;  (ags:listen-stop)
   (agm:db-close)

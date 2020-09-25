@@ -111,10 +111,11 @@
 (defun learn (best)
   (declare (type pterm best))
   (log:info "Recognized: ~a" (string-from-tree best))
-  (handler-case
+;;  (handler-case
       (AGA:SEMANTICS best)
-    (error (e)
-      (log:error "~a" e))))
+;;    (error (e)
+;;      (log:error "~a" e)))
+  )
 
 ;;; When there is more than one possible parse, pick the one
 ;;; with the highest 'probability'.

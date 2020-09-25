@@ -16,6 +16,9 @@ run:
 	@rm -f agador.log
 	@$(LISP) --core agador.img
 
+text:
+	@$(LISP) --core agador.img --corpus t.txt --count 20
+
 prepare:
 	@echo "Loading packages"
 	@$(LISP) --eval "(ql:quickload :CL-UTILITIES)" --eval "(quit)"

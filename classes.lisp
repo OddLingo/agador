@@ -27,12 +27,6 @@
   ))
 
 ;; -----------------------------------------------
-;;;; A number is like a usage, but has a numeric value (which might
-;;;; also represent a date) and they are not indexed in a dictionary.
-(defclass numb (term) (
-  (nvalue :accessor nvalue :initarg :nvalue :initform 0)))
-  
-;; -----------------------------------------------
 ;;;; Walk down a btree seeking a particular grammatical function.
 (defgeneric seek (term goal))
 

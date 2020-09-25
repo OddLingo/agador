@@ -9,18 +9,14 @@
 (defparameter *the-time* "26933762FB") ;; tenpo
 (defparameter *the-weather* "39B8EB0A2A") ;; kon sewi
 (defparameter *listening* "")  ;; kute ala
-(defparameter *wakeup* "") ;; jan Akato o kute
-(defparameter *sleep* "") ;; jan Akato o kute ala
+(defparameter *wakeup* "9B790DA5D3") ;; jan Akato o kute
+(defparameter *sleep* "6AC8C2CF1A") ;; jan Akato o kute ala
 (defvar *enabled* T)
 
 ;;; It is some sort of statement about the world.  Just remember it.
 (defun remember (top)
-;;  (agm:db-start)
-  (let ( ;; (uni-time (time-check top))
-	(key (agm:remember top)))
-    ;; If the statement contains a time reference, keep track of that.
+  (let ((key (agm:remember top)))
     (agu:term "   I remember that at ~a~%" key)
-;;    (agm:db-commit)
     key))
 
 ;;; 'merkle-of-subtree' tries to discover the database key for the memory
@@ -54,17 +50,14 @@
   "Execute explicit commands"
   (declare (type agp::pterm top)
 	   (type string handle))
-  (let*
-      (
-       (verb (agp:word-at top 'AGF::VRB))
-       (verbname (if verb (agc:spelled verb) NIL)))
-    (cond
-      ((equal handle *sleep*) (enable-action NIL))
-      ((equal verbname "MOLI") (stop top))
-      ((equal verbname "OPEN") (start top))
-      ;; Next should be 'sona kama'
-      ((equal verbname "SONA") (remember (agc:right top)))
-      (T (log:warn "No action for ~a~%" verbname)))))
+  (cond
+    ((equal handle *sleep*) (enable-action NIL))
+    ((equal handle *wakeup*) (enable-action T))
+      ;; ;; ((equal verbname "MOLI") (stop top))
+      ;; ;; ((equal verbname "OPEN") (start top))
+      ;; ;; ;; Next should be 'sona kama'
+      ;; ;; ((equal verbname "SONA") (remember (agc:right top)))
+    (T (log:warn "No action for ~a~%" verbname))))
 
 ;;; Detect questions by the presense of the universal query
 ;;; word 'seme' or the VRB-NOT-VRB pattern.
@@ -89,7 +82,8 @@
 
 (defun semantics (top)
   "Try to figure out the *meaning* of an utterance"
-  (declare (type agp::pterm top))
+  (declare (type agp::pterm top)
+	   (optimize (debug 3)(speed 1)))
   (let ((handle (agm::merkle top)))
     (if *enabled*
 	(progn
@@ -104,13 +98,13 @@
 
 	    ;; Just remember anything else and give it to the explorer.
 	    (T (progn
-		 (log:info "Trying to remember")
 		 (handler-case
 		     (let ((merk (remember top)))
-		       (log:info "Remembered ~a" merk)
+		       (log:info "Remembered ~S" merk)
 		       (agm:goto merk))
 		   (error (e)
-		     (log:error e)))))))
+		     (log:error e)))
+		 ))))
 
         ;; If actions have been disabled, the only thing we listen
         ;; for is the command to start responding again.  This is

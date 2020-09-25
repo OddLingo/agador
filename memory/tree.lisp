@@ -51,10 +51,11 @@
 ;;; Add a new context above a node, avoiding duplicates.
 (defun add-context (child parent)
   (declare (type string child parent))
+  (declare (optimize (debug 3)(speed 1)))
   (let ((c (db-get :CNTX child)))
     (if c
 	;; Child already has contexts - check for duplicates.
-	(let ((previous (agu:words-from-string (bytes-to-s c))))
+	(let ((previous (agu:words-from-string c)))
 	  (unless (member parent previous)
 		(push parent previous)
 		(db-put :CNTX child
@@ -78,6 +79,7 @@
 ;;; Merkle key of the remembered object.  
 (defgeneric remember (pterm))
 (defmethod remember ((u agp:pusage))
+  "Remember a word usage"
   (let ((m (make-instance 'musage
 	:fn (agc:term-fn u)
 	:spelled (agc:spelled u))))
@@ -87,24 +89,25 @@
     ))
 
 (defmethod remember ((p agp:ppair))
+  "Remember a syntax pair"
   (declare (optimize (debug 3)(speed 1)))
-  (let* ((lc (remember (agc:left p)))
-	 (rc (remember (agc:right p)))
+  (let* ((left-child (remember (agc:left p)))
+	 (right-child (remember (agc:right p)))
 	 (m (make-instance 'mpair
 			   :fn (agc:term-fn p)
-			   :left lc
-			   :right rc))
-	 (msig (sig m)))
+			   :left left-child
+			   :right right-child))
+	 (pair-sig (sig m)))
 
     ;; If this exact pair is not already in the db, create it
     ;; and the contexts up from the lower nodes.
-    (unless (get-tree msig)
+    (unless (get-tree pair-sig)
 	(progn
 	  (put-tree m)
 	  ; do not save contexts for stopwords (a, the, and, etc)
-	  (add-context lc msig)
-	  (add-context rc msig)))
-    msig))
+	  (add-context left-child pair-sig)
+	  (add-context right-child pair-sig)))
+    pair-sig))
 (defmethod remember ((s string)) s)
 
 ;;;; Recalling is the inverse of remembering.  We use the same

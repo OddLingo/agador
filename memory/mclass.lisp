@@ -21,19 +21,27 @@
       (setf (sig mt) (merkle mt)))
 
 (defclass mpair (agc:pair agm:mterm) ())
+(defmethod print-object ((obj mpair) stream)
+  (let ((l (agc:left obj))
+	(r (agc:right obj))
+	(k (agm:sig obj))
+	(f (agc:term-fn obj)))
+    (format stream " ~a=~a/~a ~a" k f l r)))
 
 (defclass musage (agc:usage agm:mterm) ())
+(defmethod print-object ((obj musage) stream)
+  (let ((s (agc:spelled obj))
+	(k (agm:sig obj))
+	(f (agc:term-fn obj)))
+    (format stream " ~a=~a/~a" k s f)))
 
 (defgeneric deref (s))
 (defmethod deref ((s string)) s)
 (defmethod deref ((pt agp::pterm)) (merkle pt))
 (defmethod deref ((mt mterm)) (sig mt))
-(defmethod deref ((n agc:numb)) (format NIL "N~d" (agc:nvalue n)))
 
 ;;; string-representation creates the database representation of any
-;;; tree object, in either the parser or the memory form.  Note that
-;;; numbers are not stored separately, but are represented by a
-;;; special form of a reference in an mpair.
+;;; tree object, in either the parser or the memory form.
 (defgeneric string-representation (agc:term))
 (defmethod string-representation ((p agc:pair))
   (format NIL "p ~a ~a ~a"
@@ -52,4 +60,3 @@
 
 (defmethod merkle ((mt agc:term))
   (hash-of (string-representation mt)))
-

@@ -172,9 +172,6 @@
 	      (ok (not (and
 		 (equal deep-type :PUSAGE)
 		 (equal shallow-type :PPAIR)))))
-;;	   (log:info
-;;	    "Deep ~a shallow ~a ok ~a"
-;;	    deep-type shallow-type ok)
 	   ok)))
 
     (case act
@@ -189,17 +186,20 @@
 ;;; Given an upper node and a desired grammatical Function,
 ;;; find a USAGE.
 (defun word-at (start goal)
-  (let ((probe start))
+  (let ((looking start))
     (loop named searching do
-	 (case (agc:seek probe goal)
+	 (when (eq (type-of looking) 'AGP:PUSAGE)
+	   (return-from searching looking))
+	 ;; Keep looking below a PAIR
+	 (case (agp:route-path looking goal)
 	   ;; Can't get there from here
 	   ((NIL) (return-from searching NIL))
 	   ;; Go to left child
-	   (AGC:LEFT (setf probe (agc:left probe)))
+	   (AGC:LEFT (setf looking (agc:left probe)))
 	   ;; Go to right child
-	   (AGC:RIGHT (setf probe (agc:right probe)))
-	   ;; This is the desired node.
-	   ((T) (return-from searching probe))))))
+	   (AGC:RIGHT (setf looking (agc:right probe)))
+	   ;; This can't be the desired node.
+	   ((T) (log:error "Impossible route"))))))
 
 ;;; Get a list of the rules with a specified right side term.
 (defun rules-for (fn) (gethash fn *rules*))
@@ -219,8 +219,8 @@
   (loop for s being the hash-key
      using (hash-value st) of *route*
      do
-       (agu:term "~a to~%" s)
+       (format T "~a to~%" s)
        (loop for g being the hash-key
 	  using (hash-value p) of st
 	  do
-	    (agu:term "    ~a go ~a~%" g p))))
+	    (format T "    ~a go ~a~%" g p))))

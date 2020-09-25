@@ -37,7 +37,7 @@
 ;; by the contexts it appears in.
 (defun repaint ()
   (sb-thread:with-mutex (agu::*tmtx*)
-    (log:info "~a with ~a" *cursor* *contexts*)
+    (log:info "~S with ~S" *cursor* *contexts*)
     ;; Clear below the diagram and set cursor there.
     (agu:clear AGU::+rtop+)
     (format T "=======~%")
@@ -48,7 +48,6 @@
 
     ;; Focus line in black on yellow
     (agu:set-color 0 3)
-    (agu:clear-eol)
     (if *cursor*
 	(progn
 	  (format T "~a  ~a~%~%"
@@ -65,17 +64,17 @@
 ;;; Change the explore context to the node with a given
 ;;; signature.
 (defun goto (s)
-  (log:info "Exploring from ~a" s)
-  (if s
-      (progn
-	(setq *cursor* (get-tree s))
-	(setq *contexts* (get-context s)))
-      (setq *cursor* NIL))
+  (declare (type string s))
+  (log:info "Exploring from ~S" s)
+  (setq *cursor* (get-tree s))
+  (setq *contexts* (get-context s))
   (repaint)
   )
 
-;; Top loop for exploring the long-term memory.
+;;; Top loop for exploring the long-term memory.
 (defun explore ()
+  "Main user interface"
+  (declare (optimize (debug 3)(speed 1)))
   (agu:clear AGU::+rtop+)
   (agu:set-scroll)
   (agu:term "Type something to set context~%")
@@ -88,8 +87,7 @@
        ;; A transaction around each command.
        (db-start)
        (let* ((verb line)
-	      (cmd (char-code (char verb 0)))
-	      )
+	      (cmd (char-code (char verb 0))))
 	 (cond
 	   ((and (>= cmd 48) (<= cmd 57))
 	    (goto (nth (- cmd 48) *contexts*)))
@@ -109,19 +107,14 @@
 	      (agm:db-commit)
 	      (return-from explore)))
 
-	   ((equal verb "dt") ;; Dump tree
-	    (dump :TREE))
-	   ((equal verb "dc") ;; Dump contexts
-	    (dump :CNTX))
-	   ((equal verb "dw") ;; Dump words
-	    (agp:print-words))
+	   ((equal verb "dt") (dump :TREE))
+	   ((equal verb "dc") (dump :CNTX))
+	   ((equal verb "dw") (agp:print-words))
 	   ((equal verb "v") (AGA::enable-action T))
 
 	   ;; Anything else is a new statement to analyze.
 	   ((>= (length line) 6)
-	    (let ((r (agp:parse-words
-		      (agu:words-from-string line))))
-	      (when r (goto r))))
+	    (agp:parse-words (agu:words-from-string line)))
 
 	   (T (agu:term "?~%"))
 	   ))

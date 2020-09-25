@@ -35,7 +35,7 @@
         (:file "pclass")
 	(:file "rules")
 	(:file "words")
-	(:file "number")
+;;	(:file "number")
 	(:file "display")
 	(:file "parse")
 	(:file "corpus")

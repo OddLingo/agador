@@ -73,8 +73,7 @@
 ;; Convert the vector of bytes returned by LMDB into a string.
 (defun bytes-to-s (data)
   "Convert byte vectors to strings"
-  (let ((bytes (coerce data '(simple-array (unsigned-byte 8) (*)))))
-    (babel:octets-to-string bytes :encoding :utf-8)))
+    (babel:octets-to-string data :encoding :utf-8))
 
 (defun db-get (dbi key)
   "Fetch a record from a database identified by its ID"
