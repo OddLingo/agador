@@ -64,14 +64,15 @@
   ;; Initial housekeeping
   (setf *random-state* (make-random-state t))
 
-  ;; Process command line.
-  (get-options)
-
   ;; Set up the standard logging package.
   (log:config
    :SANE :DAILY "agador.log" :BACKUP NIL
    :NOFILE :NOTIME :NOPACKAGE)
   (log:info "Start")
+
+  ;; Process command line.
+  (get-options)
+
   (agu:clear)
   
   ;; Open the memory database

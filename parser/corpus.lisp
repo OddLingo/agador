@@ -10,39 +10,44 @@
 ;;; is a list of all rules with the same result.  We do not
 ;;; do this at compile time because make-text is only used
 ;;; during recognition training.
-(defun invert-rules (genrules topgoals)
-  (dolist (old-key (alexandria:hash-table-keys *rules*))
-    (let ((rules (gethash old-key *rules*)))
-      (dolist (r rules)
-	(let*
-	    ((rslt (rule-result r))
-	     (oldrules (gethash rslt genrules)))
+(defun invert-rules ()
+  (let ((topgoals NIL)
+	(genrules (make-hash-table :size 30)))
+    (dolist (old-key (alexandria:hash-table-keys *rules*))
+      (let ((rules (gethash old-key *rules*)))
+	(dolist (r rules)
+	  (let*
+	      ((rslt (rule-result r))
+	       (oldrules (gethash rslt genrules)))
 
-	  ;; Remember the top goals
-	  (when (has-test r 'AGF::FINAL)
-	    (push r topgoals))
+	    ;; Remember the top goals
+	    (when (has-test r 'AGF::FINAL)
+	      (push r topgoals))
 
-	  ;; Add new rule to the list of all with same result term
-	  (setf (gethash rslt genrules)
-		(if oldrules
-		    (push r oldrules)
-		    (list r))))))))
-    
+	    ;; Add new rule to the list of all with same result term
+	    (setf (gethash rslt genrules)
+		  (if oldrules
+		      (push r oldrules)
+		      (list r)))))))
+  (values topgoals genrules)))
+
 (defun pick-from-list (alternatives)
   "Select a random element from a list"
+  (declare (optimize (debug 3) (speed 0)))
   (let ((num (length alternatives)))
-    (if num
-	(nth (random num) alternatives )
-	(log:error "Pick from no alternatives"))))
+    (cond
+      ((= num 1) (car alternatives))
+      ((> num 1) (nth (random num) alternatives ))
+      (T (break "Pick from no alternatives")))))
 
 (defun pick-unique (alternatives previous)
+  (declare (optimize (debug 3) (speed 0)))
   (when (and (not (null previous))
 	     (< (length alternatives) 2))
     (log:warn "Want unique from short list ~a" alternatives)
     (return-from pick-unique (car alternatives)))
   (loop for choice = (pick-from-list alternatives)
-     when (not (equal (agc:spelled choice)
-		      (agc:spelled previous)))
+     when (not (equal choice previous))
      do (return-from pick-unique choice)))
 
 (defun deeper (depth r)
@@ -56,16 +61,15 @@
   (declare (ignore period))
   (declare (optimize (debug 3) (speed 0)))
   (format T "Writing ~D sentences to ~a~%" maxcount outfile)
-  (let ((genrules (make-hash-table :size 50))
-	(funwords (words-by-fn))
-	(topgoals NIL)
-	(word-count 0)
-	(corpus (open
-	  outfile
-	  :direction :output
-	  :if-exists :supersede)))
-
-    (invert-rules genrules topgoals)
+  (multiple-value-bind
+	(topgoals genrules)
+      (invert-rules)
+    (let ((funwords (words-by-fn))
+	  (word-count 0)
+	  (corpus (open
+		   outfile
+		   :direction :output
+		   :if-exists :supersede)))
 
     ;; Generate all the sentences.
     (loop for n from 1 to maxcount
@@ -80,17 +84,20 @@
 
 	       (pick-word (words &optional (previous NIL))
 		 "Choose a random word from a list"
+		 (declare (optimize (debug 3) (speed 0)))
 		 (if words
 		     (emit (pick-unique words previous))
 		     (log:error "Picking from empty word list~%")))
 
 	       (pick-rule (depth rules)
 		 "Choose a random rule from a list"
+		 (declare (optimize (debug 3) (speed 0)))
 		 (if rules
 		     (walk (pick-from-list rules) (1+ depth))
 		     (log:error "Picking from empty rules list~%")))
 
 	       (probe (r side fn depth &optional (previous NIL))
+		 (declare (optimize (debug 3) (speed 0)))
 		 (if (has-test r side)
 		     ;; Sometimes always take a rule.
 		     (pick-rule depth (gethash fn genrules))
@@ -119,8 +126,9 @@
 
 	   ;; Now randomly walk the rules down from one of
 	   ;; the top goals.
+	   (unless topgoals (break "No top goals"))
 	   (walk (pick-from-list topgoals))) ;; End of labels
 
          ;; End of line at end of each sentence.
 	 (format corpus "~%")) ;; End loop making sentences.
-    (close corpus)))
+    (close corpus))))

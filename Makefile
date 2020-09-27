@@ -17,6 +17,7 @@ run:
 	@$(LISP) --core agador.img
 
 text:
+	@rm -f agador.log
 	@$(LISP) --core agador.img --corpus t.txt --count 20
 
 prepare:
