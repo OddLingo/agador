@@ -41,7 +41,6 @@
       (T (break "Pick from no alternatives")))))
 
 (defun pick-unique (alternatives previous)
-  (declare (optimize (debug 3) (speed 0)))
   (when (and (not (null previous))
 	     (< (length alternatives) 2))
     (log:warn "Want unique from short list ~a" alternatives)
@@ -59,7 +58,6 @@
 (defun make-text (maxcount outfile &optional (period NIL))
   "Generate a text corpus"
   (declare (ignore period))
-  (declare (optimize (debug 3) (speed 0)))
   (format T "Writing ~D sentences to ~a~%" maxcount outfile)
   (multiple-value-bind
 	(topgoals genrules)
@@ -72,51 +70,60 @@
 		   :if-exists :supersede)))
 
     ;; Generate all the sentences.
-    (loop for n from 1 to maxcount
-       do
-	 (setf word-count 0)
-	 (labels
-	      ((emit (w)
-		"Insert space before all but first word"
-		(when (> word-count 0) (format corpus " "))
-		(incf word-count)
-		(format corpus (string-upcase w)))
+      (loop for n from 1 to maxcount
+	 do
+	   (setf word-count 0)
+	   (labels
+	       ((emit (w)
+		  "Insert space before all but first word"
+		  (when (> word-count 0) (format corpus " "))
+		  (incf word-count)
+		  (format corpus (string-upcase w)))
 
-	       (pick-word (words &optional (previous NIL))
-		 "Choose a random word from a list"
-		 (declare (optimize (debug 3) (speed 0)))
-		 (if words
-		     (emit (pick-unique words previous))
-		     (log:error "Picking from empty word list~%")))
+		(pick-word (words &optional (previous NIL))
+		  "Choose a random word from a list"
+		  (if previous
+		      (case (type-of previous)
+			(:RULE
+			 (emit (pick-from-list words)))
+			(otherwise
+			 (emit (pick-unique words previous))))
+		      (emit (pick-from-list words))))
 
-	       (pick-rule (depth rules)
-		 "Choose a random rule from a list"
-		 (declare (optimize (debug 3) (speed 0)))
-		 (if rules
-		     (walk (pick-from-list rules) (1+ depth))
-		     (log:error "Picking from empty rules list~%")))
+		(pick-rule (depth rules &optional (previous NIL))
+		  "Choose a random rule from a list"
+		  (declare (type integer depth)
+			   (optimize (debug 3)(speed 1)))
+		  (if previous
+		      (case (type-of previous)
+			(:RULE
+			 (walk (pick-unique rules previous) (1+ depth)))
+			(otherwise
+			 (walk (pick-from-list rules) (1+ depth))))
+		      (walk (pick-from-list rules) (1+ depth))))
 
-	       (probe (r side fn depth &optional (previous NIL))
-		 (declare (optimize (debug 3) (speed 0)))
-		 (if (has-test r side)
-		     ;; Sometimes always take a rule.
-		     (pick-rule depth (gethash fn genrules))
+		(probe (r side fn depth &optional (previous NIL))
+		  (declare (type RULE r)
+			   (type integer depth) (type symbol side fn))
+		  (if (has-test r side)
+		      ;; Sometimes always take a rule.
+		      (pick-rule depth (gethash fn genrules))
 
-		     ;; Sometimes choose between a word and a rule.
-		     (let (
-			  ;; Get all the choices at this point.
-			  (rules (gethash fn genrules))
-			  (words (gethash fn funwords)))
-		      (cond
-			;; No matching rules, so use words.
-			((null rules) (pick-word words previous))
-			((null words) (pick-rule depth rules))
-			(T (if
-			    (deeper depth r)
-			    (pick-rule depth rules)
-			    (pick-word words previous)))))))
+		      ;; Sometimes choose between a word and a rule.
+		      (let (
+			    ;; Get all the choices at this point.
+			    (rules (gethash fn genrules))
+			    (words (gethash fn funwords)))
+			(cond
+			  ;; No matching rules, so use words.
+			  ((null rules) (pick-word words previous))
+			  ((null words) (pick-rule depth rules previous))
+			  (T (if
+			      (deeper depth r)
+			      (pick-rule depth rules previous)
+			      (pick-word words previous)))))))
 
-	      (walk (start &optional (depth 1))
+		(walk (start &optional (depth 1))
 		"Recursively descend grammar, making random choices."
 		(let* ((lfn (rule-left start))
 		       (rfn (rule-right start))

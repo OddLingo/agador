@@ -10,6 +10,10 @@
 ;;;; which is their Merkle database key.
 (defclass mterm (agc:term)
   (
+   (stored
+    :accessor store
+    :type string
+    :initform NIL)
    (signature
     :accessor sig
     :initarg :sig
@@ -17,8 +21,8 @@
     :initform NIL)))
 
 (defmethod initialize-instance :after ((mt mterm) &key)
-  (unless (sig mt))
-      (setf (sig mt) (merkle mt)))
+  (setf (store mt) (string-representation mt))
+  (setf (sig mt) (hash-of (store mt))))
 
 (defclass mpair (agc:pair agm:mterm) ())
 (defmethod print-object ((obj mpair) stream)

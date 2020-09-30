@@ -10,6 +10,10 @@
 ;;; names of words are three letters long.  Longer names are for
 ;;; groups of words such a "prepositional phrase".  All function
 ;;; names are in the AGF package.
+
+;;; Signed numbers can be placed in the list of functions in order
+;;; to modify the priority of following terms.  Normally the first
+;;; term has a priority of 100 and each sucessive term is 10 less.
 (defvar *dict* (make-hash-table :size 140 :test 'equal))
 (in-package :AGF)
 (dolist (word
@@ -26,7 +30,8 @@
    ("lete" ADJ)("li" SBJ)("lili" ADJ)("linja" NON)
    ("lipu" NON)("loje" ADJ)("lon" PRP)("luka" NON NUM)
    ("lukin" VRB PRV NON)("lupa" NON)("ma" NON PNA)("mama" NON)
-   ("mani" NON)("meli" NON)("mi" P12 ADJ)("mike" NON)("moku" VRB NON)
+   ("mani" NON)("meli" NON)("mi" P12 ADJ)("mike" NON)
+   ("moku" VRB -10 NON)
    ("moli" ADJ)("monsi" NON)("mu" INT)("mun" NON)("musi" ADJ)
    ("mije" NON)
    ("mute" ADJ NON)("nanpa" NON NUM)("nasa" ADJ)("nasin" NON)
@@ -96,13 +101,15 @@
     (maphash
      #'(lambda (spell word-funs)
 	 (dolist (fn word-funs)
-	   (let ((old (gethash fn funs)))
-	     (setf
-	      (gethash fn funs)
-	      (if old
-		  (push spell old)
-		  (list spell))))
-	   ))
+	   ;; Skip over NILs and numbers.
+	   (when (symbolp fn)
+	     (let ((old (gethash fn funs)))
+	       (setf
+		(gethash fn funs)
+		(if old
+		    (push spell old)
+		    (list spell))))
+	     )))
      AGP::*dict*)
     funs))
 

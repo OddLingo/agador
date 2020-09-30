@@ -74,16 +74,20 @@
     ;; this word.  These are just internal to the parser and not
     ;; saved until a complete parse is accepted.
     (dolist (f funs)
-      (let (
-	    (rt (make-instance 'pusage
-	       :spelled spell :fn f
-	       :lpos pos :rpos pos
-	       :prob priority)))
-	(push rt (elt *right* pos))
-	;; Functions are in decreasing order of liklihood.
-	(decf priority 10)
-	(log:info "~a" rt)
-	(consider rt)))))
+      (cond
+	((numberp f) (incf priority f))
+	((symbolp f)
+	 (let (
+	       (rt (make-instance 'pusage
+				  :spelled spell :fn f
+				  :lpos pos :rpos pos
+				  :prob priority)))
+	   (push rt (elt *right* pos))
+	   (log:info "~a" rt)
+	   (consider rt)))
+	((null f) T))
+      ;; Functions are in decreasing order of liklihood.
+      (decf priority 10))))
 
 ;;; This needs to be called before each parser invocation.
 (defun init-parse ()
