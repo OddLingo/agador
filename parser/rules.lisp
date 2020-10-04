@@ -9,6 +9,12 @@
 ;;;; tests to apply during matching.  So a rule looks like
 ;;;; (left right result (tests)).
 
+;;;; Possible tests, implemented in 'approve-join', are:
+;;;;   LEFT   Left term must be a pair
+;;;;   RIGHT  Right term must be a pair
+;;;;   FINAL  If matches all, pass to semantics
+;;;;   DUPOK  Right and left may be the same (otherwise not)
+
 (in-package :AGP)
 ;;; Each entry in the *rules* hash-table is a list of rules
 ;;; with the same right term.  When trying out potential rules,
@@ -18,7 +24,7 @@
 (in-package :AGF)
 (defparameter +all-rules+
  '(
-   (NON ADJ NON (LEFT))   ;; A modified noun phrase, left-heavy preferred
+   (NON ADJ NON (LEFT))   ;; Modified noun phrase, left-heavy preferred
    (NON NON NON (LEFT))
 ;;   (VRB ADJ VRB)   ;; Verbs too
    (PRP NON PREPP) ;; Prepositional phrase
@@ -27,7 +33,7 @@
    (ADJ PREPP ADJ) ;; .. and adjectives
    (NON NEG NON)	  ;; A negated noun  "Not green"
    (VRB NEG VRB)
-   (POF NON ADJ (RIGHT))  ;; Regrouped modifier, right must be a pair.
+   (POF NON ADJ (RIGHT))  ;; Regroup, right must be a pair.
 
    (NON CNJ CPFX)  ;; Left of a conjoined phrase "Apples and ..."
    (P12 CNJ CPFX)  ;; Left of a conjoined phrase "Me and ..."
@@ -56,8 +62,8 @@
    (MKSB NON SENT (FINAL))     ;; Something not us does something
    (MKSB ADJ SENT (FINAL))
    (MKSB PREPP SENT (FINAL))
-   (MKSB VRB SENT (FINAL)) ;; 'li' terminates subject
-   (MKSB VRBP SENT (FINAL)) ;; 'li' terminates subject
+   (MKSB VRB SENT (FINAL))
+   (MKSB VRBP SENT (FINAL))
 
    ;; Explicit commands
    (NON VOC CPFX)
@@ -65,6 +71,7 @@
    (CPFX VRBP CMND (FINAL))
    (VOC VRB CMND (FINAL))
    (VOC VRBP CMND (FINAL))
+))
  
 ;; mi ijo. ; sina ijo. ; ona li ijo. ; mi mute li ijo.
 ;;     a! ; ...a ; noun a
@@ -85,7 +92,6 @@
 ;;     0 = ala ; 1 = wan ; 2 = tu ; 3+ = mute ; ∞ = ale
 ;;     alternatives; 5 = luka ; 20 = mute ; 100 = ale
 ;;     ordinals { noun nanpa number
-))
 (in-package :AGP)
 
 ;;;; A 'routing table' of grammatical functions is derived from the
@@ -195,9 +201,9 @@
 	   ;; Can't get there from here
 	   ((NIL) (return-from searching NIL))
 	   ;; Go to left child
-	   (AGC:LEFT (setf looking (agc:left probe)))
+	   (AGC:LEFT (setf looking (agc:left looking)))
 	   ;; Go to right child
-	   (AGC:RIGHT (setf looking (agc:right probe)))
+	   (AGC:RIGHT (setf looking (agc:right looking)))
 	   ;; This can't be the desired node.
 	   ((T) (log:error "Impossible route"))))))
 

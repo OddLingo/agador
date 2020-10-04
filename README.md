@@ -54,3 +54,10 @@ like an arrow.") or there is an error in the grammar.  Toki Pona is a highly
 ambiguous language with a lot depending on context, so this could
 easily happen.  But the task of Agador is to only operate on clear
 commands and to just "remember" the rest.
+
+## Generating text
+The way the parser rules are constructed allows them to be run in reverse
+as a *generative grammar* to generate any number of syntactically valid
+(though possibly meaningless) sentences in toki pona.  This can be
+used for training the Kaldi speech recognizer.
+

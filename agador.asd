@@ -28,6 +28,12 @@
 		     (:file "vosk")
 		     (:file "talk")))
 
+    (:module "gui"
+	     :depends-on ("package" "classes")
+	     :serial T
+	     :components (
+			  (:file "windows")
+		   ))
     (:module "parser"
 	     :depends-on ("package" "classes")
 	     :serial T

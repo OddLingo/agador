@@ -37,6 +37,11 @@
   (:export sked-add sked-later init-hash)
   )
 
+(defpackage :AGADOR.GUI
+  (:nicknames :AGG)
+  (:use :clim :clim-lisp)
+  (:export run-window *app*))
+
 (defpackage :AGADOR.ACTION
   (:nicknames :aga)
   (:use common-lisp)
@@ -53,7 +58,7 @@
   (:export db-open db-close db-start db-commit hash-of)
   (:export get-info put-info)
   (:export put-tree get-tree remember recall-p set-voice db-put db-get)
-  (:export mterm musage mpair sig goto explore bytes-to-s merkle)
+  (:export mterm musage mpair sig goto bytes-to-s merkle)
   )
 
 ;; The actual Adjacency Parser that turns text into trees.

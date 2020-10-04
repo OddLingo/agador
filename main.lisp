@@ -98,7 +98,8 @@
   ;;   (error (e)
   ;;     (log:error e)
   ;;     (backtrace)))
-(agm:explore)
+(agg:run-window)
+
   ;;; Clean up to exit.
 ;;  (ags:listen-stop)
   (agm:db-close)

@@ -72,12 +72,14 @@
     ;; Generate all the sentences.
       (loop for n from 1 to maxcount
 	 do
+	   (log:info "Next")
 	   (setf word-count 0)
 	   (labels
 	       ((emit (w)
 		  "Insert space before all but first word"
 		  (when (> word-count 0) (format corpus " "))
 		  (incf word-count)
+		  (log:info "~a" w)
 		  (format corpus (string-upcase w)))
 
 		(pick-word (words &optional (previous NIL))
@@ -124,11 +126,12 @@
 			      (pick-word words previous)))))))
 
 		(walk (start &optional (depth 1))
-		"Recursively descend grammar, making random choices."
-		(let* ((lfn (rule-left start))
-		       (rfn (rule-right start))
-		       (lchoice (probe start 'AGF::LEFT lfn depth)))
-		  (probe start 'AGF::RIGHT rfn depth lchoice)))
+		  "Recursively descend grammar, making random choices."
+		  (log:info "~a" start)
+		  (let* ((lfn (rule-left start))
+			 (rfn (rule-right start))
+			 (lchoice (probe start 'AGF::LEFT lfn depth)))
+		    (probe start 'AGF::RIGHT rfn depth lchoice)))
 	      ) ;; End of local functions
 
 	   ;; Now randomly walk the rules down from one of
