@@ -42,11 +42,20 @@ prevents AI technology being employed to service specific requests.
 [Common Lisp](https://en.wikipedia.org/wiki/Common_Lisp) language
 and the SBCL compiler for that is required.
 
+* The Lightning Memory Mapped Database (LMDB) is used for long-term memory.
+
+* The McCLIM graphical user interface package is used for visual interaction.
+
 ## The Adjacency Parser
 
-This parsing algorithm does not have a "state machine" like many parsers
+The speech recognition subsystem (or typed user input) delivers a
+string of words to the parser.  The parser then delivers a
+"syntax tree" to semantic processing and for display.
+
+The parsing algorithm does not have a "state machine" like many parsers
 used for programming languages.  Instead all applicable grammar rules
-are applied holographically, wherever they happen to fit, to the entire input.
+are applied holographically, wherever they happen to fit, to the
+entire input.
 
 It is possible that more than one overall parse tree will be found,
 in which case either the input is truely ambiguous ("Time flies

@@ -23,6 +23,7 @@ text:
 prepare:
 	@echo "Loading packages"
 	@$(LISP) --eval "(ql:quickload :CL-UTILITIES)" --eval "(quit)"
+	@$(LISP) --eval "(ql:quickload :USOCKET)" --eval "(quit)"
 	@$(LISP) --eval "(ql:quickload :LMDB)" --eval "(quit)"
 	@$(LISP) --eval "(ql:quickload :CL-PPCRE)" --eval "(quit)"
 	@$(LISP) --eval "(ql:quickload :LOG4CL)" --eval "(quit)"

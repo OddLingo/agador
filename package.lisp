@@ -14,6 +14,7 @@
   (:export run seek set-lang +data-directory+)
   (:export term usage pair numb term-fn spelled left right nvalue)
   (:export contains-p depth shape)
+  (:export center top)
   )
 
 ;; There are a lot of grammatical function names, so they get their
@@ -40,7 +41,7 @@
 (defpackage :AGADOR.GUI
   (:nicknames :AGG)
   (:use :clim :clim-lisp)
-  (:export run-window *app*))
+  (:export run-window *app* set-text set-parse))
 
 (defpackage :AGADOR.ACTION
   (:nicknames :aga)

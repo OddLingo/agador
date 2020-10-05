@@ -7,7 +7,7 @@
   (
    (lpos :accessor term-lpos :initarg :lpos :type integer)
    (rpos :accessor term-rpos :initarg :rpos :type integer)
-   (prob :accessor prob :initarg :prob :type integer)
+   (prob :accessor prob :initarg :prob :type integer :initform 100)
   ))
 
 ;;; The usage of a word puts a spelling and one possible

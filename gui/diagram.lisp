@@ -1,137 +1,96 @@
 ;;;; -*- Mode: Lisp; Syntax: ANSI-Common-Lisp; -*-
 
-;; Functions that display the contents of parser working trees.
+;;;; Functions that display the contents of parser working trees.
 (in-package :AGG)
 
-;;; Print the entire parse context so far, including all partials.
-(defun print-all ()
-  "Print entire parser data"
-  (sb-thread:with-mutex (AGU::*tmtx*)
-    (agu:clear)
-    (loop for pos from 0 below (length *right*) do
-	 (format t "~%~2,'0d | " pos)
-	 (let ((col (elt *right* pos)))
-	   (dolist (r col) (print-object r T)))))
-  NIL)
-
-;;; Print a single parser tree from top down.
-(defun indent (sp)
-  "Emit a number of spaces"
-  (declare (type integer sp))
-  (loop for n from sp downto 0 do (format T " ") ))
-
-(defgeneric print-tree (pterm &optional depth ))
-(defmethod print-tree ((p ppair) &optional (depth 0))
-  (indent depth)
-  (print-object p T) (terpri)
-  (print-tree (agc:left p) (+ depth 3))
-  (print-tree (agc:right p) (+ depth 3)))
-
-(defmethod print-tree ((u pusage) &optional (depth 0))
-  (indent depth)
-  (print-object u t )
-  (terpri))
-
-;;;; Paint graphic representation of a parse tree.
-(defun dashes (n)
-  "Emit a number of dashes"
-  (declare (type integer n))
-  (loop for x from 0 below n do (format T "-")))
-
-(defun vline (x y1 y2)
-  "Draw a vertical line"
-  (declare (type integer x y1 y2))
-  (clim:draw-line* pane x y1 x y2))
-
-(defun hline (y x1 x2)
-  (declare (type integer y x1 x2))
-  "Draw a horizontal line"
-  (clim:draw-line* pane x1 y x2 y))
-
 (defun average (n1 n2)
+  "Compute average of two integers"
   (declare (type integer n1 n2))
   (floor (/ (+ n1 n2) 2 )))
 
-(defun hpos (pos) (* pos 10))
+(defun hpos (pos)
+  "Convert ordinal to pixels"
+  (* pos 50))
 
-;;; 'depth' is how far down we are in the tree.  'top'
-;;; is the y-position of the word line.
-(defgeneric paint-tree (pterm &optional top depth ))
+(defmethod bottom ((pt AGC::TERM))
+  (+ 15 (top pt)))
 
-(defmethod paint-tree ((u pusage) &optional (top 1) (depth 0))
-  (declare (type integer depth top))
-  (declare (ignore depth))
-  (let ((xpos (hpos (term-lpos u))))
-    ;; Word text on top line
-    (agu:setxy xpos top) (format T "~a" (agc:spelled u))
-    ;; Function name just below
-    (agu:setxy xpos (1+ top)) (format T "~a" (agc:term-fn u))
-    (+ 2 top)))
+;;; Assign x-positions to all terms in a tree.  Usages are spaced
+;;; evenly, and Pairs are centered above their lower twrms.
+(defun space-terms (start)
+  "Assign centers to terms"
+  (declare (type AGC:term start))
+  (let ((xpos 10))
+    (labels
+	((leaves (m)
+	   (case (type-of m)
+	     (AGC:usage
+	      (let ((oldpos xpos))
+		(setf (agc:center m) xpos)
+		(incf xpos 25)
+		oldpos))
+	     (AGC:pair
+	      (setf center (average (leaves (agc:left m))
+				    (leaves (agc:right m)))))
+	     )))
+      (leaves start))
+    ))
 
-;;; Draw PAIR nodes bottom-up.
-(defmethod paint-tree ((p ppair) &optional (top 1) (depth 2))
-  (declare (type integer depth top))
-  (let* (
-	 (left-x (hpos (term-lpos p)))
-	 (right-x (+ 4 (hpos (term-rpos p))))
-	 (nextrow (1+ depth))
-	 ;; Draw lower nodes first.  Each reports how far
-	 ;; down they went.
-	 (left-y (paint-tree (agc:left p) top nextrow))
-	 (right-y (paint-tree (agc:right p) top nextrow))
-	 ;; Vertical lines start at base
-	 (base (+ top 2))
-	 ;; Where we will draw our line across
-	 (pair-y (1+ (max left-y right-y))))
- 
-    ;; Draw the lines
-    (hline pair-y left-x right-x)
-    (vline left-x base pair-y)
-    (vline right-x base pair-y)
+(defun draw-connect (pane upper lower)
+  "Draw relationships between terms"
+  (declare (type (agc:term upper lower)))
+  (clim:draw-line* pane
+		  (agc:center upper) (bottom upper)
+		  (agc:center lower) (agc:top lower)))
+
+;;; 'ypos' is y-coord of a node
+(defgeneric paint-tree (pane AGC:term ypos ))
+
+(defmethod paint-tree (pane (u AGC:usage) ypos)
+  (declare (type integer ypos))
+  (clim:draw-text* pane (agc:spelled u) (center u) ypos)
+  (clim:draw-text* pane
+		  (format NIL "~a" (agc:term-fn u))
+		  (center u) (+ tpos 10))
+    (+ ypos))
+
+;;; Draw PAIR nodes top-down.
+(defmethod paint-tree (pane (p agc:pair) ypos)
+  (declare (type integer depth))
+  (let* ((base (+ ypos 20)))
+    (setf (top p) ypos)
 
     ;; Draw the function name
-    (clim:draw-text pane
-		    (agc:term-fn p)
-		    (- (average left-x right-x) 20) pair-y)
+    (clim:draw-text* pane
+		    (format NIL "~a" (agc:term-fn p))
+		    (- (center p) 20) ypos)
+
+    ;; Draw the lower terms.  This sets their 'top'.
+    (paint-tree (agc:left p) base)
+    (paint-tree (agc:right p) base)
+
+    ;; Draw the lines
+    (draw-connect pane p (agc:left p))
+    (draw-connect pain p (agc:right p))
+
     ;; Report the Y position below what we just did.
-    (1+ pair-y)))
+    base))
 
 ;;; Draw the diagram of grammatical functions for a sentence.
-(defun paint-parse (start &optional (top 1) )
-  (declare (type pterm start)
+(defun paint-parse (pane start &optional (ypos 8) )
+  (declare (type AGC:term start)
 	   (optimize (debug 3) (speed 1))
-	   (type integer top))
-  (sb-thread:with-mutex (AGU::*tmtx*)
-    (agu:set-scroll NIL)
-    (agu:setxy 1 top)
-    (unless (= (prob start) 100)
-      (format T "Probability ~D~%" (prob start))
-      (incf top))
-    (let ((newtop (paint-tree start top)))
-      (agu:setxy 1 newtop)
-      (agu:set-scroll T)
-      (finish-output)
-      (1+ newtop))))
+	   (type integer ypos))
+  ;; Assign x-coordinates to space things out
+  (space-terms start)
 
-;;; Create a list of the terminal words in a tree.
-;;; There is a similar function in the Memory package,
-;;; but it deals with remembered statements.
-(defun list-from-tree (start)
-  "List of the words in a parsed tree"
-  (declare (type pterm start))
-  (let ((leaves NIL))
-    (labels
-	((pleaves (m)
-	   (case (type-of m)
-	     (pusage (push
-		       (agc:spelled m)
-		       leaves))
-	     (ppair (pleaves (agc::right m))
-		    (pleaves (agc::left m))
-		    ))))
-      (pleaves start))))
+  (+ (paint-tree pane start ypos) 12)
+  )
 
-(defun string-from-tree (mt)
-  "String of the words in a parsed tree"
-  (declare (type pterm mt))
-  (agu:string-from-list (list-from-tree mt)))
+;;; Paint all the sentence parses, vertically spaced out
+;;; over the pane.
+(defun paint-parses (pane parselist)
+  (let ((ypos 4))
+    (dolist (p parselist)
+      (setf ypos (paint-parse pane p ypos))
+      )))

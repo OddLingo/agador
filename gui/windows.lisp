@@ -8,7 +8,7 @@
   ((current-text :initform "toki-pona" :accessor current-text)
    (current-parse :initform NIL :accessor current-parse))
 
-  ;; The various panes wihtin the window.
+  ;; The various panes within the window.
   (:menu-bar menubar-table)
   (:panes
    (latin
@@ -51,8 +51,10 @@
   (format pane "~a~%" (current-text frame)))
 
 (defun draw-parse (frame pane)
-  (clim:draw-line* pane 0 0 100 100)
-)
+  "Repaint parse tree"
+  (if (current-parse frame)
+      (paint-parses pane (current-parse frame))
+      (clim:draw-line* pane 0 0 200 200 :thickness 10 :ink +red+)))
 
 (defvar *app* (make-application-frame 'agador))
 
@@ -62,12 +64,25 @@
 (defclass new-text-event (clim:window-manager-event)
   ((msg :initarg :text :accessor text)))
 
+(defclass new-parse-event (clim:window-manager-event)
+  ((tree :initarg :tree :accessor tree)))
+
 (defmethod handle-event ((frame agador) (event new-text-event))
   (setf (current-text *application-frame*) (text event)))
+
+(defmethod handle-event ((frame agador) (event new-parse-event))
+  (setf (current-parse *application-frame*) (tree event)))
 
 (defun set-text (msg-text)
   (let* ((sheet (frame-top-level-sheet *app*))
          (event (make-instance 'new-text-event
-			       :sheet agador
+;;			       :sheet agador
 			       :msg msg-text)))
+    (queue-event sheet event)))
+
+(defun set-parse (treetop)
+  (let* ((sheet (frame-top-level-sheet *app*))
+         (event (make-instance 'new-parse-event
+;;			       :sheet agador
+			       :tree treetop)))
     (queue-event sheet event)))

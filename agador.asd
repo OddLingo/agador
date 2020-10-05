@@ -2,10 +2,11 @@
 
 (defsystem "agador"
   :description "Natural language experiments using b-trees"
-  :depends-on (:LMDB :CL-UTILITIES :BABEL :CL-PPCRE :USOCKET
-		:LOG4CL SB-CONCURRENCY :ALEXANDRIA
-		:CL-DATE-TIME-PARSER :UNIX-OPTS :dexador
-		:plump :lquery)
+  :depends-on (:LMDB :MCCLIM :CL-UTILITIES :BABEL :CL-PPCRE
+		:LOG4CL :SB-CONCURRENCY :ALEXANDRIA
+		:CL-DATE-TIME-PARSER :UNIX-OPTS ;; :dexador
+		;;:plump :lquery
+		)
 
   :components (
     (:file "package")
@@ -18,8 +19,8 @@
       :components (
 		   (:file "terminal")
 		   (:file "mailbox")
-		   (:file "net")
-		   (:file "schedule")
+;;		   (:file "net")
+;;		   (:file "schedule")
 		   (:file "sha1")))
     (:module "speech"
 	     :depends-on ("package")
@@ -32,6 +33,7 @@
 	     :depends-on ("package" "classes")
 	     :serial T
 	     :components (
+			  (:file "diagram")
 			  (:file "windows")
 		   ))
     (:module "parser"
@@ -54,7 +56,7 @@
       :components (
 		   (:file "dispatch")
 		   (:file "time")
-		   (:file "weather")
+;;		   (:file "weather")
 		   (:file "security")))
 
     (:module "memory"
@@ -64,7 +66,8 @@
 	(:file "mclass")
 	(:file "db")
 	(:file "tree")
-	(:file "explore")))
+;;	(:file "explore")
+	))
 
     )
   )

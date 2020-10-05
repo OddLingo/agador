@@ -94,11 +94,11 @@
   ;; Start the visual user interface with a condition
   ;; handler.  It will return when it is time to quit.
   ;; (handler-case
-  ;;     (agm:explore)
+  ;;     (agg:run-window)
   ;;   (error (e)
   ;;     (log:error e)
   ;;     (backtrace)))
-(agg:run-window)
+  (agg:run-window)
 
   ;;; Clean up to exit.
 ;;  (ags:listen-stop)

@@ -11,6 +11,8 @@
 ;;;; a grammatical function taken from the AGF package.
 (defclass term () (
   (fn :accessor term-fn :initarg :fn)
+  (top  :accessor top :initarg :top :type integer :initform 0)
+  (center :accessor center :initarg :center :type integer :initform 0)
   ))
 
 ;;;; The usage of a word represents a spelling and one possible
