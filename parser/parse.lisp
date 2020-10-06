@@ -141,8 +141,7 @@
     best-parse))
 
 (defun use-this (best)
-  (agu:clear)
-  (paint-parse best)
+  (agg:set-parse (list best))
   (learn best))
   
 ;;; If there is exactly one satisfactory solution, we can
@@ -167,8 +166,7 @@
 	 (if (= (length highest) 1)
 	     (use-this (car highest))
 	     (progn
-	       (dolist (solution highest)
-		 (setf topy (paint-parse solution topy)))
+	       (agg:set-parse highest)
 	       NIL))))
       )))
 

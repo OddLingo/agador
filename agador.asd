@@ -57,7 +57,8 @@
 		   (:file "dispatch")
 		   (:file "time")
 ;;		   (:file "weather")
-		   (:file "security")))
+;;		   (:file "security")
+		   ))
 
     (:module "memory"
 	     :depends-on ("package" "classes")

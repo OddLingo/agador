@@ -57,7 +57,7 @@
       ;; ;; ((equal verbname "OPEN") (start top))
       ;; ;; ;; Next should be 'sona kama'
       ;; ;; ((equal verbname "SONA") (remember (agc:right top)))
-    (T (log:warn "No action for ~a~%" verbname))))
+    (T (log:warn "No action for that~%"))))
 
 ;;; Detect questions by the presense of the universal query
 ;;; word 'seme' or the VRB-NOT-VRB pattern.
@@ -73,9 +73,9 @@
 	   (type string handle))
   (cond
     ;; What is the time?
-    ((equal handle *the-time*) (saytime))
+;;    ((equal handle *the-time*) (saytime))
     ;; What is the weather forecast?
-    ((equal handle *the-weather*) (wx-repeat))
+;;    ((equal handle *the-weather*) (wx-repeat))
     ;; Anything else.
     (T (ags:say (format NIL "mi sona ala ~a%"
 	 (agp:string-from-tree (agp:word-at top 'AGP::NOUNP)))))))

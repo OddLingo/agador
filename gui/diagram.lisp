@@ -1,6 +1,6 @@
 ;;;; -*- Mode: Lisp; Syntax: ANSI-Common-Lisp; -*-
 
-;;;; Functions that display the contents of parser working trees.
+;;;; Functions that display the contents of syntax trees.
 (in-package :AGG)
 
 (defun average (n1 n2)
@@ -13,10 +13,10 @@
   (* pos 50))
 
 (defmethod bottom ((pt AGC::TERM))
-  (+ 15 (top pt)))
+  (+ 15 (agc:top pt)))
 
 ;;; Assign x-positions to all terms in a tree.  Usages are spaced
-;;; evenly, and Pairs are centered above their lower twrms.
+;;; evenly, and Pairs are centered above their lower terms.
 (defun space-terms (start)
   "Assign centers to terms"
   (declare (type AGC:term start))
@@ -27,18 +27,21 @@
 	     (AGC:usage
 	      (let ((oldpos xpos))
 		(setf (agc:center m) xpos)
+		;; Horizontal pixels between words.
 		(incf xpos 25)
 		oldpos))
 	     (AGC:pair
-	      (setf center (average (leaves (agc:left m))
-				    (leaves (agc:right m)))))
+	      (setf (agc:center m)
+		    (average (leaves (agc:left m))
+			     (leaves (agc:right m)))))
 	     )))
+      ;; Descend the tree
       (leaves start))
     ))
 
 (defun draw-connect (pane upper lower)
   "Draw relationships between terms"
-  (declare (type (agc:term upper lower)))
+  (declare (type agc:term upper lower))
   (clim:draw-line* pane
 		  (agc:center upper) (bottom upper)
 		  (agc:center lower) (agc:top lower)))
@@ -48,33 +51,39 @@
 
 (defmethod paint-tree (pane (u AGC:usage) ypos)
   (declare (type integer ypos))
-  (clim:draw-text* pane (agc:spelled u) (center u) ypos)
   (clim:draw-text* pane
 		  (format NIL "~a" (agc:term-fn u))
-		  (center u) (+ tpos 10))
-    (+ ypos))
+		  (agc:center u) ypos)
+  (clim:draw-text* pane
+		   (agc:spelled u)
+		   (agc:center u) (+ ypos 10))
+  (+ 20 ypos))
 
 ;;; Draw PAIR nodes top-down.
 (defmethod paint-tree (pane (p agc:pair) ypos)
-  (declare (type integer depth))
-  (let* ((base (+ ypos 20)))
-    (setf (top p) ypos)
+  (declare (type integer ypos))
+  (let ((base (+ ypos 20))
+	(lowest 0))
+    (setf (agc:top p) ypos)
 
     ;; Draw the function name
     (clim:draw-text* pane
 		    (format NIL "~a" (agc:term-fn p))
-		    (- (center p) 20) ypos)
+		    (- (agc:center p) 20) ypos)
 
     ;; Draw the lower terms.  This sets their 'top'.
-    (paint-tree (agc:left p) base)
-    (paint-tree (agc:right p) base)
+    ;; They also report back up their lowest extent.
+    (setf lowest
+	  (max
+	   (paint-tree (agc:left p) base)
+	   (paint-tree (agc:right p) base)))
 
     ;; Draw the lines
     (draw-connect pane p (agc:left p))
-    (draw-connect pain p (agc:right p))
+    (draw-connect pane p (agc:right p))
 
     ;; Report the Y position below what we just did.
-    base))
+    lowest))
 
 ;;; Draw the diagram of grammatical functions for a sentence.
 (defun paint-parse (pane start &optional (ypos 8) )
@@ -90,6 +99,7 @@
 ;;; Paint all the sentence parses, vertically spaced out
 ;;; over the pane.
 (defun paint-parses (pane parselist)
+  "Draw all available parses"
   (let ((ypos 4))
     (dolist (p parselist)
       (setf ypos (paint-parse pane p ypos))

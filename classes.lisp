@@ -2,13 +2,13 @@
 ;;;; Here we define the most generic forms of the various objects
 ;;;; used to represent grammatical structure in binary tree form.
 ;;;; Inner nodes are called "pairs" and leaf nodes are called
-;;;; "usages" or "numbers".
-;;;; Subclasses of these classes are used internally to the parsing
-;;;; process, and another set is used for long-term memory.
+;;;; "usages".  Subclasses of these classes are used internally
+;;;; to the parsing process, and another set is used for long-term memory.
 (in-package :AGC)
 
-;;;; Pairs and Words are subclasses of Terms.  All terms have
-;;;; a grammatical function taken from the AGF package.
+;;;; Pairs and Usages are subclasses of Terms.  All terms have
+;;;; a grammatical function taken from the AGF package, and some
+;;;; coordinates used in laying out the syntax display.
 (defclass term () (
   (fn :accessor term-fn :initarg :fn)
   (top  :accessor top :initarg :top :type integer :initform 0)
@@ -16,16 +16,16 @@
   ))
 
 ;;;; The usage of a word represents a spelling and one possible
-;;;; function.
+;;;; grammatical function.
 (defclass usage (term) (
-  (spelled :accessor spelled :initarg :spelled)
+  (spelled :accessor spelled :initarg :spelled :type string)
   ))
 
 ;;;; A pair has two subordinate terms in addition to its own grammatical
 ;;;; function.
 (defclass pair (term) (
-  (left :accessor left :initarg :left)
-  (right :accessor right :initarg :right)
+  (left :accessor left :initarg :left :type term)
+  (right :accessor right :initarg :right :type term)
   ))
 
 ;; -----------------------------------------------
