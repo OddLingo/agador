@@ -44,7 +44,9 @@
 
 (define-agador-command (com-hear :name t) ((txt 'string))
   (setf (current-text *application-frame*) txt)
-  (agp:parse-string txt))
+  (agm:db-start)
+  (agp:parse-string txt)
+  (agm:db-commit))
 
 (make-command-table 'menubar-table
 		    :errorp NIL
@@ -86,13 +88,13 @@
   "Change the displayed text programmatically"
   (let* ((sheet (frame-top-level-sheet *app*))
          (event (make-instance 'new-text-event
-;;			       :sheet agador
+			       :sheet sheet
 			       :msg msg-text)))
     (queue-event sheet event)))
 
 (defun set-parse (treetop)
   (let* ((sheet (frame-top-level-sheet *app*))
          (event (make-instance 'new-parse-event
-;;			       :sheet agador
+			       :sheet sheet
 			       :tree treetop)))
     (queue-event sheet event)))

@@ -49,6 +49,7 @@
 (defun command (top handle)
   "Execute explicit commands"
   (declare (type agp::pterm top)
+	   (ignore top)
 	   (type string handle))
   (cond
     ((equal handle *sleep*) (enable-action NIL))
@@ -70,7 +71,8 @@
 ;;;; on which query word was used.
 (defun query (top handle)
   (declare (type agp::pterm top)
-	   (type string handle))
+	   (type string handle)
+	   (ignore handle))
   (cond
     ;; What is the time?
 ;;    ((equal handle *the-time*) (saytime))
@@ -101,7 +103,8 @@
 		 (handler-case
 		     (let ((merk (remember top)))
 		       (log:info "Remembered ~S" merk)
-		       (agm:goto merk))
+;;		       (agm:goto merk)
+		       )
 		   (error (e)
 		     (log:error e)))
 		 ))))

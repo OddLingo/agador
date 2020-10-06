@@ -73,8 +73,6 @@
   ;; Process command line.
   (get-options)
 
-  (agu:clear)
-  
   ;; Open the memory database
   (agm:db-open)
 
@@ -104,6 +102,4 @@
 ;;  (ags:listen-stop)
   (agm:db-close)
   (log:info "Finish")
-  (agu:set-scroll NIL)
-  (agu:clear)
   )

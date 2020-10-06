@@ -9,6 +9,8 @@
 (defun get-tree (key)
   "Create memory object from the tree database"
   (declare (type string key))
+  (declare (optimize (debug 3)(speed 1)))
+  (log:info key)
   (let ((data (db-get :TREE key)))
     (when data
 ;;      (log:info "~a => ~a" key data)
@@ -76,6 +78,7 @@
 (defgeneric remember (pterm))
 (defmethod remember ((u agp:pusage))
   "Remember a word usage"
+  (declare (optimize (debug 3)(speed 1)))
   (let ((m (make-instance 'musage
 	:fn (agc:term-fn u)
 	:spelled (agc:spelled u))))
@@ -86,6 +89,7 @@
 
 (defmethod remember ((p agp:ppair))
   "Remember a syntax pair"
+  (declare (optimize (debug 3)(speed 1)))
   (let* ((left-child  (remember (agc:left p)))
 	 (right-child (remember (agc:right p)))
 	 (m (make-instance 'mpair

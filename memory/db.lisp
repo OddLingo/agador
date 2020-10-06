@@ -78,7 +78,9 @@
 (defun db-get (dbi key)
   "Fetch a record from a database identified by its ID"
   (let ((hdl (assoc dbi *open-databases*)))
-    (unless hdl (error "Bad DB identifier ~a" dbi))
+    (unless hdl
+      (log:error "Request for DB ~a key ~a" dbi key)
+      (error "Bad DB identifier ~a" dbi))
     (let ((data (lmdb:get (cdr hdl) key)))
       (if data
 	  (bytes-to-s data)
