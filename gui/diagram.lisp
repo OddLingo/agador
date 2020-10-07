@@ -32,7 +32,7 @@
 		(setf (agc:center m) xpos)
 		(log:info "~a centered at ~D" m xpos)
 		;; Horizontal pixels between words.
-		(incf xpos 70)
+		(incf xpos 60)
 		oldpos))
  
 	     (AGP:ppair
@@ -67,10 +67,15 @@
     (setf (agc:top u) ypos)
     (clim:draw-text* pane
 		  (format NIL "~a" (agc:term-fn u))
-		  indent (+ ypos 12))
+		  indent (+ ypos 12)
+		  :text-family "Courier 10 Pitch"
+		  :text-face "Bold"
+		  )
     (clim:draw-text* pane
 		   (agc:spelled u)
-		   indent (+ ypos 24)))
+		   indent (+ ypos 28)
+		   :text-family "Bitstream Vera Serif")
+		  )
     (+ 20 ypos))
 
 ;;; Draw PAIR nodes top-down.
@@ -86,7 +91,10 @@
     ;; Draw the function name
     (clim:draw-text* pane
 		    (format NIL "~a" (agc:term-fn p))
-		    (- (agc:center p) 20) (+ ypos 12))
+		    (- (agc:center p) 20) (+ ypos 12)
+		    :text-family "Courier 10 Pitch"
+		    :text-face "Bold"
+		    )
 
     ;; Draw the lower terms.  This sets their 'top'.
     ;; They also report back up their lowest extent.
