@@ -10,7 +10,6 @@
   "Create memory object from the tree database"
   (declare (type string key))
   (declare (optimize (debug 3)(speed 1)))
-  (log:info key)
   (let ((data (db-get :TREE key)))
     (when data
 ;;      (log:info "~a => ~a" key data)

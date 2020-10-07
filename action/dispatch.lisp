@@ -89,7 +89,7 @@
   (let ((handle (agm::merkle top)))
     (if *enabled*
 	(progn
-	  (log:info "Merkle ~a" handle)
+;;	  (log:info "Merkle ~a" handle)
 	  (cond
 	    ;; Questions
 	    ((question-p top) (query top handle))

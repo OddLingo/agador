@@ -59,6 +59,7 @@
 
 (defun draw-parse (frame pane)
   "Repaint parse tree"
+  (log:info "Frame ~a Pane ~a" frame pane)
   (if (current-parses frame)
       (paint-parses pane (current-parses frame))
       ;; Draw a diagonal line if nothing to display.
@@ -82,7 +83,9 @@
   (setf (current-text *application-frame*) (text event)))
 
 (defmethod handle-event ((frame agador) (event new-parse-event))
-  (setf (current-parses *application-frame*) (tree event)))
+  (log:info "~a" event)
+  (setf (current-parses *application-frame*) (tree event))
+  (redisplay-frame-pane frame 'syntax))
 
 (defun set-text (msg-text)
   "Change the displayed text programmatically"
@@ -93,8 +96,10 @@
     (queue-event sheet event)))
 
 (defun set-parse (treetop)
+  "API for changing the parse tree list"
+  (log:info "sending event with ~a" treetop)
   (let* ((sheet (frame-top-level-sheet *app*))
          (event (make-instance 'new-parse-event
-			       :sheet sheet
+			       :sheet *app*
 			       :tree treetop)))
     (queue-event sheet event)))
