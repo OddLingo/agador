@@ -2,9 +2,6 @@
 
 (in-package :AGM)
 
-(defvar *cursor* NIL)
-(defvar *contexts* NIL)
-
 ;;; Create a list of the terminal words in a memory tree.
 ;;; We descend the tree right-side-first but are pushing it
 ;;; onto the list of leaves.  This results in the final
@@ -31,96 +28,9 @@
 (defun string-from-tree (mt)
   (agu:string-from-list (list-from-tree mt)))
 
-(defun prompt () (agu:term "~%-> "))
 
-;; Repaint the screen with the current text at the top, followed
-;; by the contexts it appears in.
-(defun repaint ()
-  (sb-thread:with-mutex (agu::*tmtx*)
-    (log:info "~S with ~S" *cursor* *contexts*)
-    ;; Clear below the diagram and set cursor there.
-    (agu:clear AGU::+rtop+)
-    (format T "=======~%")
-    ;; Context lines in white
-    (agu:set-color 7 0)
-    (loop for c in *contexts* for cnum from 0
-       do (format T "~d: ~a~%" cnum (string-from-tree c)))
+	   ;; ((equal verb "dt") (dump :TREE))
+	   ;; ((equal verb "dc") (dump :CNTX))
+	   ;; ((equal verb "dw") (agp:print-words))
+	   ;; ((equal verb "v") (AGA::enable-action T))
 
-    ;; Focus line in black on yellow
-    (agu:set-color 0 3)
-    (if *cursor*
-	(progn
-	  (format T "~a  ~a~%~%"
-		  (agc:term-fn *cursor*)
-		  (string-from-tree (sig *cursor*))))
-	(progn
-	  (log:info "Cursor NIL")
-	  (format T "no cursor")))
-
-    ;; Prompt in white on black.
-    (agu:set-color 7 0))
-)
-
-;;; Change the explore context to the node with a given
-;;; signature.
-(defun goto (s)
-  (declare (type string s))
-  (log:info "Exploring from ~S" s)
-  (setq *cursor* (get-tree s))
-  (setq *contexts* (get-context s))
-  (repaint)
-  )
-
-;;; Top loop for exploring the long-term memory.
-(defun explore ()
-  "Main user interface"
-  (declare (optimize (debug 3)(speed 1)))
-  (agu:clear AGU::+rtop+)
-  (agu:set-scroll)
-  (agu:term "Type something to set context~%")
-  (prompt)
-
-  ;; Read commands
-  (loop for line = (read-line)
-     when (> (length line) 0)
-     do
-       ;; A transaction around each command.
-       (db-start)
-       (let* ((verb line)
-	      (cmd (char-code (char verb 0))))
-	 (cond
-	   ((and (>= cmd 48) (<= cmd 57))
-	    (goto (nth (- cmd 48) *contexts*)))
-	   
-	   ((equal verb "l") ;; l
-	    (if (eq (type-of *cursor*) 'mpair)
-		(goto (agc:left *cursor*))
-		(format T "Can't do that here~%")))
-
-	   ((equal verb "r") ;; r
-	    (if (eq (type-of *cursor*) 'mpair)
-		(goto (agc:right *cursor*))
-		(format T "Can't do that here~%")))
-
-	   ((equal verb "quit") ;; Stop
-	    (progn
-	      (agm:db-commit)
-	      (return-from explore)))
-
-	   ((equal verb "dt") (dump :TREE))
-	   ((equal verb "dc") (dump :CNTX))
-	   ((equal verb "dw") (agp:print-words))
-	   ((equal verb "v") (AGA::enable-action T))
-
-	   ;; Anything else is a new statement to analyze.
-	   ((>= (length line) 6)
-	    (agp:parse-words (agu:words-from-string line)))
-
-	   (T (agu:term "?~%"))
-	   ))
-       (prompt)
-       (db-commit)
-       )
-  )
-
-	   

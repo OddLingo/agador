@@ -83,7 +83,6 @@
 				  :lpos pos :rpos pos
 				  :prob priority)))
 	   (push rt (elt *right* pos))
-	   (log:info "~a" rt)
 	   (consider rt)))
 	((null f) T))
       ;; Functions are in decreasing order of liklihood.
@@ -161,8 +160,7 @@
 
       (T
        (agu:term  "There are ~d solutions~%" nsoln)
-       (let ((topy 2)
-	     (highest (pick-best)))
+       (let ((highest (pick-best)))
 	 (if (= (length highest) 1)
 	     (use-this (car highest))
 	     (progn

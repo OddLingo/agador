@@ -13,9 +13,9 @@
   (* pos 50))
 
 (defgeneric bottom (AGC:TERM))
-(defmethod bottom ((pt AGC::PAIR))
+(defmethod bottom ((pt AGC:PAIR))
   (+ 12 (agc:top pt)))
-(defmethod bottom ((pt AGC::USAGE))
+(defmethod bottom ((pt AGC:USAGE))
   (+ 20 (agc:top pt)))
 
 ;;; Assign x-positions to all terms in a tree.  Usages are spaced
@@ -23,28 +23,26 @@
 (defun space-terms (start)
   "Assign centers to terms"
   (declare (type AGC:term start))
-  (let ((xpos 25))
+  (let ((xpos 25))  ;; Horizontal pixels between words.
     (labels
 	((leaves (m)
-	   (case (type-of m)
-	     (AGP:pusage
+	   (cond
+	     ((subtypep (type-of m) 'AGC:usage)
 	      (let ((oldpos xpos))
 		(setf (agc:center m) xpos)
-		(log:info "~a centered at ~D" m xpos)
-		;; Horizontal pixels between words.
 		(incf xpos 60)
 		oldpos))
  
-	     (AGP:ppair
+	     ((subtypep (type-of m) 'AGC:pair)
 	      (setf (agc:center m)
 		    (average (leaves (agc:left m))
 			     (leaves (agc:right m))))
-	      (log:info "~a centered at ~D" m (agc:center m))
 	      (agc:center m))
 
-	     (otherwise
-	      (log:info "~a" (type-of m))
-	      xpos)
+	     (T
+	      (progn
+		(log:info "~a" (type-of m))
+		xpos))
 	     )))
       ;; Descend the tree
       (leaves start))
@@ -85,8 +83,6 @@
   (let ((base (+ ypos 30))
 	(lowest 0))
     (setf (agc:top p) ypos)
-    (log:info "~a in ~a at ~D base ~D center ~a"
-	      p pane ypos base (agc:center p))
 
     ;; Draw the function name
     (clim:draw-text* pane
@@ -115,10 +111,8 @@
   (declare (type AGC:term start)
 	   (optimize (debug 3) (speed 1))
 	   (type integer ypos))
-  (log:info "Painting at ~D" ypos)
   ;; Assign x-coordinates to space things out
   (space-terms start)
-  (log:info "Spacing done")
   (+ (paint-tree pane start ypos) 12)
   )
 

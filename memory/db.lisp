@@ -117,3 +117,9 @@
 	(read-from-string data :eof-error-p NIL)
 	NIL)))
 
+;;; Wrap a transaction around some code.
+(defmacro with-memory (&body body)
+  `(progn
+    (agm:db-start)
+    ,@body
+    (agm:db-commit)))

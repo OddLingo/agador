@@ -29,13 +29,6 @@
 		     (:file "vosk")
 		     (:file "talk")))
 
-    (:module "gui"
-	     :depends-on ("package" "classes")
-	     :serial T
-	     :components (
-			  (:file "diagram")
-			  (:file "windows")
-		   ))
     (:module "parser"
 	     :depends-on ("package" "classes")
 	     :serial T
@@ -67,8 +60,13 @@
 	(:file "mclass")
 	(:file "db")
 	(:file "tree")
-;;	(:file "explore")
 	))
-
+    (:module "gui"
+	     :depends-on ("package" "classes")
+	     :serial T
+	     :components (
+			  (:file "diagram")
+			  (:file "windows")
+		   ))
     )
   )

@@ -8,6 +8,8 @@
 (define-application-frame agador ()
   ;; Data slots
   ((current-text :initform "toki-pona" :accessor current-text)
+   (cursor :initform NIL :accessor cursor)
+   (contexts :initform NIL :accessor contexts)
    (current-parses :initform NIL :accessor current-parses))
 
   ;; The various panes within the window.
@@ -25,7 +27,8 @@
     :background +light-goldenrod-yellow+
     :foreground +DarkBlue+
     :display-function 'show-current)
-   (context :application :height 300 :width 400)
+   (context :application :height 300 :width 400
+	    :display-function 'show-contexts)
    (syntax :application :height 360 :width 500
 	   :display-function 'draw-parse)
    (int :interactor :height 40 :width 400)
@@ -43,10 +46,23 @@
   (frame-exit *application-frame*))
 
 (define-agador-command (com-hear :name t) ((txt 'string))
-  (setf (current-text *application-frame*) txt)
-  (agm:db-start)
-  (agp:parse-string txt)
-  (agm:db-commit))
+  (agm:with-memory
+      (setf (current-text *application-frame*) txt)
+      (agp:parse-string txt)))
+
+(define-agador-command (com-up :name T) ((ndx 'integer))
+  (agm:with-memory
+      (goto (nth ndx (contexts *application-frame*)))))
+
+(define-agador-command (com-left :name T) ()
+  (when (cursor *application-frame*)
+    (agm:with-memory
+	(goto (agc:right (cursor *application-frame*))))))
+
+(define-agador-command (com-right :name T) ()
+  (when (cursor *application-frame*)
+    (agm:with-memory
+	(goto (agc:right (cursor *application-frame*))))))
 
 (make-command-table 'menubar-table
 		    :errorp NIL
@@ -57,9 +73,25 @@
 (defun show-current (frame pane)
   (format pane "~a~%" (current-text frame)))
 
+(defun show-contexts (frame pane)
+  "Show contexts of the cursor"
+    (loop for c in (contexts frame) for cnum from 0
+       do (format pane "~d: ~a"
+		  cnum
+		  (agm:string-from-tree c)))
+  )
+
+;;; Change the memory browser context to the node with
+;;; a given signature.
+(defun goto (s)
+  (declare (type string s))
+  (setf (cursor *app*) (agm:get-tree s))
+  (setf (contexts *app*) (agm:get-context s))
+  (setf (current-parses *app*) (list (agm:get-tree s)))
+  )
+
 (defun draw-parse (frame pane)
   "Repaint parse tree"
-  (log:info "Frame ~a Pane ~a" frame pane)
   (if (current-parses frame)
       (paint-parses pane (current-parses frame))
       ;; Draw a diagonal line if nothing to display.
@@ -80,10 +112,11 @@
   ((tree :initarg :tree :accessor tree)))
 
 (defmethod handle-event ((frame agador) (event new-text-event))
-  (setf (current-text *application-frame*) (text event)))
+  (setf (current-text *application-frame*) (text event))
+  (agm:with-memory
+      (agp:parse-string (text event))))
 
 (defmethod handle-event ((frame agador) (event new-parse-event))
-  (log:info "~a" event)
   (setf (current-parses *application-frame*) (tree event))
   (redisplay-frame-pane frame 'syntax))
 

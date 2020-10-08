@@ -51,24 +51,27 @@
   (:export start-security speakable-time)
   )
 
-;; Long term memory for things the parser learns, both individual words
-;; and trees.  There is an underlying key-value database.
+;; Long term memory for things the parser learns.
+;; There is an underlying key-value database.
 (defpackage :AGADOR.MEMORY
   (:nicknames :agm)
   (:use common-lisp)
   (:export db-open db-close db-start db-commit hash-of)
-  (:export get-info put-info)
-  (:export put-tree get-tree remember recall-p set-voice db-put db-get)
-  (:export mterm musage mpair sig goto bytes-to-s merkle)
+  (:export get-info put-info get-context with-memory)
+  (:export string-from-tree put-tree get-tree)
+  (:export remember recall-p set-voice db-put db-get)
+  (:export mterm musage mpair sig bytes-to-s merkle)
   )
 
 ;; The actual Adjacency Parser that turns text into trees.
 (defpackage :AGADOR.PARSER
   (:nicknames :agp)
   (:use common-lisp)
-  (:export parse-words parse-string parse-line parse-file-line init-rules)
+  (:export parse-words parse-string parse-line)
+  (:export parse-file-line init-rules)
   (:export pterm ppair pusage start-parser parse route-path)
-  (:export string-from-tree word-at term-lpos term-rpos print-words)
+  (:export string-from-tree word-at term-lpos term-rpos)
+  (:export print-words)
   )
 
 (defpackage :AGADOR.SHA1

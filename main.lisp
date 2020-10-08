@@ -65,6 +65,9 @@
   (setf *random-state* (make-random-state t))
 
   ;; Set up the standard logging package.
+  (when (probe-file "agador.log")
+    (delete-file "agador.log"))
+
   (log:config
    :SANE :DAILY "agador.log" :BACKUP NIL
    :NOFILE :NOTIME :NOPACKAGE)
