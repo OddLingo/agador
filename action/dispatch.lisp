@@ -73,14 +73,20 @@
   (declare (type agp::pterm top)
 	   (type string handle)
 	   (ignore handle))
-  (cond
-    ;; What is the time?
-;;    ((equal handle *the-time*) (saytime))
-    ;; What is the weather forecast?
-;;    ((equal handle *the-weather*) (wx-repeat))
-    ;; Anything else.
-    (T (ags:say (format NIL "mi sona ala ~a%"
-	 (agp:string-from-tree (agp:word-at top 'AGP::NOUNP)))))))
+  (let ((answer 
+	 (cond
+	   ;; What is the time?
+	   ;;    ((equal handle *the-time*) (saytime))
+	   ;; What is the weather forecast?
+	   ;;    ((equal handle *the-weather*) (wx-repeat))
+	   ;; Anything else.
+	   (T (let ((topw (agp:word-at top 'AGF::NON)))
+		(format NIL "mi sona ala ~a"
+			(if topw
+			    (agp:string-from-tree topw)
+			    "ona")))))))
+    (log:info answer)
+    (ags:say answer)))
 
 (defun semantics (top)
   "Try to figure out the *meaning* of an utterance"

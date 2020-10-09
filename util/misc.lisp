@@ -23,8 +23,3 @@
     (if (null line) NIL
 	(words-from-string line))))
 
-
-(defun set-status (fmt &rest args)
-  "Replace text on the status line"
-    (format *standard-output* fmt args))
- 

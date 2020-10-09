@@ -205,7 +205,8 @@
 	   ;; Go to right child
 	   (AGC:RIGHT (setf looking (agc:right looking)))
 	   ;; This can't be the desired node.
-	   ((T) (log:error "Impossible route"))))))
+	   ((T) (progn (log:error "Impossible route")
+		       (return-from searching NIL)))))))
 
 ;;; Get a list of the rules with a specified right side term.
 (defun rules-for (fn) (gethash fn *rules*))

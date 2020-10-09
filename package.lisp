@@ -32,16 +32,15 @@
   (:use common-lisp)
   (:import-from :cl-utilities :split-sequence)
   (:export words-from-file words-from-string gfun-from-string)
-  (:export string-from-list clear setxy set-scroll set-color clear-eol)
+  (:export string-from-list)
   (:export send connect mbx-server)
-  (:export use-term release-term term clearw1 set-status)
   (:export sked-add sked-later init-hash)
   )
 
 (defpackage :AGADOR.GUI
   (:nicknames :AGG)
   (:use :clim :clim-lisp)
-  (:export run-window *app* set-text set-parse))
+  (:export run-window *app* set-text set-parse set-status))
 
 (defpackage :AGADOR.ACTION
   (:nicknames :aga)

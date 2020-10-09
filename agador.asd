@@ -18,7 +18,7 @@
 	     :depends-on ("package")
 	     :serial T
       :components (
-		   (:file "terminal")
+		   (:file "misc")
 		   (:file "mailbox")
 ;;		   (:file "net")
 ;;		   (:file "schedule")

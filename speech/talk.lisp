@@ -13,7 +13,7 @@
 	(voice (getf msg :VOICE)))
     (if (null voice) (setf voice "other/jbo"))
 
-    ;; Tell Julius to stop listening while we talk.
+    ;; Stop listening while we talk.
     (uiop:run-program
      (format NIL "espeak -v ~a \"~a\"" voice txt)
      :output '(:string :stripped T))
@@ -22,7 +22,6 @@
   (sleep 3)
   )
 
-  
 (defvar *talking*)
   
 ;;;; External speech API

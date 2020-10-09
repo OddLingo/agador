@@ -7,7 +7,8 @@
 
 (define-application-frame agador ()
   ;; Data slots
-  ((current-text :initform "toki-pona" :accessor current-text)
+  ((input-text :initform "toki-pona" :accessor input-text)
+   (output-text :initform "toki-pona" :accessor output-text)
    (cursor :initform NIL :accessor cursor)
    (contexts :initform NIL :accessor contexts)
    (current-parses :initform NIL :accessor current-parses))
@@ -15,12 +16,14 @@
   ;; The various panes within the window.
   (:menu-bar menubar-table)
   (:panes
-   (linja
-    :application
-    :text-style (make-text-style "linja pona" NIL 40)
-    :height 70 :width 400
+   (intext
+    :application :height 70 :width 400
     :background +light-goldenrod-yellow+
-    :display-function 'show-current)
+    :display-function 'show-intext)
+   (outext
+    :application :height 70 :width 400
+    :background +LightCyan+
+    :display-function 'show-intext)
    (context :application :height 300 :width 400
 	    :display-function 'show-contexts)
    (syntax :application :height 360 :width 500
@@ -31,7 +34,7 @@
   (:layouts
    (default
        (horizontally ()
-	   (vertically () linja context int)
+	   (vertically () intext outext context int)
 	   syntax)))
   )
 
@@ -42,11 +45,11 @@
 ;; (define-agador-command (com-save :name t) ()
 ;;   (mcclim-raster-image:with-output-to-raster-image-file
 ;;       (stream "agador-toki.png")
-;;     (show-current *application-frame* stream)))
+;;     (show-intext *application-frame* stream)))
 
 (define-agador-command (com-hear :name t) ((txt 'string))
   (agm:with-memory
-      (setf (current-text *application-frame*) txt)
+      (setf (input-text *application-frame*) txt)
       (agp:parse-string txt)))
 
 (define-agador-command (com-up :name T) ((ndx 'integer))
@@ -70,15 +73,19 @@
 ;;			    ("Save" :command com-save)
 			    ))
 
+
 ;;;; These functions update the displays of information.
-(defun show-current (frame pane)
-  (draw-text* pane (current-text frame)
-	      10 38
+(defun show-intext (frame pane)
+  (show-text (input-text frame) pane))
+(defun show-outext (frame pane)
+  (show-text (output-text frame) pane))
+
+(defun show-text (msg pane)
+  (draw-text* pane msg 10 38
 	      :text-family "linja pona"
 	      :text-size 45
 	      :ink +DarkBlue+)
-  (draw-text* pane (current-text frame)
-	      10 60
+  (draw-text* pane msg 10 60
 	      :text-family "Bitstream Vera Serif"
 	      :text-size 14)
  )
@@ -118,11 +125,18 @@
 (defclass new-text-event (clim:window-manager-event)
   ((msg :initarg :text :accessor text)))
 
+(defclass new-output-event (clim:window-manager-event)
+  ((msg :initarg :text :accessor text)))
+
 (defclass new-parse-event (clim:window-manager-event)
   ((tree :initarg :tree :accessor tree)))
 
 (defmethod handle-event ((frame agador) (event new-text-event))
-  (setf (current-text *application-frame*) (text event))
+  (setf (input-text *application-frame*) (text event))
+  (redisplay-frame-pane frame 'outext))
+
+(defmethod handle-event ((frame agador) (event new-text-event))
+  (setf (output-text *application-frame*) (text event))
   (agm:with-memory
       (agp:parse-string (text event))))
 
@@ -138,6 +152,14 @@
 			       :msg msg-text)))
     (queue-event sheet event)))
 
+(defun set-output (msg-text)
+  "Change the displayed text programmatically"
+  (let* ((sheet (frame-top-level-sheet *app*))
+         (event (make-instance 'new-output-event
+			       :sheet sheet
+			       :msg msg-text)))
+    (queue-event sheet event)))
+
 (defun set-parse (treetop)
   "API for changing the parse tree list"
   (log:info "sending event with ~a" treetop)
@@ -147,3 +169,7 @@
 			       :tree treetop)))
     (queue-event sheet event)))
 
+(defun set-status (fmt &rest args)
+  "Replace text on the status line"
+    (log:info (format *standard-output* fmt args)))
+ 
