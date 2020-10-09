@@ -79,12 +79,6 @@
     (agu:string-from-list
      (map 'list #'(lambda (c) (letter-sound c)) s))))
 
-;;; Print the entire internal dictionary.  For debugging.
-(defun print-words ()
-  (maphash
-   #'(lambda (k v) (format T "~a -> ~a~%" k v))
-   *dict*))
-       
 ;;; Look up a word in the dictionary.
 (defun lookup (spell)
   (gethash spell *dict*))

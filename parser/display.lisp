@@ -6,13 +6,10 @@
 ;;; Print the entire parse context so far, including all partials.
 (defun print-all ()
   "Print entire parser data"
-  (sb-thread:with-mutex (AGU::*tmtx*)
-    (agu:clear)
-    (loop for pos from 0 below (length *right*) do
-	 (format t "~%~2,'0d | " pos)
-	 (let ((col (elt *right* pos)))
-	   (dolist (r col) (print-object r T)))))
-  NIL)
+  (loop for pos from 0 below (length *right*) do
+       (format t "~%~2,'0d | " pos)
+       (let ((col (elt *right* pos)))
+	 (dolist (r col) (print-object r T)))))
 
 ;;; Print a single parser tree from top down.
 (defun indent (sp)

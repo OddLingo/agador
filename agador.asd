@@ -3,6 +3,7 @@
 (defsystem "agador"
   :description "Natural language experiments using b-trees"
   :depends-on (:LMDB :MCCLIM :CL-UTILITIES :BABEL :CL-PPCRE
+	       :MCCLIM-RASTER-IMAGE
 		:LOG4CL :SB-CONCURRENCY :ALEXANDRIA
 		:CL-DATE-TIME-PARSER :UNIX-OPTS ;; :dexador
 		;;:plump :lquery

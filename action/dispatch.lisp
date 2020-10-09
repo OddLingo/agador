@@ -16,7 +16,7 @@
 ;;; It is some sort of statement about the world.  Just remember it.
 (defun remember (top)
   (let ((key (agm:remember top)))
-    (agu:term "   I remember that at ~a~%" key)
+    (log:info "   I remember that at ~a~%" key)
     key))
 
 ;;; 'merkle-of-subtree' tries to discover the database key for the memory
@@ -34,7 +34,7 @@
        (progn
 	 (log:info "Stopped listening")
 	 (enable-action NIL)))
-      (T (agu:term "")))))
+      (T (format T "Can't stop that~%")))))
 
 (defun start (top)
     (log:info "Acting on 'start' ~a~%" top))
@@ -58,7 +58,7 @@
       ;; ;; ((equal verbname "OPEN") (start top))
       ;; ;; ;; Next should be 'sona kama'
       ;; ;; ((equal verbname "SONA") (remember (agc:right top)))
-    (T (log:warn "No action for that~%"))))
+    (T (log:warn "No action for that"))))
 
 ;;; Detect questions by the presense of the universal query
 ;;; word 'seme' or the VRB-NOT-VRB pattern.
@@ -89,7 +89,6 @@
   (let ((handle (agm::merkle top)))
     (if *enabled*
 	(progn
-;;	  (log:info "Merkle ~a" handle)
 	  (cond
 	    ;; Questions
 	    ((question-p top) (query top handle))

@@ -71,7 +71,6 @@
   (:export parse-file-line init-rules)
   (:export pterm ppair pusage start-parser parse route-path)
   (:export string-from-tree word-at term-lpos term-rpos)
-  (:export print-words)
   )
 
 (defpackage :AGADOR.SHA1

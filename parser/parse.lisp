@@ -33,7 +33,6 @@
 (defun apply-rules (rt rules neighbors)
   (dolist (lt neighbors)
     (dolist (r rules)
-;;      (log:info "Trying ~a" r)
       (when (eq (rule-left r) (agc:term-fn lt))
 	(when (approved (action r) lt rt)
 	  (join lt rt (rule-result r) (action r)))))))
@@ -69,6 +68,11 @@
 
     ;; Create an empty entry at the right end of the sentence.
     (vector-push-extend () *right*)
+
+    ;; Fake up a function for proper names.
+    ;; (unless funs
+    ;;   (if (capitalizedp spell)
+    ;; 	  (setf funs '(AGF::ADJ))))
 
     ;; Create a USAGE for each potential grammatical function of
     ;; this word.  These are just internal to the parser and not
@@ -151,7 +155,7 @@
     (cond
       ((= 0 nsoln)
        (log:warn "No satisfactory solution found")
-       (print-all)
+       (agg:set-parse NIL)
        NIL)
 
       ((= 1 nsoln)
@@ -159,7 +163,7 @@
        (use-this (car *top*)))
 
       (T
-       (agu:term  "There are ~d solutions~%" nsoln)
+       (log:warn "There are ~d solutions" nsoln)
        (let ((highest (pick-best)))
 	 (if (= (length highest) 1)
 	     (use-this (car highest))

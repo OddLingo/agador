@@ -15,17 +15,11 @@
   ;; The various panes within the window.
   (:menu-bar menubar-table)
   (:panes
-   (latin
-    :application
-    :text-style (make-text-style NIL NIL 16)
-    :height 20 :width 400
-    :display-function 'show-current)
    (linja
     :application
     :text-style (make-text-style "linja pona" NIL 40)
-    :height 40 :width 400
+    :height 70 :width 400
     :background +light-goldenrod-yellow+
-    :foreground +DarkBlue+
     :display-function 'show-current)
    (context :application :height 300 :width 400
 	    :display-function 'show-contexts)
@@ -37,7 +31,7 @@
   (:layouts
    (default
        (horizontally ()
-	   (vertically () linja latin context int)
+	   (vertically () linja context int)
 	   syntax)))
   )
 
@@ -45,14 +39,20 @@
 (define-agador-command (com-quit :name t) ()
   (frame-exit *application-frame*))
 
+;; (define-agador-command (com-save :name t) ()
+;;   (mcclim-raster-image:with-output-to-raster-image-file
+;;       (stream "agador-toki.png")
+;;     (show-current *application-frame* stream)))
+
 (define-agador-command (com-hear :name t) ((txt 'string))
   (agm:with-memory
       (setf (current-text *application-frame*) txt)
       (agp:parse-string txt)))
 
 (define-agador-command (com-up :name T) ((ndx 'integer))
-  (agm:with-memory
-      (goto (nth ndx (contexts *application-frame*)))))
+  (when (contexts *application-frame*)
+    (agm:with-memory
+	(goto (nth ndx (contexts *application-frame*))))))
 
 (define-agador-command (com-left :name T) ()
   (when (cursor *application-frame*)
@@ -67,11 +67,21 @@
 (make-command-table 'menubar-table
 		    :errorp NIL
 		    :menu '(("Quit" :command com-quit)
+;;			    ("Save" :command com-save)
 			    ))
 
 ;;;; These functions update the displays of information.
 (defun show-current (frame pane)
-  (format pane "~a~%" (current-text frame)))
+  (draw-text* pane (current-text frame)
+	      10 38
+	      :text-family "linja pona"
+	      :text-size 45
+	      :ink +DarkBlue+)
+  (draw-text* pane (current-text frame)
+	      10 60
+	      :text-family "Bitstream Vera Serif"
+	      :text-size 14)
+ )
 
 (defun show-contexts (frame pane)
   "Show contexts of the cursor"
@@ -136,3 +146,4 @@
 			       :sheet *app*
 			       :tree treetop)))
     (queue-event sheet event)))
+

@@ -8,15 +8,9 @@
   (declare (type integer n1 n2))
   (floor (/ (+ n1 n2) 2 )))
 
-(defun hpos (pos)
-  "Convert ordinal to pixels"
-  (* pos 50))
-
 (defgeneric bottom (AGC:TERM))
-(defmethod bottom ((pt AGC:PAIR))
-  (+ 12 (agc:top pt)))
-(defmethod bottom ((pt AGC:USAGE))
-  (+ 20 (agc:top pt)))
+(defmethod bottom ((pt AGC:PAIR))  (+ 12 (agc:top pt)))
+(defmethod bottom ((pt AGC:USAGE)) (+ 20 (agc:top pt)))
 
 ;;; Assign x-positions to all terms in a tree.  Usages are spaced
 ;;; evenly, and Pairs are centered above their lower terms.
@@ -59,12 +53,12 @@
 (defgeneric paint-tree (pane AGC:term ypos ))
 
 (defmethod paint-tree (pane (u AGC:usage) ypos)
-  (declare (type integer ypos)
-	   (optimize (debug 3)(speed 1)))
+  "Draw a 'usage' leaf node"
+  (declare (type integer ypos))
   (let ((indent (- (agc:center u) 14)))
     (setf (agc:top u) ypos)
     (clim:draw-text* pane
-		  (format NIL "~a" (agc:term-fn u))
+		  (string (agc:term-fn u))
 		  indent (+ ypos 12)
 		  :text-family "Courier 10 Pitch"
 		  :text-face "Bold"
@@ -78,15 +72,15 @@
 
 ;;; Draw PAIR nodes top-down.
 (defmethod paint-tree (pane (p agc:pair) ypos)
-  (declare (type integer ypos)
-	   (optimize (debug 3)(speed 1)))
+  "Draw a 'pair' inner node"
+  (declare (type integer ypos))
   (let ((base (+ ypos 30))
 	(lowest 0))
     (setf (agc:top p) ypos)
 
     ;; Draw the function name
     (clim:draw-text* pane
-		    (format NIL "~a" (agc:term-fn p))
+		    (string (agc:term-fn p))
 		    (- (agc:center p) 20) (+ ypos 12)
 		    :text-family "Courier 10 Pitch"
 		    :text-face "Bold"
@@ -108,8 +102,8 @@
 
 ;;; Draw the diagram of grammatical functions for a sentence.
 (defun paint-parse (pane start &optional (ypos 8) )
+  "Draw one syntax tree"
   (declare (type AGC:term start)
-	   (optimize (debug 3) (speed 1))
 	   (type integer ypos))
   ;; Assign x-coordinates to space things out
   (space-terms start)
@@ -119,7 +113,7 @@
 ;;; Paint all the sentence parses, vertically spaced out
 ;;; over the pane.
 (defun paint-parses (pane parselist)
-  "Draw all available parses"
+  "Draw all available syntax trees"
   (let ((ypos 10))
     (dolist (p parselist)
       (setf ypos (paint-parse pane p ypos))

@@ -97,7 +97,7 @@
   (let ((hdl (assoc dbi *open-databases*)))
     (if hdl
       (lmdb:do-pairs ((cdr hdl) key data)
-	(agu:term "   ~a: ~a~%"  (bytes-to-s key) (bytes-to-s data)))
+	(format T "   ~a: ~a~%"  (bytes-to-s key) (bytes-to-s data)))
       (error "Bad DB handle ~a to Dump" dbi))))
 
 ;;;; Actions can store arbitary data in the "info" database.  Since
