@@ -87,7 +87,6 @@
 (defmethod remember ((p agp:ppair))
   "Remember a syntax pair"
   (declare (optimize (debug 3)(speed 1)))
-  (log:info p)
   (let* ((left-child  (remember (agc:left p)))
 	 (right-child (remember (agc:right p)))
 	 (m (make-instance 'mpair

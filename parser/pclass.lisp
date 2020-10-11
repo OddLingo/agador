@@ -58,6 +58,8 @@
   (not (null (member tname (action r)))))
 (defmethod has-test ((r ppair) tname)
   (not (null (member tname (action r)))))
+(defmethod has-test ((u pusage) tname)
+  NIL)
 
 (defmethod print-object ((obj rule) stream)
   (let ((l (rule-left obj))

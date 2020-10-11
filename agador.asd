@@ -23,6 +23,7 @@
 ;;		   (:file "net")
 ;;		   (:file "schedule")
 		   (:file "sha1")))
+
     (:module "speech"
 	     :depends-on ("package")
 	     :serial T
@@ -62,6 +63,7 @@
 	(:file "db")
 	(:file "tree")
 	))
+
     (:module "gui"
 	     :depends-on ("package" "classes")
 	     :serial T
@@ -69,5 +71,4 @@
 			  (:file "diagram")
 			  (:file "windows")
 		   ))
-    )
-  )
+    ))

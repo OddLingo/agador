@@ -1,5 +1,7 @@
 ;;;; -*- Mode: Lisp; Syntax: ANSI-Common-Lisp; -*-
 
+;; The speech package manages interfaces to both recognition
+;; and synthesis of audible speech.
 (defpackage :AGADOR.SPEECH
   (:nicknames :ags)
   (:use common-lisp)
@@ -25,8 +27,7 @@
   (:use common-lisp)
   )
 
-;; The utility package has string and symbol manipulation functions,
-;; as well as console terminal controls.
+;; The utility package has string and symbol manipulation functions.
 (defpackage :AGADOR.UTIL
   (:nicknames :agu)
   (:use common-lisp)
@@ -37,11 +38,15 @@
   (:export sked-add sked-later init-hash)
   )
 
+;; The graphical user interface, based on McCLIM.
 (defpackage :AGADOR.GUI
   (:nicknames :AGG)
   (:use :clim :clim-lisp)
-  (:export run-window *app* set-text set-parse set-status))
+  (:export run-window *app* set-input set-parse)
+  (:export set-status set-output))
 
+;; The action package actually does things based on
+;; input sentences.
 (defpackage :AGADOR.ACTION
   (:nicknames :aga)
   (:use common-lisp)

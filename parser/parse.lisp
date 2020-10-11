@@ -19,7 +19,7 @@
   "Check all special conditions"
   (dolist (act actions)
       (unless (approve-join act lt rt)
-	(log:info "Join blocked by ~a" act)
+	(log:info "Join ~a to ~a blocked by ~a" lt rt act)
 	(return-from approved NIL)))
   T)
 
@@ -150,7 +150,7 @@
   (let ((nsoln (length *top*)))
     (cond
       ((= 0 nsoln)
-       (log:warn "No satisfactory solution found")
+       (agg:set-status "No satisfactory solution found")
        (agg:set-parse NIL)
        NIL)
 
@@ -159,7 +159,7 @@
        (learn (car *top*)))
 
       (T
-       (log:warn "There are ~d solutions" nsoln)
+       (agg:set-status "There are ~d solutions" nsoln)
        (let ((highest (pick-best)))
 	 (if (= (length highest) 1)
 	     (learn (car highest))

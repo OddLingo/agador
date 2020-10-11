@@ -35,10 +35,10 @@
        (progn
 	 (log:info "Stopped listening")
 	 (enable-action NIL)))
-      (T (format T "Can't stop that~%")))))
+      (T (agg:set-status "Can't stop that~%")))))
 
 (defun start (top)
-    (log:info "Acting on 'start' ~a~%" top))
+    (agg:set-status "Acting on 'start' ~a~%" top))
 
 (defun enable-action (yes)
   (setf *enabled* yes)
@@ -113,7 +113,6 @@
 
 	  ;; Just remember anything else and give it to the explorer.
 	  (T (let ((merk NIL))
-	       (log:info "Remembering ~a" top)
 	       (setf merk (remember top))
 	       (log:info "Remembered ~a" merk)
 	       (agg::set-parse top merk)

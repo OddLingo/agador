@@ -12,7 +12,7 @@
   (let ((txt (getf msg :TEXT))
 	(voice (getf msg :VOICE)))
     (if (null voice) (setf voice "other/jbo"))
-    (agg::set-output txt)
+    (agg:set-output txt)
 
     ;; Stop listening while we talk.
     (uiop:run-program

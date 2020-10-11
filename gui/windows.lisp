@@ -96,11 +96,15 @@
 
 (defun show-contexts (frame pane)
   "Show contexts of the cursor"
-    (loop for c in (contexts frame) for cnum from 0
-       do (format pane "~d: ~a"
-		  cnum
-		  (agm:string-from-tree c)))
-  )
+  (let ((ctx (contexts frame)))
+    (cond
+      ((null ctx) T)
+      ((equal (type-of ctx) 'cons)
+       (loop for c in ctx for cnum from 0
+	  do (format pane "~d: ~a"
+		     cnum
+		     (agm:string-from-tree c))))
+      (T (format pane ctx)))))
 
 ;;; Change the memory browser context to the node with
 ;;; a given signature.
@@ -126,6 +130,9 @@
 (defclass new-text-event (clim:window-manager-event)
   ((msg :initarg :text :accessor text)))
 
+(defclass new-status-event (clim:window-manager-event)
+  ((msg :initarg :text :accessor text)))
+
 (defclass new-output-event (clim:window-manager-event)
   ((msg :initarg :text :accessor text)))
 
@@ -133,6 +140,8 @@
   ((tree :initarg :tree :accessor tree)
    (context :initarg :context :accessor context)))
 
+;;;; Handling an event usually requires an explicit
+;;;; request to redisplay affected panes.
 (defmethod handle-event ((frame agador) (event new-output-event))
   (setf (output-text *application-frame*) (text event))
   (redisplay-frame-pane frame 'outext))
@@ -142,13 +151,22 @@
   (agm:with-memory
       (agp:parse-string (text event))))
 
+(defmethod handle-event ((frame agador) (event new-status-event))
+  (setf (contexts *application-frame*) (text event))
+  (redisplay-frame-pane frame 'context))
+
 (defmethod handle-event ((frame agador) (event new-parse-event))
   (setf (current-parses *application-frame*) (tree event))
   (setf (contexts *application-frame*) (context event))
-  (redisplay-frame-pane frame 'syntax))
+  (redisplay-frame-pane frame 'syntax)
+  (redisplay-frame-pane frame 'context))
 
+;;;; The 'set' functions are the internal API for changing
+;;;; the information displayed on the screen.  They generate
+;;;; 'events' that are processed by the 'handlers' within
+;;;; the McCLIM command loop.
 (defun set-text (msg-text)
-  "Change the displayed text programmatically"
+  "Change the displayed input text programmatically"
   (let* ((sheet (frame-top-level-sheet *app*))
          (event (make-instance 'new-text-event
 			       :sheet sheet
@@ -156,7 +174,7 @@
     (queue-event sheet event)))
 
 (defun set-output (msg-text)
-  "Change the displayed text programmatically"
+  "Change the displayed output text programmatically"
   (let* ((sheet (frame-top-level-sheet *app*))
          (event (make-instance 'new-output-event
 			       :sheet sheet
@@ -166,7 +184,6 @@
 (defun set-parse (treetop &optional (ctx NIL))
   "API to change the parse tree diagram"
   (declare (optimize (speed 2)(debug 3)))
-  (log:info "sending event with ~a" treetop)
   (let* ((sheet (frame-top-level-sheet *app*))
          (event (make-instance 'new-parse-event
 			       :sheet *app*
@@ -176,5 +193,9 @@
 
 (defun set-status (fmt &rest args)
   "Replace text on the status line"
-    (log:info (format *standard-output* fmt args)))
+  (let* ((sheet (frame-top-level-sheet *app*))
+         (event (make-instance 'new-status-event
+			:sheet sheet
+			:text (apply 'format (list NIL fmt args)))))
+    (queue-event sheet event)))
  
