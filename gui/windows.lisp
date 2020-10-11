@@ -23,7 +23,7 @@
    (outext
     :application :height 70 :width 400
     :background +LightCyan+
-    :display-function 'show-intext)
+    :display-function 'show-outext)
    (context :application :height 300 :width 400
 	    :display-function 'show-contexts)
    (syntax :application :height 360 :width 500
@@ -53,16 +53,20 @@
       (agp:parse-string txt)))
 
 (define-agador-command (com-up :name T) ((ndx 'integer))
+  "Move memory cursor up"
   (when (contexts *application-frame*)
     (agm:with-memory
+	;; Select signature from list of contexts
 	(goto (nth ndx (contexts *application-frame*))))))
 
 (define-agador-command (com-left :name T) ()
+  "Move memory cursor down to the left"
   (when (cursor *application-frame*)
     (agm:with-memory
 	(goto (agc:right (cursor *application-frame*))))))
 
 (define-agador-command (com-right :name T) ()
+  "Move memory cursor down to the right"
   (when (cursor *application-frame*)
     (agm:with-memory
 	(goto (agc:right (cursor *application-frame*))))))
@@ -100,21 +104,18 @@
 
 ;;; Change the memory browser context to the node with
 ;;; a given signature.
-(defun goto (s)
-  (declare (type string s))
-  (setf (cursor *app*) (agm:get-tree s))
-  (setf (contexts *app*) (agm:get-context s))
-  (setf (current-parses *app*) (list (agm:get-tree s)))
-  )
+(defun goto (merk)
+  (declare (type string merk))
+  (declare (optimize (speed 2)(debug 3)))
+  (let ((tree (agm:get-tree merk)))
+    (setf (cursor *app*) tree)
+    (setf (contexts *app*) (agm:get-context merk))
+    (setf (current-parses *app*) tree)
+  ))
 
 (defun draw-parse (frame pane)
   "Repaint parse tree"
-  (if (current-parses frame)
-      (paint-parses pane (current-parses frame))
-      ;; Draw a diagonal line if nothing to display.
-      (clim:draw-line* pane 0 0 200 200
-		       :line-thickness 10
-		       :ink +red+)))
+  (paint-parse pane (current-parses frame) 10))
 
 (defun run-window ()
   (setf *app* (make-application-frame 'agador))
@@ -129,19 +130,21 @@
   ((msg :initarg :text :accessor text)))
 
 (defclass new-parse-event (clim:window-manager-event)
-  ((tree :initarg :tree :accessor tree)))
+  ((tree :initarg :tree :accessor tree)
+   (context :initarg :context :accessor context)))
 
-(defmethod handle-event ((frame agador) (event new-text-event))
-  (setf (input-text *application-frame*) (text event))
+(defmethod handle-event ((frame agador) (event new-output-event))
+  (setf (output-text *application-frame*) (text event))
   (redisplay-frame-pane frame 'outext))
 
 (defmethod handle-event ((frame agador) (event new-text-event))
-  (setf (output-text *application-frame*) (text event))
+  (setf (input-text *application-frame*) (text event))
   (agm:with-memory
       (agp:parse-string (text event))))
 
 (defmethod handle-event ((frame agador) (event new-parse-event))
   (setf (current-parses *application-frame*) (tree event))
+  (setf (contexts *application-frame*) (context event))
   (redisplay-frame-pane frame 'syntax))
 
 (defun set-text (msg-text)
@@ -157,15 +160,17 @@
   (let* ((sheet (frame-top-level-sheet *app*))
          (event (make-instance 'new-output-event
 			       :sheet sheet
-			       :msg msg-text)))
+			       :text msg-text)))
     (queue-event sheet event)))
 
-(defun set-parse (treetop)
-  "API for changing the parse tree list"
+(defun set-parse (treetop &optional (ctx NIL))
+  "API to change the parse tree diagram"
+  (declare (optimize (speed 2)(debug 3)))
   (log:info "sending event with ~a" treetop)
   (let* ((sheet (frame-top-level-sheet *app*))
          (event (make-instance 'new-parse-event
 			       :sheet *app*
+			       :context ctx
 			       :tree treetop)))
     (queue-event sheet event)))
 

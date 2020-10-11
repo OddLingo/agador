@@ -117,17 +117,18 @@
 ;;; Remember what was said or act on commands or questions.
 (defun learn (best)
   (declare (type pterm best))
-  (log:info "Recognized: ~a" (string-from-tree best))
+  (declare (optimize (debug 3)(speed 1)))
 ;;  (handler-case
       (AGA:SEMANTICS best)
 ;;    (error (e)
-;;      (log:error "~a" e)))
+;;      (progn
+;;	(sb-debug:print-backtrace :count 5)
+;;	(log:error e))))
   )
 
-;;; When there is more than one possible parse, pick the one
+;;; When there is more than one possible parse, pick the one(s)
 ;;; with the highest 'probability'.
 (defun pick-best ()
-  (log:info "Choose from ~a" *top*)
   (let* ((best-score 0)
 	 (best-parse NIL))
     (dolist (candidate *top*)
@@ -140,13 +141,8 @@
 	  ((= this-prob best-score)
 	   (push candidate best-parse)))
 	))
-    (log:info "Chose ~a" best-parse)
     best-parse))
 
-(defun use-this (best)
-  (agg:set-parse (list best))
-  (learn best))
-  
 ;;; If there is exactly one satisfactory solution, we can
 ;;; learn from it or act on it.
 (defun judge ()
@@ -160,13 +156,13 @@
 
       ((= 1 nsoln)
        ;; Exactly one - we go with it.
-       (use-this (car *top*)))
+       (learn (car *top*)))
 
       (T
        (log:warn "There are ~d solutions" nsoln)
        (let ((highest (pick-best)))
 	 (if (= (length highest) 1)
-	     (use-this (car highest))
+	     (learn (car highest))
 	     (progn
 	       (agg:set-parse highest)
 	       NIL))))

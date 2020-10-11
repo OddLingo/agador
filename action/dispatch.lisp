@@ -15,6 +15,7 @@
 
 ;;; It is some sort of statement about the world.  Just remember it.
 (defun remember (top)
+  (declare (optimize (speed 2)(debug 3)))
   (let ((key (agm:remember top)))
     (log:info "   I remember that at ~a~%" key)
     key))
@@ -90,29 +91,34 @@
 
 (defun semantics (top)
   "Try to figure out the *meaning* of an utterance"
-  (declare (type agp::pterm top)
-	   (optimize (debug 3)(speed 1)))
+  (declare (type agp::pterm top))
+  (declare (optimize (speed 2)(debug 3)))
   (let ((handle (agm::merkle top)))
+    (log:info handle)
     (if *enabled*
-	(progn
-	  (cond
-	    ;; Questions
-	    ((question-p top) (query top handle))
+	(cond
+	  ;; Questions
+	  ((question-p top)
+	   (progn
+	     (log:info "Question")
+	     (agg:set-parse top NIL)
+	     (query top handle)))
 
-	    ;; Commands
-	    ((equal (agc:term-fn top) 'AGF::CMND)
-	     (command top handle))
+	  ;; Commands
+	  ((equal (agc:term-fn top) 'AGF::CMND)
+	   (progn
+	     (log:info "command")
+	     (agg::set-parse top NIL)
+	     (command top handle)))
 
-	    ;; Just remember anything else and give it to the explorer.
-	    (T (progn
-		 (handler-case
-		     (let ((merk (remember top)))
-		       (log:info "Remembered ~S" merk)
-;;		       (agm:goto merk)
-		       )
-		   (error (e)
-		     (log:error e)))
-		 ))))
+	  ;; Just remember anything else and give it to the explorer.
+	  (T (let ((merk NIL))
+	       (log:info "Remembering ~a" top)
+	       (setf merk (remember top))
+	       (log:info "Remembered ~a" merk)
+	       (agg::set-parse top merk)
+	       )
+	       ))
 
         ;; If actions have been disabled, the only thing we listen
         ;; for is the command to start responding again.  This is

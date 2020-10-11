@@ -6,7 +6,7 @@
 (defun gfun-from-string (s) (intern s :AGF))
 
 (defun words-from-string (s)
-  (cl-ppcre:split "[ \-\\[\\]\\+_]" (string-trim " " s)))
+  (cl-ppcre:split "[\\s\\-\\[\\]\\+\\_]" (string-trim " " s)))
   
 ;;; The inverse of words-from-string.
 (defun string-from-list (l) (format NIL "~{~a~^ ~}" l))

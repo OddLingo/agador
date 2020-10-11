@@ -8,18 +8,16 @@
 ;;;; create an MPAIR or MUSAGE object from that string.
 (defun get-tree (key)
   "Create memory object from the tree database"
-  (declare (type string key))
+;;  (declare (type string key))
   (declare (optimize (debug 3)(speed 1)))
   (let ((data (db-get :TREE key)))
     (when data
-;;      (log:info "~a => ~a" key data)
       (let* (
 	     ;; Got a string.  Split into words.
 	     (words (agu:words-from-string data))
 	     ;; The record type is in the first word.
 	     (record-type (char (first words) 0))
 	     )
-
 	(case record-type
 	  ;; Usage nodes:  (#\u AGF:FN spelling)
 	  (#\u (make-instance 'musage
@@ -50,7 +48,7 @@
 
 ;;; Add a new context above a node, avoiding duplicates.
 (defun add-context (child parent)
-  (declare (type string child parent))
+;;  (declare (type string child parent))
   (let ((c (db-get :CNTX child)))
     (if c
 	;; Child already has contexts - check for duplicates.
@@ -89,6 +87,7 @@
 (defmethod remember ((p agp:ppair))
   "Remember a syntax pair"
   (declare (optimize (debug 3)(speed 1)))
+  (log:info p)
   (let* ((left-child  (remember (agc:left p)))
 	 (right-child (remember (agc:right p)))
 	 (m (make-instance 'mpair

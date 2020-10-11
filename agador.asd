@@ -49,7 +49,7 @@
 	     :serial T
       :components (
 		   (:file "dispatch")
-		   (:file "time")
+;;		   (:file "time")
 ;;		   (:file "weather")
 ;;		   (:file "security")
 		   ))

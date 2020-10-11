@@ -33,10 +33,9 @@
 			     (leaves (agc:right m))))
 	      (agc:center m))
 
-	     (T
-	      (progn
-		(log:info "~a" (type-of m))
-		xpos))
+	     (T (progn
+		  (log:info "~a" (type-of m))
+		  xpos))
 	     )))
       ;; Descend the tree
       (leaves start))
@@ -101,20 +100,23 @@
     lowest))
 
 ;;; Draw the diagram of grammatical functions for a sentence.
-(defun paint-parse (pane start &optional (ypos 8) )
+(defgeneric paint-parse (pane start ypos))
+(defmethod paint-parse (pane (start AGC:term) (ypos integer))
   "Draw one syntax tree"
-  (declare (type AGC:term start)
-	   (type integer ypos))
+  (declare (optimize (speed 2)(debug 3)))
   ;; Assign x-coordinates to space things out
   (space-terms start)
-  (+ (paint-tree pane start ypos) 12)
-  )
-
-;;; Paint all the sentence parses, vertically spaced out
-;;; over the pane.
-(defun paint-parses (pane parselist)
+  (+ (paint-tree pane start ypos) 12))
+(defmethod paint-parse (pane (parselist cons) (ypos integer))
   "Draw all available syntax trees"
+  (log:info "Painting ~a" parselist)
   (let ((ypos 10))
     (dolist (p parselist)
-      (setf ypos (paint-parse pane p ypos))
-      )))
+      (setf ypos (paint-parse pane p ypos)))
+    ypos))
+(defmethod paint-parse (pane (empty NULL) ypos)
+  (declare (ignore empty))
+  (clim:draw-line* pane 0 0 200 200
+		   :line-thickness 10
+		   :ink +red+)
+  ypos)
