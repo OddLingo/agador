@@ -30,14 +30,14 @@
 	(r (agc:right obj))
 	(k (agm:sig obj))
 	(f (agc:term-fn obj)))
-    (format stream " ~a=~a/~a ~a" k f l r)))
+    (format stream " ~a=~a/~a:~a" k f l r)))
 
 (defclass musage (agc:usage agm:mterm) ())
 (defmethod print-object ((obj musage) stream)
   (let ((s (agc:spelled obj))
 	(k (agm:sig obj))
 	(f (agc:term-fn obj)))
-    (format stream " ~a=~a/~a" k s f)))
+    (format stream " ~a=~a/~a" k f s)))
 
 (defgeneric deref (s))
 (defmethod deref ((s string)) s)

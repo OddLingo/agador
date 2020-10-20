@@ -119,7 +119,11 @@
 
 (defun draw-parse (frame pane)
   "Repaint parse tree"
-  (paint-parse pane (current-parses frame) 10))
+  (let ((p (current-parses frame)))
+    (when p
+      (log:info p)
+      (agm:with-memory
+	  (paint-parse pane p 10)))))
 
 (defun run-window ()
   (setf *app* (make-application-frame 'agador))
@@ -184,6 +188,7 @@
 (defun set-parse (treetop &optional (ctx NIL))
   "API to change the parse tree diagram"
   (declare (optimize (speed 2)(debug 3)))
+  (sb-debug:print-backtrace :count 5)
   (let* ((sheet (frame-top-level-sheet *app*))
          (event (make-instance 'new-parse-event
 			       :sheet *app*

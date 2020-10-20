@@ -2,7 +2,8 @@
 
 (in-package :AGP)
 
-;;; Within the parser, terms add a lexical range and a probability.
+;;;; Within the parser, terms add a lexical range and a probability.
+;;;; This information is not retained in memory.
 (defclass pterm ()
   (
    (lpos :accessor term-lpos :initarg :lpos :type integer)

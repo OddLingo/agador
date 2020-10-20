@@ -142,9 +142,3 @@
 ;;; Get a single string of the spelling of the words in a tree.
 (defun string-from-tree (mt)
   (agu:string-from-list (list-from-tree mt)))
-
-
-	   ;; ((equal verb "dt") (dump :TREE))
-	   ;; ((equal verb "dc") (dump :CNTX))
-	   ;; ((equal verb "dw") (agp:print-words))
-	   ;; ((equal verb "v") (AGA::enable-action T))

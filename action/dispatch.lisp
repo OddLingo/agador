@@ -114,8 +114,9 @@
 	  ;; Just remember anything else and give it to the explorer.
 	  (T (let ((merk NIL))
 	       (setf merk (remember top))
-	       (log:info "Remembered ~a" merk)
-	       (agg::set-parse top merk)
+	       (agg::set-parse
+		(agm:get-tree merk)
+		(agm:get-context merk))
 	       )
 	       ))
 

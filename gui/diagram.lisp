@@ -69,6 +69,15 @@
 		  )
     (+ 20 ypos))
 
+
+(defgeneric recalled (node))
+(defmethod recalled ((node agc:pair)) node)
+(defmethod recalled ((node agc:usage)) node)
+(defmethod recalled ((node string)) (agm:get-tree node))
+
+(defmethod paint-tree (pane (handle string) (ypos integer))
+  (paint-tree pane (agm:get-tree handle) ypos))
+
 ;;; Draw PAIR nodes top-down.
 (defmethod paint-tree (pane (p agc:pair) ypos)
   "Draw a 'pair' inner node"
@@ -103,13 +112,12 @@
 (defgeneric paint-parse (pane start ypos))
 (defmethod paint-parse (pane (start AGC:term) (ypos integer))
   "Draw one syntax tree"
-  (declare (optimize (speed 2)(debug 3)))
+  (declare (optimize (speed 1)(debug 3)))
   ;; Assign x-coordinates to space things out
   (space-terms start)
   (+ (paint-tree pane start ypos) 12))
 (defmethod paint-parse (pane (parselist cons) (ypos integer))
   "Draw all available syntax trees"
-  (log:info "Painting ~a" parselist)
   (let ((ypos 10))
     (dolist (p parselist)
       (setf ypos (paint-parse pane p ypos)))
@@ -117,6 +125,6 @@
 (defmethod paint-parse (pane (empty NULL) ypos)
   (declare (ignore empty))
   (clim:draw-line* pane 0 0 200 200
-		   :line-thickness 10
+		   :line-thickness 8
 		   :ink +red+)
   ypos)
