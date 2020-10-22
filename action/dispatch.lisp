@@ -13,19 +13,12 @@
 (defparameter *sleep* "6AC8C2CF1A") ;; jan Akato o kute ala
 (defvar *enabled* T)
 
-;;; It is some sort of statement about the world.  Just remember it.
-(defun remember (top)
-  (declare (optimize (speed 2)(debug 3)))
-  (let ((key (agm:remember top)))
-    (log:info "   I remember that at ~a~%" key)
-    key))
-
 ;;; 'merkle-of-subtree' tries to discover the database key for the memory
 ;;; representation of some sub-tree of a given parse tree.
 (defun merkle-of-subtree (start goal)
   (declare (type agp::pterm start))
   (let ((subtree (agp:word-at start goal)))
-    (if subtree (agm:merkle subtree) NIL)))
+    (when subtree (agm:remember subtree :STORE NIL))))
 
 (defun stop (obj)
   "Stop some ongoing internal process"
@@ -58,7 +51,7 @@
       ;; ;; ((equal verbname "MOLI") (stop top))
       ;; ;; ((equal verbname "OPEN") (start top))
       ;; ;; ;; Next should be 'sona kama'
-      ;; ;; ((equal verbname "SONA") (remember (agc:right top)))
+      ;; ;; ((equal verbname "SONA") (agm:remember (agc:right top)))
     (T (log:warn "No action for that"))))
 
 ;;; Detect questions by the presense of the universal query
@@ -93,7 +86,7 @@
   "Try to figure out the *meaning* of an utterance"
   (declare (type agp::pterm top))
   (declare (optimize (speed 2)(debug 3)))
-  (let ((handle (agm::merkle top)))
+  (let ((handle (agm:remember top :STORE NIL)))
     (log:info handle)
     (if *enabled*
 	(cond
@@ -113,7 +106,7 @@
 
 	  ;; Just remember anything else and give it to the explorer.
 	  (T (let ((merk NIL))
-	       (setf merk (remember top))
+	       (setf merk (agm:remember top))
 	       (agg::set-parse
 		(agm:get-tree merk)
 		(agm:get-context merk))

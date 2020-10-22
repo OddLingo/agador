@@ -59,7 +59,6 @@
 	     :depends-on ("package" "classes")
 	     :serial T	       
       :components (
-	(:file "mclass")
 	(:file "db")
 	(:file "tree")
 	))
