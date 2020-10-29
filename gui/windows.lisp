@@ -9,8 +9,11 @@
   ;; Data slots
   ((input-text :initform "toki-pona" :accessor input-text)
    (output-text :initform "toki-pona" :accessor output-text)
+   ;; A TERM at the top of the current displayed tree
    (cursor :initform NIL :accessor cursor)
+   ;; A list of tree KEYS
    (contexts :initform NIL :accessor contexts)
+   ;; A list or single PAIR
    (current-parses :initform NIL :accessor current-parses))
 
   ;; The various panes within the window.
@@ -61,19 +64,26 @@
 
 (define-agador-command (com-left :name T) ()
   "Move memory cursor down to the left"
-  (when (cursor *application-frame*)
-    (agm:with-memory
-	(goto (agc:right (cursor *application-frame*))))))
+  (let ((c (cursor *application-frame*)))
+    (log:info c)
+    (when c
+      (agm:with-memory
+	(goto (agc:left c))))))
 
 (define-agador-command (com-right :name T) ()
   "Move memory cursor down to the right"
-  (when (cursor *application-frame*)
-    (agm:with-memory
-	(goto (agc:right (cursor *application-frame*))))))
+  (let ((c (cursor *application-frame*)))
+    (log:info c)
+    (when c
+      (agm:with-memory
+	(goto (agc:right c))))))
 
 (make-command-table 'menubar-table
 		    :errorp NIL
 		    :menu '(("Quit" :command com-quit)
+			    ("Left" :command com-left)
+			    ("Right" :command com-right)
+			    ("Up" :command com-up)
 ;;			    ("Save" :command com-save)
 			    ))
 
@@ -97,31 +107,35 @@
 (defun show-contexts (frame pane)
   "Show contexts of the cursor"
   (let ((ctx (contexts frame)))
-    (cond
-      ((null ctx) T)
-      ((equal (type-of ctx) 'cons)
-       (loop for c in ctx for cnum from 0
-	  do (format pane "~d: ~a"
-		     cnum
-		     (agm:string-from-tree c))))
-      (T (format pane ctx)))))
+    (log:info ctx)
+    (agm:with-memory
+	(cond
+	  ((null ctx) (format pane "---"))
+	  ((equal (type-of ctx) 'cons)
+	   (loop for c in ctx for cnum from 0
+	      do (format pane "~d: ~a~%"
+			 cnum
+			 c)))
+;;			 (agm:string-from-tree c))))
+	  (T (format pane ctx))))))
 
 ;;; Change the memory browser context to the node with
 ;;; a given signature.
-(defun goto (merk)
-  (declare (type string merk))
-  (declare (optimize (speed 2)(debug 3)))
-  (let ((tree (agm:get-tree merk)))
-    (setf (cursor *app*) tree)
-    (setf (contexts *app*) (agm:get-context merk))
-    (setf (current-parses *app*) tree)
-  ))
+(defgeneric goto (newtop))
+(defmethod goto ((tree agc:term))
+  (log:info tree)
+  (setf (cursor *app*) tree)
+  (setf (contexts *app*)
+	(agm:get-context (agm:remember tree :STORE NIL)))
+  (setf (current-parses *app*) tree))
+(defmethod goto ((merk string))
+  (log:info merk)
+  (goto (agm:get-tree merk)))
 
 (defun draw-parse (frame pane)
   "Repaint parse tree"
   (let ((p (current-parses frame)))
     (when p
-      (log:info p)
       (agm:with-memory
 	  (paint-parse pane p 10)))))
 
@@ -160,7 +174,9 @@
   (redisplay-frame-pane frame 'context))
 
 (defmethod handle-event ((frame agador) (event new-parse-event))
+  (log:info "Parse ~a with ~a" (tree event) (context event))
   (setf (current-parses *application-frame*) (tree event))
+  (setf (cursor *application-frame*) (tree event))
   (setf (contexts *application-frame*) (context event))
   (redisplay-frame-pane frame 'syntax)
   (redisplay-frame-pane frame 'context))

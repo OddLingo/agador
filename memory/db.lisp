@@ -52,7 +52,6 @@
 
   ;; Open DB's identified in the dbi list and keep track of which
   ;; ones have been opened.
-  (log:info dbis)
   (dolist (dbi dbis)
     (let* ((dbname (assoc dbi +database-names+))
 	  (hdl (lmdb:make-database *dbtxn* (cdr dbname) :create T)))
@@ -61,7 +60,6 @@
 
 (defun db-commit ()
   "Commit changes to the database"
-  (log:info "committed")
   ;; Commit any changes.
   (lmdb:commit-transaction *dbtxn*)
   ;; Close any DBs we opened.

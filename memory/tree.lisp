@@ -49,14 +49,17 @@
 (defun get-context (key)
   "Get list of contexts for a term"
   (declare (type string key))
+  (log:info key)
   (let ((data (db-get :CNTX key)))
     (when data
+      (log:info data)
       (agu:words-from-string data))))
 
 ;;; Add a new context above a node, avoiding duplicates.
 (defun add-context (low-key high-key)
   (declare (type string low-key high-key))
   (let ((c (db-get :CNTX low-key)))
+    (log:info "Adding ~a to ~a for ~a" high-key c low-key)
     (if c
 	;; Child already has contexts - check for duplicates.
 	(let ((previous (agu:words-from-string c)))
@@ -102,6 +105,7 @@
     ;; If this exact pair is not already in the db, create it
     ;; and the contexts up from the lower nodes.
     (when store
+      (log:info "Store ~a at ~a" stored-as key)
       (unless (db-get :TREE key)
 	(db-put :TREE key stored-as)
 	(add-context left-child  key)

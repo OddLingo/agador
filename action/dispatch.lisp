@@ -87,7 +87,6 @@
   (declare (type agp::pterm top))
   (declare (optimize (speed 2)(debug 3)))
   (let ((handle (agm:remember top :STORE NIL)))
-    (log:info handle)
     (if *enabled*
 	(cond
 	  ;; Questions
@@ -107,6 +106,7 @@
 	  ;; Just remember anything else and give it to the explorer.
 	  (T (let ((merk NIL))
 	       (setf merk (agm:remember top))
+	       (log:info "Remembered at ~a" merk)
 	       (agg::set-parse
 		(agm:get-tree merk)
 		(agm:get-context merk))
