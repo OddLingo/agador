@@ -120,14 +120,15 @@
 	  (T (format pane ctx))))))
 
 ;;; Change the memory browser context to the node with
-;;; a given signature.
+;;; a given signature.  Caller must have the with-memory lock.
 (defgeneric goto (newtop))
 (defmethod goto ((tree agc:term))
   (log:info tree)
   (setf (cursor *app*) tree)
   (setf (contexts *app*)
 	(agm:get-context (agm:remember tree :STORE NIL)))
-  (setf (current-parses *app*) tree))
+  (setf (current-parses *app*) tree)
+  (agm::say-tree tree))
 (defmethod goto ((merk string))
   (log:info merk)
   (goto (agm:get-tree merk)))

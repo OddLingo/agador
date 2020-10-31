@@ -116,14 +116,12 @@
 ;;; We descend the tree right-side-first but are pushing it
 ;;; onto the list of leaves.  This results in the final
 ;;; list being in the correct order left-to-right.
-(defun list-from-tree (start)
-  "Flatten memorized tree to a list"
-  (declare (type string start))
+(defgeneric list-from-tree (start))
+(defmethod list-from-tree ((start agc:term))
   (let ((leaves NIL))
     (labels
-	((find-leaf (mt)
-	   (let* ((m (get-tree mt))
-		 (ty (type-of m)))
+	((find-leaf (m)
+	   (let ((ty (type-of m)))
 	     (case ty
 	       (AGC:USAGE (push (agc:spelled m) leaves))
 	       (AGC:PAIR
@@ -133,7 +131,12 @@
 	       ))))
       (find-leaf start))
     leaves))
+(defmethod list-from-tree ((start string))
+  (list-from-tree (get-tree start)))
 
 ;;; Get a single string of the spelling of the words in a tree.
 (defun string-from-tree (mt)
   (agu:string-from-list (list-from-tree mt)))
+
+(defun say-tree (mt)
+  (ags:say (string-from-tree mt)))
