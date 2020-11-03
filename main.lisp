@@ -89,7 +89,6 @@
   ;; Start speech interfaces
   (ags:tstart)
 ;;  (ags:listen-start)
-
   (aga::enable-action T) ;; "I am listening."
 
   ;; Start the visual user interface with a condition

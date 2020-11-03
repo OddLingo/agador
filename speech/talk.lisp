@@ -12,7 +12,6 @@
   (let ((txt (getf msg :TEXT))
 	(voice (getf msg :VOICE)))
     (if (null voice) (setf voice "other/jbo"))
-    (agg:set-output txt)
 
     ;; Stop listening while we talk.
     (uiop:run-program
@@ -34,6 +33,8 @@
   )
 
 (defun say (msg &key (voice "other/jbo+m2"))
+  (log:info msg)
+  (agg:set-output msg)
   (agu:send *talking* (list :op :SAY :TEXT msg :voice voice))
   )
 

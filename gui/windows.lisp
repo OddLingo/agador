@@ -65,7 +65,6 @@
 (define-agador-command (com-left :name T) ()
   "Move memory cursor down to the left"
   (let ((c (cursor *application-frame*)))
-    (log:info c)
     (when c
       (agm:with-memory
 	(goto (agc:left c))))))
@@ -73,7 +72,6 @@
 (define-agador-command (com-right :name T) ()
   "Move memory cursor down to the right"
   (let ((c (cursor *application-frame*)))
-    (log:info c)
     (when c
       (agm:with-memory
 	(goto (agc:right c))))))
@@ -107,7 +105,6 @@
 (defun show-contexts (frame pane)
   "Show contexts of the cursor"
   (let ((ctx (contexts frame)))
-    (log:info ctx)
     (agm:with-memory
 	(cond
 	  ((null ctx) (format pane "---"))
@@ -123,7 +120,6 @@
 ;;; a given signature.  Caller must have the with-memory lock.
 (defgeneric goto (newtop))
 (defmethod goto ((tree agc:term))
-  (log:info tree)
   (setf (cursor *app*) tree)
   (setf (contexts *app*)
 	(agm:get-context (agm:remember tree :STORE NIL)))
@@ -162,11 +158,11 @@
 ;;;; Handling an event usually requires an explicit
 ;;;; request to redisplay affected panes.
 (defmethod handle-event ((frame agador) (event new-output-event))
-  (setf (output-text *application-frame*) (text event))
+  (setf (output-text frame) (text event))
   (redisplay-frame-pane frame 'outext))
 
 (defmethod handle-event ((frame agador) (event new-text-event))
-  (setf (input-text *application-frame*) (text event))
+  (setf (input-text frame) (text event))
   (agm:with-memory
       (agp:parse-string (text event))))
 
@@ -175,10 +171,9 @@
   (redisplay-frame-pane frame 'context))
 
 (defmethod handle-event ((frame agador) (event new-parse-event))
-  (log:info "Parse ~a with ~a" (tree event) (context event))
-  (setf (current-parses *application-frame*) (tree event))
-  (setf (cursor *application-frame*) (tree event))
-  (setf (contexts *application-frame*) (context event))
+  (setf (current-parses frame) (tree event))
+  (setf (cursor frame) (tree event))
+  (setf (contexts frame) (context event))
   (redisplay-frame-pane frame 'syntax)
   (redisplay-frame-pane frame 'context))
 
@@ -186,38 +181,40 @@
 ;;;; the information displayed on the screen.  They generate
 ;;;; 'events' that are processed by the 'handlers' within
 ;;;; the McCLIM command loop.
-(defun set-text (msg-text)
+(defun set-input (msg-text)
   "Change the displayed input text programmatically"
-  (let* ((sheet (frame-top-level-sheet *app*))
-         (event (make-instance 'new-text-event
-			       :sheet sheet
-			       :msg msg-text)))
-    (queue-event sheet event)))
+  (when *app*
+    (let* ((sheet (frame-top-level-sheet *app*))
+	   (event (make-instance 'new-text-event
+				 :sheet *app*
+				 :msg msg-text)))
+      (queue-event sheet event))))
 
 (defun set-output (msg-text)
   "Change the displayed output text programmatically"
-  (let* ((sheet (frame-top-level-sheet *app*))
-         (event (make-instance 'new-output-event
-			       :sheet sheet
-			       :text msg-text)))
-    (queue-event sheet event)))
+  (when *app*
+    (let* ((sheet (frame-top-level-sheet *app*))
+	   (event (make-instance 'new-output-event
+				 :sheet *app*
+				 :text msg-text)))
+      (queue-event sheet event))))
 
 (defun set-parse (treetop &optional (ctx NIL))
   "API to change the parse tree diagram"
-  (declare (optimize (speed 2)(debug 3)))
-  (sb-debug:print-backtrace :count 5)
-  (let* ((sheet (frame-top-level-sheet *app*))
-         (event (make-instance 'new-parse-event
-			       :sheet *app*
-			       :context ctx
-			       :tree treetop)))
-    (queue-event sheet event)))
+  (when *app*
+    (let* ((sheet (frame-top-level-sheet *app*))
+	   (event (make-instance 'new-parse-event
+				 :sheet *app*
+				 :context ctx
+				 :tree treetop)))
+      (queue-event sheet event))))
 
 (defun set-status (fmt &rest args)
   "Replace text on the status line"
-  (let* ((sheet (frame-top-level-sheet *app*))
-         (event (make-instance 'new-status-event
-			:sheet sheet
-			:text (apply 'format (list NIL fmt args)))))
-    (queue-event sheet event)))
+  (when *app*
+    (let* ((sheet (frame-top-level-sheet *app*))
+	   (event (make-instance 'new-status-event
+				 :sheet *app*
+				 :text (apply 'format (list NIL fmt args)))))
+      (queue-event sheet event))))
  
